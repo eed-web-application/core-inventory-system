@@ -11,6 +11,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
     build:
-        uses: eed-web-application/code-inventory-system-deployment/.github/workflows/build-test.yml@main
+        uses: eed-web-application/core-inventory-system-deployment/.github/workflows/build-test.yml@main
         secrets: inherit
 
