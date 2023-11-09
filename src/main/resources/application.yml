@@ -1,0 +1,34 @@
+logging:
+  level:
+    edu.stanford.slac.code_inventory_system: DEBUG
+    org.springdoc: debug
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+edu:
+  stanford:
+    slac:
+      code_inventory_system:
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+spring:
+  application:
+    name: 'code-inventory-system' 
+
+# swagger-ui custom path
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /api-docs
