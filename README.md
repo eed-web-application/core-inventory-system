@@ -1,2 +1,2 @@
 # code-inventory-system
-Template for java backend
+Manament system for big apparatus
