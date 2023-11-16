@@ -2,7 +2,7 @@ package edu.stanford.slac.code_inventory_system;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.ApiResultResponse;
+import edu.stanford.slac.ad.eed.baselib.api.v1.dto.ApiResultResponse;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;

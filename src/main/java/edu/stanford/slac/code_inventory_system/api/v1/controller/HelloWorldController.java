@@ -1,6 +1,6 @@
 package edu.stanford.slac.code_inventory_system.api.v1.controller;
 
-import edu.stanford.slac.code_inventory_system.api.v1.dto.ApiResultResponse;
+import edu.stanford.slac.ad.eed.baselib.api.v1.dto.ApiResultResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ public class HelloWorldController {
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(summary = "Download a content from a file entry")
-    public ApiResultResponse<String>  helloWorld() throws Exception {
+    public ApiResultResponse<String> helloWorld() throws Exception {
         return ApiResultResponse.of("hello world");
     }
 }
