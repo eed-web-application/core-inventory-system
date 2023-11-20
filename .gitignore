@@ -2,3 +2,4 @@ build
 /.idea/
 /bin
 /.gradle
+/gradle.properties
