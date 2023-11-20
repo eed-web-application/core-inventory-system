@@ -5,6 +5,5 @@ import lombok.Builder;
 
 @Builder
 @AllArgsConstructor
-public class InventoryClass {
-    private String name;
+public class InventoryItem {
 }
