@@ -1,5 +1,18 @@
-# code-inventory-system
-Management system for big apparatus
+# code-inventory-system (CIS)
+CIS stands as a new inventory management system designed specifically for managing large and complex equipment. 
+It breaks away from traditional inventory management systems by not only encompassing hardware, connectors, and 
+cables but also enabling users to create new classes for defining new inventory items on the fly. This flexibility
+caters to the ever-evolving demands of managing sophisticated equipment.
+
+CIS extends its purview beyond mere hardware inventory to encompass the physical locations where this equipment 
+resides. This comprehensive approach ensures seamless tracking of equipment movement and placement, providing a 
+holistic view of the physical infrastructure.
+
+Furthermore, CIS diligently maintains a detailed history of each inventory item throughout its lifecycle, 
+providing valuable insights into its usage patterns, maintenance records, and overall lifespan. This 
+historical data proves instrumental in making informed decisions regarding equipment upgrades, 
+replacement cycles, and potential areas of improvement.
+
 # Table of Contents
 1. [Overview](#Overview)
 2. [ClassType Entity](#classtype-entity)
@@ -10,7 +23,7 @@ Management system for big apparatus
 ## Overview
 This document provides detailed information about the InventoryItem and ClassType entities 
 used in the Inventory Management System designed for tracking and managing various items, 
-including equipment and locations within a nuclear accelerator facility.
+including equipment and locations within a nuclear accelerator facility. 
 
 ### ClassType Entity
 The ClassType entity defines the classes of items, cables, and connectors in the system, specifying their attributes, 
