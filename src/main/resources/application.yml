@@ -17,7 +17,7 @@ spring:
     base: ${CIS_LDAP_BASE:dc=sdf,dc=slac,dc=stanford,dc=edu}
   data:
     mongodb:
-      uri: ${CIS_MONGODB_URI:mongodb://test:test@localhost:27017/test?authSource=test}
+      uri: ${CIS_MONGODB_URI:mongodb://cis:cis@localhost:27017/cis?authSource=cis}
   servlet:
     multipart:
       enabled: true

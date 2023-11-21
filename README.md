@@ -16,7 +16,7 @@ replacement cycles, and potential areas of improvement.
 # Table of Contents
 1. [Overview](#Overview)
 2. [ClassType Entity](#classtype-entity)
-3. [InventoryItem Entity](#inventoryitem-entity)
+3. [InventoryElement Entity](#inventoryelement-entity)
 4. [CableItem Entity](#cableitem-entity)
 5. [Example global overview](#example-global-overview)
 
@@ -158,32 +158,33 @@ Description: Represents power cord cables(F/M), specifying length and plug type.
 }
 ```
 
-### InventoryItem Entity
-The InventoryItem entity represents individual items in the inventory. This includes all
-physical items and locations, such as servers, racks, and connectors.
+### InventoryElement Entity
+The InventoryElement entity represents individual element in the inventory. This includes all
+physical item and locations and software, such as servers, racks, connectors and software program.
 ```json lines
 {
-  "_id": String,
-  "name": String,
-  "type": String,
-  "classType": String,
-  "parent_id": String,
-  "attributes": Object,
-  "connector_class": Array,
-  "history": Array
+  "_id": "String",
+  "name": "String",
+  "classId": "String",
+  "parent_id": "String",
+  "full_three_path": "String",
+  "attributes": "Object",
+  "connector_class": "Array",
+  "history": "Array"
 }
 ```
 Fields
-* _id: Unique identifier for the item.
-* name: Human-readable name of the item.
-* type: Type of the item (e.g., 'Server', 'Connector').
+* _id: Unique identifier for the element.
+* name: Human-readable name of the element.
+* classId: the id of the class type of the element (e.g., 'Server', 'Connector').
 * parent_id: ID of the parent item, indicating the item's location or grouping.
+* full_three_path: represent the full three path from the root to this element that is the leaf
 * attributes: Key-value pairs representing item-specific attributes.
 * connector_class: An array of objects, each specifying a type of connector class the item supports and the count of such connectors. This helps in identifying the connectivity capabilities of the item.
 * history: Array of historical records, including actions like 'Installed', 'Moved', and their corresponding details.
 
 #### Usage
-InventoryItem documents are pivotal for tracking and managing the physical and logical aspects of each inventory component. 
+InventoryElement documents are pivotal for tracking and managing the physical and logical aspects of each inventory component. 
 They provide crucial insights into the item's capabilities, its location within the facility, and its lifecycle events, 
 ensuring effective and informed inventory management.
 
