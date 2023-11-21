@@ -44,9 +44,4 @@ public class InventoryClass {
      */
     @Builder.Default
     List<InventoryClassAttribute> attributes = Collections.emptyList();
-    /**
-     * Define to list of class to which the element can be connected
-     */
-    @Builder.Default
-    List<InventoryClass> connectableClass = Collections.emptyList();
 }
