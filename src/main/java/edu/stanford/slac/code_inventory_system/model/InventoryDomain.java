@@ -17,6 +17,19 @@ import java.util.List;
 public class InventoryDomain {
     @Id
     private String id;
+    /**
+     * The name of the domain
+     */
     private String name;
+
+    /**
+     * The description of the domain
+     */
+    private String description;
+
+    /**
+     * The list of the tags that can be used for all
+     * inventory elements of this domain
+     */
     private List<Tag> tags;
 }
