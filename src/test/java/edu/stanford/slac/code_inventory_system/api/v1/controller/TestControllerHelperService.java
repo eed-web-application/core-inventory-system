@@ -60,7 +60,8 @@ public class TestControllerHelperService {
         )
                 .accept(MediaType.APPLICATION_JSON);
         return executeHttpRequest(
-                new TypeReference<ApiResultResponse<InventoryClassDTO>>() {},
+                new TypeReference<>() {
+                },
                 mockMvc,
                 resultMatcher,
                 userInfo,
@@ -83,9 +84,7 @@ public class TestControllerHelperService {
         if (someException.isPresent()) {
             throw someException.get();
         }
-        ObjectMapper mapper = new ObjectMapper();
-        ApiResultResponse<T> resultObj = mapper.readValue(result.getResponse().getContentAsString(),typeRef);
-        return resultObj;
+        return new ObjectMapper().readValue(result.getResponse().getContentAsString(),typeRef);
     }
 
 }
