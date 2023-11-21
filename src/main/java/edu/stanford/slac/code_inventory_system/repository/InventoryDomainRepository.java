@@ -1,0 +1,36 @@
+package edu.stanford.slac.code_inventory_system.repository;
+
+import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
+import edu.stanford.slac.code_inventory_system.model.Tag;
+import org.springframework.data.mongodb.repository.Aggregation;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface InventoryDomainRepository extends MongoRepository<InventoryDomain, String>, InventoryDomainRepositoryCustom{
+
+    /**
+     * Return the single tag from the list of tags that belong to a domain
+     * @param id the unique id of the domain
+     * @param tagId i hte gat id to return
+     * @return the full tag object found
+     */
+    @Aggregation(pipeline = {
+            "{ $match: { 'id': ?0 } }",
+            "{ $unwind: '$tags' }",
+            "{ $match: { 'tags._id': ?1 } }",
+            "{ $project: { 'tags': 1, '_id': 0 } }",
+            "{ $replaceRoot: { newRoot: '$tags' } }",
+    })
+    Tag findTagById(String id, String tagId);
+
+    /**
+     * check if the tag exist into the domain
+     * @param id the domain id
+     * @param tagId the id of the tag
+     * @return true if the tag exists
+     */
+    @Aggregation(pipeline = {
+            "{ $match: { 'id': ?0 } }",
+            "{ $project: { 'tagExists': { $anyElementTrue: { $map: { input: '$tags', as: 'tag', in: { $eq: ['$$tag._id', ?1] } } } }, '_id': 0 } }"
+    })
+    boolean existsTagById(String id, String tagId);
+}
