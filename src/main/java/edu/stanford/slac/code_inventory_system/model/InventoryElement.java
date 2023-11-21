@@ -1,7 +1,6 @@
 package edu.stanford.slac.code_inventory_system.model;
 
 import edu.stanford.slac.code_inventory_system.model.value.AbstractValue;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +22,12 @@ public class InventoryElement {
      * Is the name of the element
      */
     private String name;
+
+    /**
+     * specify the domain which the item belong
+     */
+    private String domainId;
+
     /**
      * IS the id of one of the existing class {@link InventoryClass#id name}
      */
@@ -41,10 +46,20 @@ public class InventoryElement {
     /**
      * Teh value for the attributes
      */
-    private List<AbstractValue> attribute;
+    private List<AbstractValue> attributes;
 
     /**
      * the list of the connector class that can be used as ID
      */
     private List<ConnectorClass> connectorClasses;
+
+    /**
+     * IS the history of that element
+     */
+    private List<InventoryElementHistory> history;
+
+    /**
+     * Define the ids of the tag associated with the element
+     */
+    private List<String> tags;
 }

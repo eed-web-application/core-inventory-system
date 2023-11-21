@@ -45,7 +45,7 @@ public class InventoryElementTest {
                 .builder()
                 .name("Control System Building")
                 .classId(UUID.randomUUID().toString())
-                .attribute(
+                .attributes(
                         List.of(
                                 StringValue
                                         .builder()

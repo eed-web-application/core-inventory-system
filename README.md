@@ -34,7 +34,6 @@ mandatory requirements, and connectivity rules.
   "name": "String",
   "classType": "String",
   "attributes": "Object",
-  "connectableClasses": "Array"
 }
 ```
 Fields
@@ -42,7 +41,6 @@ Fields
 * name: Name of the class (e.g., 'ServerClass', 'EthernetCable').
 * classType: Nature of the class (Item, Cable, or Connector).
 * attributes: Object defining attributes specific to the class, including mandatory/optional status, data type, and unit.
-* connectableClasses: Array of class IDs that can be connected to this class (relevant for items and connectors).
 
 #### Usage
 The ClassType documents are essential for defining the structure and rules for various items in the inventory. 
@@ -65,8 +63,7 @@ Description: Represents servers within the inventory, detailing essential attrib
     "RAM": {"mandatory": true, "type": "string", "unit": "GB"},
     "Storage": {"mandatory": true, "type": "string", "unit": "TB"},
     "NetworkPorts": {"mandatory": true, "type": "number"}
-  },
-  "connectableClasses": ["powerSupplyConnectorClass", "ethernetCableClass"]
+  }
 }
 
 ```
@@ -79,8 +76,7 @@ Description: Defines power supplies, including attributes like wattage and effic
   "attributes": {
     "Wattage": {"mandatory": true, "type": "number", "unit": "Watts"},
     "EfficiencyRating": {"mandatory": false, "type": "string"}
-  },
-  "connectableClasses": ["powerCordCableClass"]
+  }
 }
 ```
 Description: Specifies RJ45(M/F) connectors used primarily for Ethernet connections.
@@ -92,8 +88,7 @@ Description: Specifies RJ45(M/F) connectors used primarily for Ethernet connecti
   "attributes": {
     "Type": {"mandatory": true, "type": "string"},
     "Compatibility": {"mandatory": true, "type": "string"}
-  },
-  "connectableClasses": ["ethernetCableClass"]
+  }
 }
 ```
 ```json
@@ -104,8 +99,7 @@ Description: Specifies RJ45(M/F) connectors used primarily for Ethernet connecti
   "attributes": {
     "Type": {"mandatory": true, "type": "string"},
     "Compatibility": {"mandatory": true, "type": "string"}
-  },
-  "connectableClasses": ["ethernetCableClass"]
+  }
 }
 ```
 Description: Details connectors used for connecting power supplies.
@@ -116,8 +110,7 @@ Description: Details connectors used for connecting power supplies.
   "classType": "Connector",
   "attributes": {
     "VoltageRating": {"mandatory": false, "type": "number", "unit": "Volts"}
-  },
-  "connectableClasses": ["powerCordCableClass", "powerSupplyClass"]
+  }
 }
 ```
 ```json
@@ -127,8 +120,7 @@ Description: Details connectors used for connecting power supplies.
   "classType": "Connector",
   "attributes": {
     "VoltageRating": {"mandatory": false, "type": "number", "unit": "Volts"}
-  },
-  "connectableClasses": ["powerCordCableClass", "powerSupplyClass"]
+  }
 }
 ```
 Description: Covers Ethernet cables, defining length, category, and other relevant attributes.
@@ -140,8 +132,7 @@ Description: Covers Ethernet cables, defining length, category, and other releva
   "attributes": {
     "Length": {"mandatory": true, "type": "number", "unit": "meters"},
     "Category": {"mandatory": true, "type": "string"}
-  },
-  "connectableClasses": ["rj45ConnectorClass", "serverClass"]
+  }
 }
 ```
 Description: Represents power cord cables(F/M), specifying length and plug type.
@@ -153,8 +144,7 @@ Description: Represents power cord cables(F/M), specifying length and plug type.
   "attributes": {
     "Length": {"mandatory": true, "type": "number", "unit": "meters"},
     "PlugType": {"mandatory": true, "type": "string"}
-  },
-  "connectableClasses": ["powerSupplyConnectorClass", "powerSupplyClass"]
+  }
 }
 ```
 
