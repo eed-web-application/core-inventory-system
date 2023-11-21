@@ -1,16 +1,14 @@
 package edu.stanford.slac.code_inventory_system.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Define an attribute to enrich the class attribute({@link InventoryClass#attributes}) list
  */
 @Data
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class InventoryClassAttribute {
@@ -27,10 +25,10 @@ public class InventoryClassAttribute {
      */
     private Boolean mandatory;
     /**
-     * Define the type of the attribute for the {@link AttributeType}
+     * Define the type of the attribute for the {@link InventoryClassAttributeType}
      * enum
      */
-    private AttributeType type;
+    private InventoryClassAttributeType type;
     /**
      * Specify the type of the unit that represent the attribute
      */

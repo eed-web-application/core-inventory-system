@@ -1,9 +1,9 @@
 package edu.stanford.slac.code_inventory_system.repository;
 
-import edu.stanford.slac.code_inventory_system.model.AttributeType;
-import edu.stanford.slac.code_inventory_system.model.InventoryClassAttribute;
-import edu.stanford.slac.code_inventory_system.model.InventoryClassType;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
+import edu.stanford.slac.code_inventory_system.model.InventoryClassAttribute;
+import edu.stanford.slac.code_inventory_system.model.InventoryClassAttributeType;
+import edu.stanford.slac.code_inventory_system.model.InventoryClassType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -51,21 +51,21 @@ public class InventoryClassTest {
                                         .name("Alias")
                                         .description("Is the simple code for describe the building")
                                         .mandatory(true)
-                                        .type(AttributeType.String)
+                                        .type(InventoryClassAttributeType.String)
                                         .build(),
                                 InventoryClassAttribute
                                         .builder()
                                         .name("Building access manager")
                                         .description("Is the access manage user identification")
                                         .mandatory(true)
-                                        .type(AttributeType.String)
+                                        .type(InventoryClassAttributeType.String)
                                         .build(),
                                 InventoryClassAttribute
                                         .builder()
                                         .name("Area access level")
                                         .description("Is the access level code that identify who can access the building")
                                         .mandatory(true)
-                                        .type(AttributeType.String)
+                                        .type(InventoryClassAttributeType.String)
                                         .build()
                         )
                 )

@@ -1,9 +1,6 @@
 package edu.stanford.slac.code_inventory_system.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 
 import java.util.Collections;
@@ -26,6 +23,7 @@ import java.util.List;
  */
 @Data
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class InventoryClass {

@@ -3,6 +3,7 @@ package edu.stanford.slac.code_inventory_system.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 @Data
 @Builder
+@ToString
 @AllArgsConstructor
 public class InventoryDomain {
     @Id
