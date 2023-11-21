@@ -55,10 +55,11 @@ dependencies {
             'javax.annotation:javax.annotation-api:1.3.2',
             'io.swagger.core.v3:swagger-annotations:2.2.8',
             'org.mapstruct:mapstruct:1.5.3.Final',
-            'edu.stanford.slac:slac-ad-eed-baselib:0.1.21',
-            'edu.stanford.slac:slac-ad-eed-base-mongodb-lib:0.1.10',
             'org.hibernate.validator:hibernate-validator:6.2.0.Final'
 
+    //eed library
+    implementation 'edu.stanford.slac:slac-ad-eed-baselib:0.1.22',
+            'edu.stanford.slac:slac-ad-eed-base-mongodb-lib:0.1.10'
     // MongoDB
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     // mongock

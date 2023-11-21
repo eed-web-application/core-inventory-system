@@ -17,6 +17,7 @@ import java.util.List;
 public class InventoryDomain {
     @Id
     private String id;
+
     /**
      * The name of the domain
      */
