@@ -4,6 +4,7 @@ import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttribut
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeTypeDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassTypeDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
+import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -89,6 +91,19 @@ public class InventoryClassControllerTest {
         assertThat(findByIdResult.getPayload().attributes()).hasSize(1);
         assertThat(findByIdResult.getPayload().attributes().get(0).name()).isEqualTo("security-level");
         assertThat(findByIdResult.getPayload().attributes().get(0).type()).isEqualTo(InventoryClassAttributeTypeDTO.String);
+    }
 
+    @Test
+    public void findClassFailsWithUnexistingId(){
+        var classNotfound = assertThrows(
+                InventoryClassNotFound.class,
+                () -> testControllerHelperService.inventoryClassControllerFindById(
+                        mockMvc,
+                        status().isNotFound(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        "bad id"
+                )
+        );
+        assertThat(classNotfound.getErrorCode()).isEqualTo(-2);
     }
 }
