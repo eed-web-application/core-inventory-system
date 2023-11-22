@@ -42,7 +42,15 @@ mandatory requirements, and connectivity rules.
   "_id": "String",
   "name": "String",
   "classType": "String",
-  "attributes": "Object",
+  "attributes": [
+  {
+    "name": "string",
+    "description": "string",
+    "mandatory": "true|false",
+    "type": "string|integer|double|boolean|date|date-time"
+    "unit": "watt|m/s|ampere|etc..."
+  }
+  ],
 }
 ```
 Fields

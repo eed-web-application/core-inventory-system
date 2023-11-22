@@ -8,6 +8,8 @@ import edu.stanford.slac.ad.eed.baselib.auth.JWTHelper;
 import edu.stanford.slac.ad.eed.baselib.config.AppProperties;
 import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassSummaryDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassTypeDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -45,7 +48,8 @@ public class TestControllerHelperService {
                         )
                 );
         return executeHttpRequest(
-                new TypeReference<>() {},
+                new TypeReference<>() {
+                },
                 mockMvc,
                 resultMatcher,
                 userInfo,
@@ -59,6 +63,30 @@ public class TestControllerHelperService {
                 id
         )
                 .accept(MediaType.APPLICATION_JSON);
+        return executeHttpRequest(
+                new TypeReference<>() {
+                },
+                mockMvc,
+                resultMatcher,
+                userInfo,
+                getBuilder
+        );
+    }
+
+    public ApiResultResponse<List<InventoryClassSummaryDTO>> inventoryClassControllerFindAll(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo,
+            Optional<List<InventoryClassTypeDTO>> inventoryClassTypeDTOList) throws Exception {
+        var getBuilder = get(
+                "/v1/inventory/class"
+        )
+                .accept(MediaType.APPLICATION_JSON);
+        inventoryClassTypeDTOList.ifPresent(typeList -> {
+            String[] typeArray = new String[typeList.size()];
+            typeList.stream().map(Enum::name).toList().toArray(typeArray);
+            getBuilder.param("classTypes", typeArray);
+        });
         return executeHttpRequest(
                 new TypeReference<>() {
                 },
@@ -84,7 +112,7 @@ public class TestControllerHelperService {
         if (someException.isPresent()) {
             throw someException.get();
         }
-        return new ObjectMapper().readValue(result.getResponse().getContentAsString(),typeRef);
+        return new ObjectMapper().readValue(result.getResponse().getContentAsString(), typeRef);
     }
 
 }

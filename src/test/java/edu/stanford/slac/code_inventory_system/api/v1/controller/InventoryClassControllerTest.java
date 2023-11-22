@@ -22,7 +22,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
+import static java.util.Optional.empty;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -94,7 +96,7 @@ public class InventoryClassControllerTest {
     }
 
     @Test
-    public void findClassFailsWithUnexistingId(){
+    public void findClassFailsWithUnexistingId() {
         var classNotfound = assertThrows(
                 InventoryClassNotFound.class,
                 () -> testControllerHelperService.inventoryClassControllerFindById(
@@ -105,5 +107,110 @@ public class InventoryClassControllerTest {
                 )
         );
         assertThat(classNotfound.getErrorCode()).isEqualTo(-2);
+    }
+
+    @Test
+    public void findAllClasses() {
+        for (int idx = 0; idx < 50; idx++) {
+            int finalIdx = idx;
+            var createNewClassResult = assertDoesNotThrow(
+                    () -> testControllerHelperService.inventoryClassControllerCreateNew(
+                            mockMvc,
+                            status().isCreated(),
+                            Optional.of("user1@slac.stanford.edu"),
+                            NewInventoryClassDTO
+                                    .builder()
+                                    .name("Building %03d".formatted(finalIdx))
+                                    .type(InventoryClassTypeDTO.Building)
+                                    .attributes(
+                                            List.of(
+                                                    InventoryClassAttributeDTO
+                                                            .builder()
+                                                            .name("Security Level")
+                                                            .description("Determinate the security level choosing form [Green, Yellow, Red]")
+                                                            .type(InventoryClassAttributeTypeDTO.String)
+                                                            .build()
+                                            )
+                                    )
+                                    .build()
+                    )
+            );
+
+            assertThat(createNewClassResult.getErrorCode()).isEqualTo(0);
+            assertThat(createNewClassResult.getPayload()).isNotNull();
+        }
+
+        // find all class
+        var findAllClassResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerFindAll(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        empty()
+                )
+        );
+        assertThat(findAllClassResult.getErrorCode()).isEqualTo(0);
+        assertThat(findAllClassResult.getPayload()).hasSize(50);
+    }
+
+    @Test
+    public void findAllClassesByType() {
+        Random random = new Random();
+        InventoryClassTypeDTO[] classTypesArray = InventoryClassTypeDTO.values();
+        int classTypeOccurence[] = new int[classTypesArray.length];
+        for (int idx = 0; idx < 50; idx++) {
+            int finalIdx = idx;
+            int currentTypeIndex = random.nextInt(classTypesArray.length);
+            // get the current type
+            var currentType = classTypesArray[currentTypeIndex];
+            // increment the used type
+            classTypeOccurence[currentTypeIndex]++;
+            //create class type
+            var createNewClassResult = assertDoesNotThrow(
+                    () -> testControllerHelperService.inventoryClassControllerCreateNew(
+                            mockMvc,
+                            status().isCreated(),
+                            Optional.of("user1@slac.stanford.edu"),
+                            NewInventoryClassDTO
+                                    .builder()
+                                    .name("Building %03d".formatted(finalIdx))
+                                    .type(currentType)
+                                    .attributes(
+                                            List.of(
+                                                    InventoryClassAttributeDTO
+                                                            .builder()
+                                                            .name("Security Level")
+                                                            .description("Determinate the security level choosing form [Green, Yellow, Red]")
+                                                            .type(InventoryClassAttributeTypeDTO.String)
+                                                            .build()
+                                            )
+                                    )
+                                    .build()
+                    )
+            );
+
+            assertThat(createNewClassResult.getErrorCode()).isEqualTo(0);
+            assertThat(createNewClassResult.getPayload()).isNotNull();
+        }
+
+        // choose a rando type of class to fetch
+        int randomTypeIndexForFindAll = random.nextInt(classTypesArray.length);
+        Optional<List<InventoryClassTypeDTO>> typeToFind = Optional.of(
+                List.of(
+                        classTypesArray[randomTypeIndexForFindAll]
+                )
+        );
+
+        // find all class
+        var findAllClassResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerFindAll(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        typeToFind
+                )
+        );
+        assertThat(findAllClassResult.getErrorCode()).isEqualTo(0);
+        assertThat(findAllClassResult.getPayload()).hasSize(classTypeOccurence[randomTypeIndexForFindAll]);
     }
 }

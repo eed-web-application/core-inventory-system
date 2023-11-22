@@ -32,24 +32,24 @@ import java.util.List;
 @AllArgsConstructor
 public class InventoryClass {
     @Id
-    private String id;
+    String id;
     /**
      * define the name of the inventory element
      */
-    private String name;
+    String name;
     /**
      * Define to which type belong the element
      */
-    private InventoryClassType type;
+    InventoryClassType type;
     /**
      * Define the list for that can be used to specialize the element
      */
     @Builder.Default
-    private List<InventoryClassAttribute> attributes = Collections.emptyList();
+    List<InventoryClassAttribute> attributes = Collections.emptyList();
 
     @CreatedDate
-    private LocalDateTime creationTime;
+    LocalDateTime creationTime;
 
     @CreatedBy
-    private String createdBy;
+    String createdBy;
 }
