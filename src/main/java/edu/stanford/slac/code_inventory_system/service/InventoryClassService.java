@@ -71,6 +71,23 @@ public class InventoryClassService {
                 );
     }
 
+
+    /**
+     * Return all class types as distinct of the overall saved class
+     *
+     * @return all class type for the stored class
+     */
+    public List<InventoryClassTypeDTO> findAllTypes() {
+        var allClassTypes = wrapCatch(
+                () -> inventoryClassRepository.findDistinctTypes(),
+                -1,
+                "InventoryClassService::findById"
+        );
+        return allClassTypes.stream().map(
+                t->inventoryClassMapper.toDTO(t)
+        ).toList();
+    }
+
     /**
      * Return all the found class
      *

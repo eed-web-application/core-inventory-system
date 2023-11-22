@@ -20,9 +20,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -212,5 +211,65 @@ public class InventoryClassControllerTest {
         );
         assertThat(findAllClassResult.getErrorCode()).isEqualTo(0);
         assertThat(findAllClassResult.getPayload()).hasSize(classTypeOccurence[randomTypeIndexForFindAll]);
+    }
+
+    @Test
+    public void findAllClassTypes() {
+        Random random = new Random();
+        InventoryClassTypeDTO[] classTypesArray = InventoryClassTypeDTO.values();
+        int classTypeOccurence[] = new int[classTypesArray.length];
+        for (int idx = 0; idx < 50; idx++) {
+            int finalIdx = idx;
+            int currentTypeIndex = random.nextInt(classTypesArray.length);
+            // get the current type
+            var currentType = classTypesArray[currentTypeIndex];
+            // increment the used type
+            classTypeOccurence[currentTypeIndex]++;
+            //create class type
+            var createNewClassResult = assertDoesNotThrow(
+                    () -> testControllerHelperService.inventoryClassControllerCreateNew(
+                            mockMvc,
+                            status().isCreated(),
+                            Optional.of("user1@slac.stanford.edu"),
+                            NewInventoryClassDTO
+                                    .builder()
+                                    .name("Building %03d".formatted(finalIdx))
+                                    .type(currentType)
+                                    .attributes(
+                                            List.of(
+                                                    InventoryClassAttributeDTO
+                                                            .builder()
+                                                            .name("Security Level")
+                                                            .description("Determinate the security level choosing form [Green, Yellow, Red]")
+                                                            .type(InventoryClassAttributeTypeDTO.String)
+                                                            .build()
+                                            )
+                                    )
+                                    .build()
+                    )
+            );
+
+            assertThat(createNewClassResult.getErrorCode()).isEqualTo(0);
+            assertThat(createNewClassResult.getPayload()).isNotNull();
+        }
+        List<InventoryClassTypeDTO> usedTypes = new ArrayList<>();
+        // choose a rando type of class to fetch
+        for(int idx =0 ; idx < classTypeOccurence.length; idx++) {
+            if(classTypeOccurence[idx]>0) {
+                usedTypes.add(classTypesArray[idx]);
+            }
+        }
+
+
+        // find all class
+        var findAllClassTypeResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerFindAllType(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu")
+                )
+        );
+        assertThat(findAllClassTypeResult.getErrorCode()).isEqualTo(0);
+        assertThat(findAllClassTypeResult.getPayload()).containsAll(usedTypes);
     }
 }

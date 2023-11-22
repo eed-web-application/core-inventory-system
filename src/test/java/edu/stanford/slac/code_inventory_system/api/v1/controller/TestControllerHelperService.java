@@ -97,6 +97,24 @@ public class TestControllerHelperService {
         );
     }
 
+    public ApiResultResponse<List<InventoryClassTypeDTO>> inventoryClassControllerFindAllType(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo) throws Exception {
+        var getBuilder = get(
+                "/v1/inventory/class/types"
+        )
+                .accept(MediaType.APPLICATION_JSON);
+        return executeHttpRequest(
+                new TypeReference<>() {
+                },
+                mockMvc,
+                resultMatcher,
+                userInfo,
+                getBuilder
+        );
+    }
+
     public <T> ApiResultResponse<T> executeHttpRequest(
             TypeReference<ApiResultResponse<T>> typeRef,
             MockMvc mockMvc,

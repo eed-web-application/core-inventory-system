@@ -1,9 +1,7 @@
 package edu.stanford.slac.code_inventory_system.repository;
 
-import edu.stanford.slac.code_inventory_system.model.InventoryClass;
-import edu.stanford.slac.code_inventory_system.model.InventoryClassAttribute;
-import edu.stanford.slac.code_inventory_system.model.InventoryClassAttributeType;
-import edu.stanford.slac.code_inventory_system.model.InventoryClassType;
+import edu.stanford.slac.code_inventory_system.model.*;
+import edu.stanford.slac.code_inventory_system.model.value.StringValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -18,6 +16,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -27,57 +26,63 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles({"test"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class InventoryClassTest {
+public class InventoryElementRepositoryTest {
     @Autowired
     private InventoryClassRepository inventoryClassRepository;
+    @Autowired
+    private InventoryElementRepository inventoryElementRepository;
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @BeforeEach
     public void cleanCollection() {
-        mongoTemplate.remove(new Query(), InventoryClass.class);
+        mongoTemplate.remove(new Query(), InventoryElement.class);
     }
 
     @Test
     public void saveOk() {
-        InventoryClass ic = InventoryClass
+        InventoryElement ie = InventoryElement
                 .builder()
-                .name("Laboratory Building")
-                .type(InventoryClassType.Building)
+                .name("Control System Building")
+                .classId(UUID.randomUUID().toString())
                 .attributes(
                         List.of(
-                                InventoryClassAttribute
+                                StringValue
                                         .builder()
-                                        .name("Alias")
-                                        .description("Is the simple code for describe the building")
-                                        .mandatory(true)
-                                        .type(InventoryClassAttributeType.String)
+                                        .name("alias")
+                                        .value("B-34")
                                         .build(),
-                                InventoryClassAttribute
+                                StringValue
                                         .builder()
-                                        .name("Building access manager")
-                                        .description("Is the access manage user identification")
-                                        .mandatory(true)
-                                        .type(InventoryClassAttributeType.String)
+                                        .name("building-access-manager")
+                                        .value("user@domain.com")
                                         .build(),
-                                InventoryClassAttribute
+                                StringValue
                                         .builder()
-                                        .name("Area access level")
-                                        .description("Is the access level code that identify who can access the building")
-                                        .mandatory(true)
-                                        .type(InventoryClassAttributeType.String)
+                                        .name("area-access-level")
+                                        .value("green")
+                                        .build()
+                        )
+                )
+                .connectorClasses(
+                        List.of(
+                                ConnectorClass
+                                        .builder()
+                                        .count(1)
+                                        .classID(UUID.randomUUID().toString())
                                         .build()
                         )
                 )
                 .build();
-        var savedIC = inventoryClassRepository.save(
-                ic
+
+        var savedIE = inventoryElementRepository.save(
+                ie
         );
 
-        assertThat(savedIC)
+        assertThat(savedIE)
                 .isNotNull()
                 .usingRecursiveComparison()
                 .ignoringActualNullFields()
-                .isEqualTo(ic);
+                .isEqualTo(ie);
     }
 }

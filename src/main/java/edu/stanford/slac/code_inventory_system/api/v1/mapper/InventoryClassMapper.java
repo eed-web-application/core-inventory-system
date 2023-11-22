@@ -16,15 +16,18 @@ import java.util.List;
 )
 public abstract class InventoryClassMapper {
     abstract public InventoryClass toModel(NewInventoryClassDTO newInventoryClassDTO);
+
     abstract public InventoryClassDTO toDTO(InventoryClass inventoryClass);
+
     abstract public InventoryClassSummaryDTO toSummaryDTO(InventoryClass inventoryClass);
 
     /**
      * Convert the two different attribute type
+     *
      * @param inventoryClassAttributeType class oriented attribute value
      * @return the simple enum oriented dto
      */
-    public InventoryClassAttributeTypeDTO toDTO(InventoryClassAttributeType inventoryClassAttributeType){
+    public InventoryClassAttributeTypeDTO toDTO(InventoryClassAttributeType inventoryClassAttributeType) {
         return InventoryClassAttributeTypeDTO.valueOf(
                 inventoryClassAttributeType.name()
         );
@@ -32,14 +35,17 @@ public abstract class InventoryClassMapper {
 
     /**
      * Convert the two different attribute type
+     *
      * @param inventoryClassAttributeTypeDTO the normal enum oriented
      * @return the class oriented enum
      */
-    public InventoryClassAttributeType toModel(InventoryClassAttributeTypeDTO inventoryClassAttributeTypeDTO){
+    public InventoryClassAttributeType toModel(InventoryClassAttributeTypeDTO inventoryClassAttributeTypeDTO) {
         return InventoryClassAttributeType.fromName(
                 inventoryClassAttributeTypeDTO.name()
         );
     }
 
     abstract public InventoryClassType toModel(InventoryClassTypeDTO inventoryClassTypeDTO);
+
+    abstract public InventoryClassTypeDTO toDTO(InventoryClassType inventoryClassTypeDTO);
 }

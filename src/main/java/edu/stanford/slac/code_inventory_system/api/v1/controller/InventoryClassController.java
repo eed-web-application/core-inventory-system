@@ -81,6 +81,29 @@ public class InventoryClassController {
     }
 
     @GetMapping(
+            path = "/types",
+            produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(summary = "Return all the classes types")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResultResponse<List<InventoryClassTypeDTO>> findAllTypes(
+            Authentication authentication
+    ) {
+        // check for auth
+        assertion(
+                NotAuthorized.notAuthorizedBuilder()
+                        .errorCode(-1)
+                        .errorDomain("InventoryClassController::findAll")
+                        .build(),
+                // should be authenticated
+                () -> authService.checkAuthentication(authentication)
+        );
+        return ApiResultResponse.of(
+                inventoryClassService.findAllTypes()
+        );
+    }
+
+    @GetMapping(
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(summary = "Return all the classes")
