@@ -59,7 +59,7 @@ dependencies {
             'org.hibernate.validator:hibernate-validator:6.2.0.Final'
 
     //eed library
-    implementation 'edu.stanford.slac:slac-ad-eed-baselib:0.1.22',
+    implementation 'edu.stanford.slac:slac-ad-eed-baselib:0.1.23',
             'edu.stanford.slac:slac-ad-eed-base-mongodb-lib:0.1.10'
     // MongoDB
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:19-jdk-jammy
+FROM eclipse-temurin:21-jammy
 RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u 1001 app
 USER app
 WORKDIR /home/app

@@ -1,4 +1,4 @@
-name: elog_plus
+name: cis
 services:
   backend:
     build:
@@ -17,5 +17,3 @@ services:
       - ./:/opt/app
     depends_on:
       - mongodb-primary
-      - minio
-      - kafka

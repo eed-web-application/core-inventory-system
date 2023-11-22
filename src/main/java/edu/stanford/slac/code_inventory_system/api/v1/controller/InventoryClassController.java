@@ -54,7 +54,7 @@ public class InventoryClassController {
             path = "/{id}",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    @Operation(summary = "return found inventory class")
+    @Operation(summary = "Return found inventory class")
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<InventoryClassDTO> finById(
             Authentication authentication,
