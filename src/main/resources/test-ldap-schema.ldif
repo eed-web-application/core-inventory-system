@@ -65,6 +65,6 @@ cn: group-2
 objectClass: posixGroup
 objectClass: top
 objectClass: importedObject
-gidNumber: 3591
+gidNumber: 3592
 memberUid: user1@slac.stanford.edu
 memberUid: user2@slac.stanford.edu
