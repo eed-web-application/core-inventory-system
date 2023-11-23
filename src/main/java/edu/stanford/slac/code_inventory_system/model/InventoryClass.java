@@ -1,11 +1,12 @@
 package edu.stanford.slac.code_inventory_system.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.security.core.Authentication;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import java.util.List;
  */
 @Data
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class InventoryClass {
@@ -44,4 +46,10 @@ public class InventoryClass {
      */
     @Builder.Default
     List<InventoryClassAttribute> attributes = Collections.emptyList();
+
+    @CreatedDate
+    LocalDateTime creationTime;
+
+    @CreatedBy
+    String createdBy;
 }

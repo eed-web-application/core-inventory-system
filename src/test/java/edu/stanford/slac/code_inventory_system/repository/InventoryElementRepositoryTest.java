@@ -26,7 +26,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles({"test"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class InventoryElementTest {
+public class InventoryElementRepositoryTest {
     @Autowired
     private InventoryClassRepository inventoryClassRepository;
     @Autowired

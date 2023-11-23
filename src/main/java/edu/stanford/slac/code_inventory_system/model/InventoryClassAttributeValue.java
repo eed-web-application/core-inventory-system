@@ -13,10 +13,10 @@ public class InventoryClassAttributeValue {
      */
     private Boolean mandatory;
     /**
-     * Define the type of the attribute for the {@link AttributeType}
+     * Define the type of the attribute for the {@link InventoryClassAttributeType}
      * enum
      */
-    private AttributeType type;
+    private InventoryClassAttributeType type;
     /**
      * Specify the type of the unit that represent the attribute
      */

@@ -1,4 +1,16 @@
-# code-inventory-system (CIS)
+![logo](./logos/SLAC-lab-hires.png)
+
+# Code Inventory System (CIS)
+
+
+## SLAC National Accelerator Laboratory
+The SLAC National Accelerator Laboratory is operated by Stanford University for the US Departement of Energy.  
+[DOE/Stanford Contract](https://legal.slac.stanford.edu/sites/default/files/Conformed%20Prime%20Contract%20DE-AC02-76SF00515%20as%20of%202022.10.01.pdf)
+
+## License
+Copyright (c) 2017-2023, The Board of Trustees of the Leland Stanford Junior University, through SLAC National Accelerator Laboratory... the complete license is [here](LICENSE.md)
+
+## Overview
 CIS stands as a new inventory management system designed specifically for managing large and complex equipment. 
 It breaks away from traditional inventory management systems by not only encompassing hardware, connectors, and 
 cables but also enabling users to create new classes for defining new inventory items on the fly. This flexibility
@@ -13,344 +25,201 @@ providing valuable insights into its usage patterns, maintenance records, and ov
 historical data proves instrumental in making informed decisions regarding equipment upgrades, 
 replacement cycles, and potential areas of improvement.
 
-# Table of Contents
-1. [Overview](#Overview)
-2. [ClassType Entity](#classtype-entity)
-3. [InventoryElement Entity](#inventoryelement-entity)
-4. [CableItem Entity](#cableitem-entity)
-5. [Example global overview](#example-global-overview)
+## Data Structure
+a detailed data structure can be viewed [here](doc/DataStructureDetails.md)
 
-## Overview
-This document provides detailed information about the InventoryItem and ClassType entities 
-used in the Inventory Management System designed for tracking and managing various items, 
-including equipment and locations within a nuclear accelerator facility. 
+## Configuration
 
-### ClassType Entity
-The ClassType entity defines the classes of items, cables, and connectors in the system, specifying their attributes, 
-mandatory requirements, and connectivity rules.
-```json lines
-{
-  "_id": "String",
-  "name": "String",
-  "classType": "String",
-  "attributes": "Object",
-}
-```
-Fields
-* _id: Unique identifier for the class type.
-* name: Name of the class (e.g., 'ServerClass', 'EthernetCable').
-* classType: Nature of the class (Item, Cable, or Connector).
-* attributes: Object defining attributes specific to the class, including mandatory/optional status, data type, and unit.
+below is the standard configuration of the CIS backend application
+```yaml
+logging:
+  level:
+    edu.stanford.slac.code_inventory_system: ${CIS_LOG_LEVEL:DEBUG}
 
-#### Usage
-The ClassType documents are essential for defining the structure and rules for various items in the inventory. 
-They provide a template for creating and validating InventoryItem documents, ensuring consistency and integrity 
-in inventory management.
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
 
-#### Example
-This section provides detailed documentation for various ClassTypes used in the Inventory Management System. 
-These class types define the characteristics and connectivity options for different items such as servers, connectors, 
-and cables within the system.
+spring:
+  application:
+    name: 'CIS'
+  cache:
+    type: hazelcast
+  ldap:
+    urls: ${CIS_LDAP_URI:ldap://localhost:8389}
+    base: ${CIS_LDAP_BASE:dc=sdf,dc=slac,dc=stanford,dc=edu}
+  data:
+    mongodb:
+      uri: ${CIS_MONGODB_URI:mongodb://cis:cis@localhost:27017/cis?authSource=cis}
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 1MB
+      max-file-size: ${CIS_MAX_POST_SIZE:100MB}
+      max-request-size: ${CIS_MAX_POST_SIZE:100MB}
 
-Description: Represents servers within the inventory, detailing essential attributes like CPU, RAM, and storage.
-```json
-{
-  "_id": "serverClass",
-  "name": "Server",
-  "classType": "Item",
-  "attributes": {
-    "CPU": {"mandatory": true, "type": "string"},
-    "RAM": {"mandatory": true, "type": "string", "unit": "GB"},
-    "Storage": {"mandatory": true, "type": "string", "unit": "TB"},
-    "NetworkPorts": {"mandatory": true, "type": "number"}
-  }
-}
+edu:
+  stanford:
+    slac:
+      ad:
+        eed:
+          baselib:
+            app-token-prefix: ${spring.application.name}
+            app-token-jwt-key: ${CIS_APP_TOKEN_JWT:token-header-key}
+            user-header-name: ${CIS_AUTH_HEADER:x-vouch-idp-accesstoken}
+            oauth-server-discover: ${CIS_OIDC_CONFIGURATION_ENDPOINT:https://dex.slac.stanford.edu/.well-known/openid-configuration}
+            root-user-list: ${CIS_ROOT_USERS}
+            root-authentication-token-list-json: ${CIS_ROOT_AUTHENTICATION_TOKEN_JSON:[]}
+          mongodb:
+            db_admin_uri: ${CIS_ADMIN_MONGODB_URI:mongodb://admin:admin@localhost:27017/?authSource=admin}
 
-```
-Description: Defines power supplies, including attributes like wattage and efficiency.
-```json
-{
-  "_id": "powerSupplyClass",
-  "name": "PowerSupply",
-  "classType": "Item",
-  "attributes": {
-    "Wattage": {"mandatory": true, "type": "number", "unit": "Watts"},
-    "EfficiencyRating": {"mandatory": false, "type": "string"}
-  }
-}
-```
-Description: Specifies RJ45(M/F) connectors used primarily for Ethernet connections.
-```json
-{
-  "_id": "rj45MaleConnectorClass",
-  "name": "RJ45Connector",
-  "classType": "Connector",
-  "attributes": {
-    "Type": {"mandatory": true, "type": "string"},
-    "Compatibility": {"mandatory": true, "type": "string"}
-  }
-}
-```
-```json
-{
-  "_id": "rj45FemaleConnectorClass",
-  "name": "RJ45Connector",
-  "classType": "Connector",
-  "attributes": {
-    "Type": {"mandatory": true, "type": "string"},
-    "Compatibility": {"mandatory": true, "type": "string"}
-  }
-}
-```
-Description: Details connectors used for connecting power supplies.
-```json
-{
-  "_id": "powerSupplyFemaleConnectorClass",
-  "name": "PowerSupplyConnector",
-  "classType": "Connector",
-  "attributes": {
-    "VoltageRating": {"mandatory": false, "type": "number", "unit": "Volts"}
-  }
-}
-```
-```json
-{
-  "_id": "powerSupplyMaleConnectorClass",
-  "name": "PowerSupplyConnector",
-  "classType": "Connector",
-  "attributes": {
-    "VoltageRating": {"mandatory": false, "type": "number", "unit": "Volts"}
-  }
-}
-```
-Description: Covers Ethernet cables, defining length, category, and other relevant attributes.
-```json 
-{
-  "_id": "ethernetCableClass",
-  "name": "EthernetCable",
-  "classType": "Cable",
-  "attributes": {
-    "Length": {"mandatory": true, "type": "number", "unit": "meters"},
-    "Category": {"mandatory": true, "type": "string"}
-  }
-}
-```
-Description: Represents power cord cables(F/M), specifying length and plug type.
-```json
-{
-  "_id": "powerCordCableClass",
-  "name": "PowerCordCable",
-  "classType": "Cable",
-  "attributes": {
-    "Length": {"mandatory": true, "type": "number", "unit": "meters"},
-    "PlugType": {"mandatory": true, "type": "string"}
-  }
-}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# swagger-ui custom path
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    path: /api-docs
+
+mongock:
+  migration-scan-package:
+    - edu.stanford.slac.code_inventory_system.migration
+  throw-exception-if-cannot-obtain-lock: true #Default true
+  track-ignored: false #Default true
+  transaction-enabled: false
+  runner-type: initializingbean
+  enabled: true #Default true
 ```
 
-### InventoryElement Entity
-The InventoryElement entity represents individual element in the inventory. This includes all
-physical item and locations and software, such as servers, racks, connectors and software program.
-```json lines
-{
-  "_id": "String",
-  "name": "String",
-  "classId": "String",
-  "parent_id": "String",
-  "full_three_path": "String",
-  "attributes": "Object",
-  "connector_class": "Array",
-  "history": "Array"
-}
-```
-Fields
-* _id: Unique identifier for the element.
-* name: Human-readable name of the element.
-* classId: the id of the class type of the element (e.g., 'Server', 'Connector').
-* parent_id: ID of the parent item, indicating the item's location or grouping.
-* full_three_path: represent the full three path from the root to this element that is the leaf
-* attributes: Key-value pairs representing item-specific attributes.
-* connector_class: An array of objects, each specifying a type of connector class the item supports and the count of such connectors. This helps in identifying the connectivity capabilities of the item.
-* history: Array of historical records, including actions like 'Installed', 'Moved', and their corresponding details.
+## Demo
 
-#### Usage
-InventoryElement documents are pivotal for tracking and managing the physical and logical aspects of each inventory component. 
-They provide crucial insights into the item's capabilities, its location within the facility, and its lifecycle events, 
-ensuring effective and informed inventory management.
+### Starting the Demo with Docker-Compose Files
 
-#### Example, using the above class examples
+To initiate the demo, use the provided docker-compose files. The `docker-compose.yml` is the default file 
+for starting the necessary services for the CIS backend to conduct unit and integration tests. Alongside, 
+the `docker-compose-app.yml` is used to enable the CIS backend in demo mode.
 
-```json
-{
-  "_id": "server001",
-  "name": "Main Server",
-  "type": "Server",
-  "classType": "serverClass",
-  "parent_id": "dataCenter1",
-  "attributes": {
-    "CPU": "Intel Xeon E5",
-    "RAM": "64GB",
-    "Storage": "4TB",
-    "NetworkPorts": 4
-  },
-  "connector_class": [
-        {
-          "count": 1,
-          "type": "powerSupplyConnectorClass"
-        },
-        {
-        "count": 4,
-        "type": "rj45FemaleConnectorClass"
-        }
-  ],
-  "history": [
-    {
-      "date": "2023-04-10",
-      "action": "Installed",
-      "description": "Server installed in Data Center 1."
-    }
-  ]
-}
+```shell
+ docker compose -f docker-compose.yml -f docker-compose-app.yml up
 ```
 
-```json
-{
-  "_id": "powerSupply001",
-  "name": "Server Power Supply",
-  "type": "PowerSupply",
-  "classType": "powerSupplyClass",
-  "parent_id": "server001",
-  "attributes": {
-    "Wattage": 800,
-    "EfficiencyRating": "Gold"
-  },
-  "connectors": [
-    {
-      "count": 1,
-      "type": "powerSupplyMaleConnectorClass"
-    }
-  ],
-  "history": [
-    {
-      "date": "2023-04-12",
-      "action": "Added",
-      "description": "Power supply added to Main Server."
-    }
-  ]
-}
-```
+#### Demo Mode Features
+In demo mode, the system employs an embedded LDAP server to mimic users and groups. Moreover, 
+this mode introduces a feature for mock users, incorporating a suite of REST APIs. These APIs 
+facilitate the retrieval of mock user data, which is essential for accessing the full range of other A
+PIs in the system.
 
-### CableItem Entity
-Cable items are an essential part of the inventory management system, especially in environments like data centers or 
-technical facilities. They are used to represent various types of cables, such as Ethernet cables, power cords, and others, 
-each serving as a crucial link between different equipment or locations.
-```json
-{
-  "_id": "String",
-  "name": "String",
-  "classType": "String",
-  "attributes": ["Object"],
-  "connector1_id": "String",
-  "connector2_id": "String",
-  "history": "Array"
-}
-```
+### Demo LDAP configuration
 
-* _id: Unique identifier for the cable.
-* name: Descriptive name of the cable.
-* classType: Reference to the ClassType defining this cable's category (e.g., Ethernet, power cord).
-* attributes: Key-value pairs describing the cable's physical and technical characteristics, such as length, category, or bandwidth.
-* connector1_id, connector2_id: The IDs of the connectors at each end of the cable. These reference specific connector items, indicating what the cable is connected to.
-* history: Records of significant events in the cable's lifecycle, including installation, movement, or maintenance.
+Below is the default ldap configuration, the content configure three user and two groups:
+* as users: *users1*, *user2* and *user3*.
+* as groups: 
+  * group-1: user1
+  * group-2: user1, user2
 
-#### Examples
-Using the two example above we are now modelling the connector for the server and power supply, then we will model the cable .
-this is the connector attached to the power supply connector of the ***server001***
-```json
-{
-  "_id": "powerSupplyMaleConnectorOnServer",
-  "name": "Male Power Supply Connector on Main Server",
-  "type": "Connector",
-  "classType": "powerSupplyMaleConnectorClass",
-  "parent_id": "server001",
-  "attributes": {
-    "Type": "Standard Power Connector",
-    "VoltageRating": 240
-  },
-  "history": [
-    {
-      "date": "2023-04-10",
-      "action": "Installed",
-      "description": "Male power supply connector installed on Main Server."
-    }
-  ]
-}
+User3 doesn't belong ot any groups.
 
-```
-Tis is the male connector attached to the female connector of the ***powerSupply001***
-```json
-{
-  "_id": "powerConnector001",
-  "name": "Power Supply Male Connector",
-  "type": "Connector",
-  "classType": "powerSupplyMaleConnectorClass",
-  "parent_id": "powerSupply001",
-  "attributes": {
-    "Type": "Standard Power Connector",
-    "VoltageRating": 240
-  },
-  "history": [
-    {
-      "date": "2023-04-13",
-      "action": "Created",
-      "description": "Male connector for power supply created."
-    }
-  ]
-}
-```
-
-Now we are going to model the cable item that is attache to the two male connector for bring current to the powerSupply001 to the server001
-```json lines
-{
-  "_id": "powerCordCable001",
-  "name": "Power Cord Cable for Main Server",
-  "type": "Cable",
-  "classType": "powerCordCableClass",
-  "connector1_id": "powerSupplyMaleConnectorOnServer", // Male connector on the server
-  "connector2_id": "powerConnector001", // Corresponding power connector
-  "attributes": {
-    "Length": 2,
-    "PlugType": "Type-F"
-  },
-  "history": [
-    {
-      "date": "2023-04-10",
-      "action": "Connected",
-      "description": "Connected Main Server to Power Supply."
-    }
-    // Additional historical records...
-  ]
-}
-```
-## Example global overview
-Below is a graphical representation for the above exmples
 ```text
-Building
-│
-├─── [item] Floor 1
-│    │
-│    ├─── [item] Server (Main Server)
-│         [Attributes: CPU, RAM, Storage, NetworkPorts]
-│         │
-│         │ [Connector] Male Power Supply Connector on Main Server] -----│ 
-│                                                                        │ 
-│                                                                        │ 
-│                                                                        │ 
-│                                                                        │ 
-└─── [item] Floor 2                                                      │ [Power Cord Cable for Main Server]
-     │                                                                   │ 
-     ├─── [item] Power Supply (Server Power Supply)                      │ 
-          │                                                              │ 
-          │ [Connector] Power Connector 001------------------------------│ 
-         
+dn: dc=sdf,dc=slac,dc=stanford,dc=edu
+objectclass: top
+objectclass: domain
+objectclass: extensibleObject
+dc: kpn
+
+# Create the Groups organizational unit
+dn: ou=Group,dc=sdf,dc=slac,dc=stanford,dc=edu
+objectClass: top
+objectClass: organizationalUnit
+ou: Group
+
+# Create the People organizational unit
+dn: ou=People,dc=sdf,dc=slac,dc=stanford,dc=edu
+objectClass: top
+objectClass: organizationalUnit
+ou: People
+
+
+# Create People
+dn: uid=user1,ou=People, dc=sdf,dc=slac,dc=stanford,dc=edu
+uid: user1
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+gecos: Name1 Surname1
+cn: Surname1
+sn: Surname1
+mail: user1@slac.stanford.edu
+
+dn: uid=user2,ou=People, dc=sdf,dc=slac,dc=stanford,dc=edu
+uid: user2
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+gecos: Name2 Surname2
+cn: Surname2
+sn: Surname2
+mail: user2@slac.stanford.edu
+
+dn: uid=user3,ou=People, dc=sdf,dc=slac,dc=stanford,dc=edu
+uid: user3
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+gecos: Name3 Surname3
+cn: Surname3
+sn: Surname3
+mail: user3@slac.stanford.edu
+
+# Create Group
+dn: cn=group-1,ou=Group, dc=sdf,dc=slac,dc=stanford,dc=edu
+cn: group-1
+objectClass: posixGroup
+objectClass: top
+objectClass: importedObject
+gidNumber: 3591
+memberUid: user1@slac.stanford.edu
+
+dn: cn=group-2,ou=Group, dc=sdf,dc=slac,dc=stanford,dc=edu
+cn: group-2
+objectClass: posixGroup
+objectClass: top
+objectClass: importedObject
+gidNumber: 3592
+memberUid: user1@slac.stanford.edu
+memberUid: user2@slac.stanford.edu
 ```
+
+For get the mock users the /v1/mock/users-auth api should be called:
+```shell # example for retrieve mock users
+curl http://localhost:8080/v1/mock/users-auth
+```
+
+and something like that is returned:
+```json
+{
+  "errorCode":0,
+  "payload":
+  {
+    "Name1 Surname1":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InVzZXIxQHNsYWMuc3RhbmZvcmQuZWR1IiwiaWF0IjoxNzAwNzAzMTIzLCJleHAiOjE3MDA3MDY3MjN9.LZgUleeSkzL3-m_FBY7KAsXGrg-OBco0Ltzwe5Cal68",
+    "Name3 Surname3":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InVzZXIzQHNsYWMuc3RhbmZvcmQuZWR1IiwiaWF0IjoxNzAwNzAzMTIzLCJleHAiOjE3MDA3MDY3MjN9.A2upZMIN7le31RzNWwlKbk0J7jTpavcH24odJ8j97Jo",
+    "Name2 Surname2":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InVzZXIyQHNsYWMuc3RhbmZvcmQuZWR1IiwiaWF0IjoxNzAwNzAzMTIzLCJleHAiOjE3MDA3MDY3MjN9.lUKIxch_ifr1pzNQXH22mRr_Ak-qQJJdXJEcvfg-yms"
+  }
+}
+```
+Each key of the payload content is a different user, have been mocked three different user 
+belonging to different groups. The content of each user is the JWT that need to be used too authentication the
+call to the rest API. The content of the JWT need to be put into the http header in the field indicated by 
+the configuration key <span style="color:orange">**user-header-name**</span>, that for the default 
+configuration is: <span style="color:orange">**x-vouch-idp-accesstoken**</span>
