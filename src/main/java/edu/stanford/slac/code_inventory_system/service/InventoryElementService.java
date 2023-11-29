@@ -6,10 +6,7 @@ import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryDomainDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryDomainDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryElementDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryElementMapper;
-import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
-import edu.stanford.slac.code_inventory_system.exception.InventoryDomainNotFound;
-import edu.stanford.slac.code_inventory_system.exception.InventoryDomainParentElementMismatch;
-import edu.stanford.slac.code_inventory_system.exception.InventoryElementNotFound;
+import edu.stanford.slac.code_inventory_system.exception.*;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
@@ -39,6 +36,21 @@ public class InventoryElementService {
      * @return return the id of the newly create inventory domain
      */
     public String createNew(NewInventoryDomainDTO newInventoryDomainDTO) {
+        String domainNormalizedName = normalizeStringWithReplace(
+                newInventoryDomainDTO.name(),
+                " ",
+                "-"
+        );
+        // check if exists
+        assertion(
+                InventoryDomainAlreadyExists.
+                        domainAlreadyExistsByName()
+                        .errorCode(-1)
+                        .domainName(domainNormalizedName)
+                        .build(),
+                () -> !inventoryDomainRepository.existsByNameIs(domainNormalizedName)
+        );
+
         // name normalization
         var newlyCreatedDomain = wrapCatch(
                 () -> inventoryDomainRepository.save(
@@ -46,16 +58,12 @@ public class InventoryElementService {
                                 newInventoryDomainDTO
                                         .toBuilder()
                                         .name(
-                                                normalizeStringWithReplace(
-                                                        newInventoryDomainDTO.name(),
-                                                        " ",
-                                                        "-"
-                                                )
+                                                domainNormalizedName
                                         )
                                         .build()
                         )
                 ),
-                -1
+                -2
         );
         return newlyCreatedDomain.getId();
     }
@@ -88,7 +96,7 @@ public class InventoryElementService {
      * @param newInventoryElementDTO is the new inventory item to create
      */
     public String createNew(NewInventoryElementDTO newInventoryElementDTO) {
-        if(newInventoryElementDTO == null) return null;
+        if (newInventoryElementDTO == null) return null;
         // check for name id
         assertion(
                 ControllerLogicException
@@ -99,10 +107,10 @@ public class InventoryElementService {
                         .build(),
                 () -> newInventoryElementDTO.name() != null,
                 () -> !newInventoryElementDTO.name().isEmpty(),
-                ()-> newInventoryElementDTO.classId() !=null,
-                ()-> !newInventoryElementDTO.classId().isEmpty(),
-                ()-> newInventoryElementDTO.domainId() !=null,
-                ()-> !newInventoryElementDTO.domainId().isEmpty()
+                () -> newInventoryElementDTO.classId() != null,
+                () -> !newInventoryElementDTO.classId().isEmpty(),
+                () -> newInventoryElementDTO.domainId() != null,
+                () -> !newInventoryElementDTO.domainId().isEmpty()
         );
         // convert element to model
         var inventoryElementToSave = inventoryElementMapper.toModel(
@@ -116,7 +124,6 @@ public class InventoryElementService {
                         )
                         .build()
         );
-
 
 
         // check for domain id

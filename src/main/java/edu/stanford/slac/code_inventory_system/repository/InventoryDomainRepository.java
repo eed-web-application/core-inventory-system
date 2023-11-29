@@ -33,4 +33,11 @@ public interface InventoryDomainRepository extends MongoRepository<InventoryDoma
             "{ $project: { 'tagExists': { $anyElementTrue: { $map: { input: '$tags', as: 'tag', in: { $eq: ['$$tag._id', ?1] } } } }, '_id': 0 } }"
     })
     boolean existsTagById(String id, String tagId);
+
+    /**
+     * Check if exists a domain with a specific name
+     * @param domainName the domain name
+     * @return true if a domain with that name has been found
+     */
+    boolean existsByNameIs(String domainName);
 }

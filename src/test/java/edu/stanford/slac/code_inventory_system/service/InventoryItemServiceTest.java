@@ -2,6 +2,7 @@ package edu.stanford.slac.code_inventory_system.service;
 
 import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
+import edu.stanford.slac.code_inventory_system.exception.InventoryDomainAlreadyExists;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
@@ -62,6 +63,36 @@ public class InventoryItemServiceTest {
         assertThat(newDomainId)
                 .isNotNull()
                 .isNotEmpty();
+    }
+
+    @Test
+    public void saveDomainFailWithSameName() {
+        String newDomainId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("New Domain")
+                                .description("This is the description for the new domain")
+                                .build()
+                )
+        );
+        assertThat(newDomainId)
+                .isNotNull()
+                .isNotEmpty();
+        InventoryDomainAlreadyExists exceptionForDomainWithSameName = assertThrows(
+                InventoryDomainAlreadyExists.class,
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("New Domain")
+                                .description("This is the description for the new domain")
+                                .build()
+                )
+        );
+        assertThat(exceptionForDomainWithSameName)
+                .isNotNull();
+        assertThat(exceptionForDomainWithSameName.getErrorCode())
+                .isEqualTo(-1);
     }
 
     @Test
