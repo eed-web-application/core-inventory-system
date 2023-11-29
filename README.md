@@ -111,6 +111,12 @@ the `docker-compose-app.yml` is used to enable the CIS backend in demo mode.
 ```shell
 docker compose -f docker-compose.yml -f docker-compose-app.yml up
 ```
+in case of application updates the docker image need to be rebuilt so in this case this command can be used:
+```shell
+docker compose -f docker-compose.yml -f docker-compose-app.yml up --build backend
+```
+
+
 
 #### Demo Mode Features
 In demo mode, the system employs an embedded LDAP server to mimic users and groups. Moreover, 
