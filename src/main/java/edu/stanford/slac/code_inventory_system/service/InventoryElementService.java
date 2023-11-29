@@ -104,27 +104,6 @@ public class InventoryElementService {
                 ()-> newInventoryElementDTO.domainId() !=null,
                 ()-> !newInventoryElementDTO.domainId().isEmpty()
         );
-
-
-        // check for domain id
-        assertion(
-                InventoryDomainNotFound
-                        .domainNotFoundById()
-                        .errorCode(-2)
-                        .id(newInventoryElementDTO.domainId())
-                        .build(),
-                () -> inventoryDomainRepository.existsById(newInventoryElementDTO.domainId())
-        );
-
-        // check for class id
-        assertion(
-                InventoryClassNotFound
-                        .classNotFoundById()
-                        .errorCode(-3)
-                        .id(newInventoryElementDTO.domainId())
-                        .build(),
-                () -> inventoryClassRepository.existsById(newInventoryElementDTO.classId())
-        );
         // convert element to model
         var inventoryElementToSave = inventoryElementMapper.toModel(
                 newInventoryElementDTO.toBuilder()
@@ -137,6 +116,29 @@ public class InventoryElementService {
                         )
                         .build()
         );
+
+
+
+        // check for domain id
+        assertion(
+                InventoryDomainNotFound
+                        .domainNotFoundById()
+                        .errorCode(-2)
+                        .id(inventoryElementToSave.getDomainId())
+                        .build(),
+                () -> inventoryDomainRepository.existsById(inventoryElementToSave.getDomainId())
+        );
+
+        // check for class id
+        assertion(
+                InventoryClassNotFound
+                        .classNotFoundById()
+                        .errorCode(-3)
+                        .id(inventoryElementToSave.getDomainId())
+                        .build(),
+                () -> inventoryClassRepository.existsById(inventoryElementToSave.getClassId())
+        );
+
 
         if (inventoryElementToSave.getParentId() != null) {
             // check if parent exists and belong to the same domain
@@ -156,7 +158,7 @@ public class InventoryElementService {
                             .domainMismatch()
                             .errorCode(-5)
                             .parentElement(parentElement.getFullTreePath())
-                            .actualDomain(newInventoryElementDTO.domainId())
+                            .actualDomain(inventoryElementToSave.getDomainId())
                             .build(),
                     () -> inventoryElementRepository.existsById(inventoryElementToSave.getParentId())
             );

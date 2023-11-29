@@ -10,7 +10,10 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 /**
  * represent the element that compose the inventory which is the specialization
@@ -56,22 +59,26 @@ public class InventoryElement {
     /**
      * Teh value for the attributes
      */
-    private List<AbstractValue> attributes;
+    @Builder.Default
+    private List<AbstractValue> attributes = emptyList();
 
     /**
      * the list of the connector class that can be used as ID
      */
-    private List<ConnectorClass> connectorClasses;
+    @Builder.Default
+    private List<ConnectorClass> connectorClasses  = emptyList();
 
     /**
      * IS the history of that element
      */
-    private List<InventoryElementHistory> history;
+    @Builder.Default
+    private List<InventoryElementHistory> history  = emptyList();
 
     /**
      * Define the ids of the tag associated with the element
      */
-    private List<String> tags;
+    @Builder.Default
+    private List<String> tags = emptyList();
 
     @CreatedDate
     private LocalDateTime createdTime;

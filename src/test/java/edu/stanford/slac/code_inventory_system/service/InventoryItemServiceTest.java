@@ -6,7 +6,6 @@ import edu.stanford.slac.code_inventory_system.exception.InventoryElementNotFoun
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
-import edu.stanford.slac.code_inventory_system.model.value.NumberValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
