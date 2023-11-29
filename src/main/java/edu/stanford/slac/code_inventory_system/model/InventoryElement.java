@@ -29,6 +29,11 @@ public class InventoryElement {
     private String name;
 
     /**
+     * The element description
+     */
+    private String description;
+
+    /**
      * specify the domain which the item belong
      */
     private String domainId;
@@ -41,7 +46,7 @@ public class InventoryElement {
     /**
      * Is the unique id of the parend in the inventory
      */
-    private String parendId;
+    private String parentId;
 
     /**
      * represent the full three path from the root to this element that is the leaf

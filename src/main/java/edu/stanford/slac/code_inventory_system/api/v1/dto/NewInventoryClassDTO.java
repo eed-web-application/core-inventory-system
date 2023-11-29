@@ -14,7 +14,8 @@ import java.util.List;
 public record NewInventoryClassDTO(
         @Schema(description = "The name of the inventory class")
         String name,
-
+        @Schema(description = "The description of the inventory class")
+        String description,
         @Schema(description = "The type to which the inventory class belongs")
         InventoryClassTypeDTO type,
 

@@ -56,7 +56,7 @@ public class InventoryElementMapperTest {
                                                 InventoryClassAttribute
                                                         .builder()
                                                         .name("attr-1")
-                                                        .type(InventoryClassAttributeType.Integer)
+                                                        .type(InventoryClassAttributeType.Number)
                                                         .build()
                                         )
                                 )
@@ -96,12 +96,12 @@ public class InventoryElementMapperTest {
                                                 InventoryClassAttribute
                                                         .builder()
                                                         .name("attr-1")
-                                                        .type(InventoryClassAttributeType.Integer)
+                                                        .type(InventoryClassAttributeType.Number)
                                                         .build(),
                                                 InventoryClassAttribute
                                                         .builder()
                                                         .name("attr-2")
-                                                        .type(InventoryClassAttributeType.Integer)
+                                                        .type(InventoryClassAttributeType.Number)
                                                         .build()
                                         )
                                 )

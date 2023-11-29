@@ -38,6 +38,10 @@ public class InventoryClass {
      */
     String name;
     /**
+     * The description of the class
+     */
+    String description;
+    /**
      * Define to which type belong the element
      */
     InventoryClassType type;

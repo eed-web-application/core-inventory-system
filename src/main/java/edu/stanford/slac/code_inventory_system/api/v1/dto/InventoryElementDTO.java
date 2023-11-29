@@ -19,6 +19,8 @@ import java.util.List;
 public record InventoryElementDTO(
         @Schema(description = "Is the name of the element")
         String name,
+        @Schema(description = "Is the description of the element")
+        String description,
         @Schema(description = "Specify the domain which the item belong")
         String domainId,
         @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")

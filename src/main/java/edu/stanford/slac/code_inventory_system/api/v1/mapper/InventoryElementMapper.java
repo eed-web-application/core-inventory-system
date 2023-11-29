@@ -46,6 +46,7 @@ public abstract class InventoryElementMapper {
             String classId,
             List<InventoryElementAttributeValue> inventoryElementAttributeValues) {
         List<AbstractValue> abstractAttributeList = new ArrayList<>();
+        if(inventoryElementAttributeValues==null) return abstractAttributeList;
         InventoryClass ic = wrapCatch(
                 () -> inventoryClassRepository.findById(classId),
                 -1
@@ -124,6 +125,7 @@ public abstract class InventoryElementMapper {
     public List<InventoryElementAttributeValue> toElementAttributeWithClass(
             List<AbstractValue> inventoryElementAttributeClass) {
         List<InventoryElementAttributeValue> resultList = new ArrayList<>();
+        if(inventoryElementAttributeClass==null) return resultList;
         for (AbstractValue abstractValue: inventoryElementAttributeClass) {
             InventoryElementAttributeValue newAttributeValue = null;
             Class<? extends AbstractValue> valueType = abstractValue.getClass();
