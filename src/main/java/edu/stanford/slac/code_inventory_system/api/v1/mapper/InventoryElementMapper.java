@@ -38,7 +38,7 @@ public abstract class InventoryElementMapper {
 
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(newInventoryElementDTO.classId(),newInventoryElementDTO.attributes()))")
     public abstract InventoryElement toModel(NewInventoryElementDTO newInventoryElementDTO);
-
+    @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(inventoryElement.getAttributes()))")
     public abstract InventoryElementDTO toDTO(InventoryElement inventoryElement);
 
     @Named("getFollowingUp")
@@ -117,8 +117,62 @@ public abstract class InventoryElementMapper {
 
             abstractAttributeList.add(newAttributeValue);
         }
-
         return abstractAttributeList;
+    }
+
+    @Named("getFollowingUp")
+    public List<InventoryElementAttributeValue> toElementAttributeWithClass(
+            List<AbstractValue> inventoryElementAttributeClass) {
+        List<InventoryElementAttributeValue> resultList = new ArrayList<>();
+        for (AbstractValue abstractValue: inventoryElementAttributeClass) {
+            InventoryElementAttributeValue newAttributeValue = null;
+            Class<? extends AbstractValue> valueType = abstractValue.getClass();
+            if (valueType.isAssignableFrom(StringValue.class)) {
+                newAttributeValue = InventoryElementAttributeValue
+                        .builder()
+                        .name(abstractValue.getName())
+                        .value(((StringValue)abstractValue).getValue())
+                        .build();
+            } else if (valueType.isAssignableFrom(BooleanValue.class)) {
+                newAttributeValue = InventoryElementAttributeValue
+                        .builder()
+                        .name(abstractValue.getName())
+                        .value(((BooleanValue)abstractValue).getValue().toString())
+                        .build();
+            } else if (valueType.isAssignableFrom(NumberValue.class)) {
+                newAttributeValue = InventoryElementAttributeValue
+                        .builder()
+                        .name(abstractValue.getName())
+                        .value(((NumberValue)abstractValue).getValue().toString())
+                        .build();
+            } else if (valueType.isAssignableFrom(DoubleValue.class)) {
+                newAttributeValue = InventoryElementAttributeValue
+                        .builder()
+                        .name(abstractValue.getName())
+                        .value(((DoubleValue)abstractValue).getValue().toString())
+                        .build();
+            } else if (valueType.isAssignableFrom(DateValue.class)) {
+                newAttributeValue = InventoryElementAttributeValue
+                        .builder()
+                        .name(abstractValue.getName())
+                        .value(((DateValue)abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                        .build();
+            } else if (valueType.isAssignableFrom(DateTimeValue.class)) {
+                newAttributeValue = InventoryElementAttributeValue
+                        .builder()
+                        .name(abstractValue.getName())
+                        .value(((DateTimeValue)abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                        .build();
+            } else {
+                throw ControllerLogicException.builder()
+                        .errorCode(-4)
+                        .errorMessage("Invalid attribute type")
+                        .errorDomain("InventoryElementMapper::toElementAttributeWithClass")
+                        .build();
+            }
+            resultList.add(newAttributeValue);
+        }
+        return resultList;
     }
 
 }

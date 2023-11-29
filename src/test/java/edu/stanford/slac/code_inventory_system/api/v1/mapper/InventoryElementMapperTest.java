@@ -1,6 +1,7 @@
 package edu.stanford.slac.code_inventory_system.api.v1.mapper;
 
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementAttributeValue;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryElementDTO;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementAttributeNotForClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
@@ -9,6 +10,7 @@ import edu.stanford.slac.code_inventory_system.model.InventoryClassAttributeType
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
 import edu.stanford.slac.code_inventory_system.model.value.*;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -397,6 +399,189 @@ public class InventoryElementMapperTest {
                 .extracting(AbstractValue::getName).isEqualTo("attr-1");
         assertThat(((StringValue) invElem.getAttributes().get(0)).getValue()).isEqualTo(
                 "this is a string"
+        );
+    }
+
+    @Test
+    public void testToDTOAttributeString() {
+        InventoryElementDTO invElemDTO = assertDoesNotThrow(
+                () -> inventoryElementMapper.toDTO(
+                        InventoryElement
+                                .builder()
+                                .attributes(
+                                        List.of(
+                                                StringValue
+                                                        .builder()
+                                                        .name("attr-1")
+                                                        .value("this is a string")
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        assertThat(invElemDTO.attributes())
+                .hasSize(1);
+        AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
+                .isOfAnyClassIn(InventoryElementAttributeValue.class)
+                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                "this is a string"
+        );
+    }
+
+    @Test
+    public void testToDTOAttributeBoolean() {
+        InventoryElementDTO invElemDTO = assertDoesNotThrow(
+                () -> inventoryElementMapper.toDTO(
+                        InventoryElement
+                                .builder()
+                                .attributes(
+                                        List.of(
+                                                BooleanValue
+                                                        .builder()
+                                                        .name("attr-1")
+                                                        .value(true)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        assertThat(invElemDTO.attributes())
+                .hasSize(1);
+        AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
+                .isOfAnyClassIn(InventoryElementAttributeValue.class)
+                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                "true"
+        );
+    }
+
+    @Test
+    public void testToDTOAttributeNumber() {
+        InventoryElementDTO invElemDTO = assertDoesNotThrow(
+                () -> inventoryElementMapper.toDTO(
+                        InventoryElement
+                                .builder()
+                                .attributes(
+                                        List.of(
+                                                NumberValue
+                                                        .builder()
+                                                        .name("attr-1")
+                                                        .value(Long.MAX_VALUE)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        assertThat(invElemDTO.attributes())
+                .hasSize(1);
+        AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
+                .isOfAnyClassIn(InventoryElementAttributeValue.class)
+                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                String.valueOf(Long.MAX_VALUE)
+        );
+    }
+
+    @Test
+    public void testToDTOAttributeDouble() {
+        InventoryElementDTO invElemDTO = assertDoesNotThrow(
+                () -> inventoryElementMapper.toDTO(
+                        InventoryElement
+                                .builder()
+                                .attributes(
+                                        List.of(
+                                                DoubleValue
+                                                        .builder()
+                                                        .name("attr-1")
+                                                        .value(Double.MAX_VALUE)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        assertThat(invElemDTO.attributes())
+                .hasSize(1);
+        AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
+                .isOfAnyClassIn(InventoryElementAttributeValue.class)
+                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                String.valueOf(Double.MAX_VALUE)
+        );
+    }
+
+    @Test
+    public void testToDTOAttributeDate() {
+        InventoryElementDTO invElemDTO = assertDoesNotThrow(
+                () -> inventoryElementMapper.toDTO(
+                        InventoryElement
+                                .builder()
+                                .attributes(
+                                        List.of(
+                                                DateValue
+                                                        .builder()
+                                                        .name("attr-1")
+                                                        .value(
+                                                                LocalDate.of(
+                                                                        2000,
+                                                                        12,
+                                                                        31
+                                                                )
+                                                        )
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        assertThat(invElemDTO.attributes())
+                .hasSize(1);
+        AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
+                .isOfAnyClassIn(InventoryElementAttributeValue.class)
+                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                "2000-12-31"
+        );
+    }
+
+    @Test
+    public void testToDTOAttributeDateTime() {
+        InventoryElementDTO invElemDTO = assertDoesNotThrow(
+                () -> inventoryElementMapper.toDTO(
+                        InventoryElement
+                                .builder()
+                                .attributes(
+                                        List.of(
+                                                DateTimeValue
+                                                        .builder()
+                                                        .name("attr-1")
+                                                        .value(
+                                                                LocalDateTime.of(
+                                                                        2000,
+                                                                        12,
+                                                                        31,
+                                                                        0,
+                                                                        0,
+                                                                        0
+                                                                )
+                                                        )
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        assertThat(invElemDTO.attributes())
+                .hasSize(1);
+        AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
+                .isOfAnyClassIn(InventoryElementAttributeValue.class)
+                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                "2000-12-31T00:00:00"
         );
     }
 }
