@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import static edu.stanford.slac.code_inventory_system.exception.Utility.getAllMethodInCall;
 
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Class has not been found")
-public class InventoryClassNotFound extends ControllerLogicException {
-    @Builder(builderMethodName = "classNotFoundById")
-    public InventoryClassNotFound(Integer errorCode, String id) {
+public class InventoryElementAttributeNotForClass extends ControllerLogicException {
+    @Builder(builderMethodName = "ieaNotForClassName")
+    public InventoryElementAttributeNotForClass(Integer errorCode, String attributeName, String className) {
         super(errorCode,
-                String.format("The inventory class with id '%s' has not been found", id),
+                String.format("The inventory attribute '%s' cannot be assigned because not in class '%s'", attributeName, className),
                 getAllMethodInCall(2)
         );
     }

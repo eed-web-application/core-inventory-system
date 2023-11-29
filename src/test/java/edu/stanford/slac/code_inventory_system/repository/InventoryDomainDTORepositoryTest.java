@@ -29,7 +29,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles({"test"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class InventoryDomainRepositoryTest {
+public class InventoryDomainDTORepositoryTest {
     @Autowired
     InventoryDomainRepository inventoryDomainRepository;
     @Autowired

@@ -42,18 +42,17 @@ public class InventoryDomainIndex {
                         )
                         .named("name")
                         .unique()
-                        .sparse()
         );
 
         MongoDDLOps.createIndex(
                 InventoryDomain.class,
                 mongoTemplate,
                 new Index().on(
-                                "tags_id",
+                                "tags.id",
                                 Sort.Direction.ASC
                         )
                         .named("tags-id")
-                        .sparse()
+                        .unique()
         );
     }
 }

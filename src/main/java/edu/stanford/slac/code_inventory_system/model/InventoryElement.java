@@ -5,8 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -64,4 +67,10 @@ public class InventoryElement {
      * Define the ids of the tag associated with the element
      */
     private List<String> tags;
+
+    @CreatedDate
+    private LocalDateTime createdTime;
+
+    @CreatedBy
+    private String createdBy;
 }

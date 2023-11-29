@@ -1,5 +1,6 @@
 package edu.stanford.slac.code_inventory_system.model.value;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -14,15 +15,14 @@ import lombok.experimental.SuperBuilder;
         use = JsonTypeInfo.Id.NAME,
         property = "type"
 )
-//@JsonSubTypes({
-//        @JsonSubTypes.Type(value = ExtendedDataBooleanValueDTO.class, name = "bool-value"),
-//        @JsonSubTypes.Type(value = ExtendedDataDateValueDTO.class, name = "date-value"),
-//        @JsonSubTypes.Type(value = ExtendedDataIntegerValueDTO.class, name = "integer-value"),
-//        @JsonSubTypes.Type(value = ExtendedDataLongValueDTO.class, name = "long-value"),
-//        @JsonSubTypes.Type(value = ExtendedDataFloatValueDTO.class, name = "float-value"),
-//        @JsonSubTypes.Type(value = ExtendedDataDoubleValueDTO.class, name = "double-value"),
-//        @JsonSubTypes.Type(value = ExtendedDataStringValueDTO.class, name = "string-value"),
-//})
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = BooleanValue.class, name = "bool-value"),
+        @JsonSubTypes.Type(value = DateTimeValue.class, name = "date-time-value"),
+        @JsonSubTypes.Type(value = DateValue.class, name = "date-value"),
+        @JsonSubTypes.Type(value = NumberValue.class, name = "number-value"),
+        @JsonSubTypes.Type(value = DoubleValue.class, name = "double-value"),
+        @JsonSubTypes.Type(value = String.class, name = "string-value"),
+})
 
 public class AbstractValue {
     private String name;
