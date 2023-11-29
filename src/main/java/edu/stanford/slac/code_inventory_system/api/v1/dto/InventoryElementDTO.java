@@ -8,6 +8,10 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +33,15 @@ public record InventoryElementDTO(
         List<InventoryElementAttributeValue> attributes,
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
-        LocalDateTime createdTime,
-        String createdBy
+        @Schema(description = "The creation time")
+        LocalDateTime createdDate,
+        @Schema(description = "The user that creates the element")
+        String createdBy,
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        @Schema(description = "The modification time")
+        LocalDateTime lastModifiedDate,
+        @Schema(description = "The user that modify the element")
+        String lastModifiedBy
 ) {
 }

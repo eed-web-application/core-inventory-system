@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles({"test"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class InventoryItemServiceTest {
+public class InventoryElementServiceTest {
     @Autowired
     MongoTemplate mongoTemplate;
     @Autowired

@@ -7,7 +7,9 @@ import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryDomainDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryElementDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryElementMapper;
 import edu.stanford.slac.code_inventory_system.exception.*;
+import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
+import edu.stanford.slac.code_inventory_system.model.Tag;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryElementRepository;
@@ -18,6 +20,7 @@ import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 import static edu.stanford.slac.ad.eed.baselib.utility.StringUtilities.normalizeStringWithReplace;
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
 
+import java.util.List;
 /**
  * HIgh level API for the management of the inventory domain and item
  */
@@ -85,6 +88,36 @@ public class InventoryElementService {
                         .build()
         );
         return inventoryElementMapper.toDTO(newlyCreatedDomain);
+    }
+
+    /**
+     * Update the domain applying all integrity check
+     * all the tag will be manage in this way:
+     * 1) tag witout id: will be created into the domain,
+     * 2) tag with id will be checked the information and in case updated
+     * 3) tag stored on the database but not in this instance will be deleted
+     *
+     * @param inventoryDomainDTO the domain to update
+     */
+    public void update(InventoryDomainDTO inventoryDomainDTO) {
+        InventoryDomain inventoryToUpdate = inventoryElementMapper.toModel(inventoryDomainDTO);
+
+        // get the inventory saved on database for work on tag
+        InventoryDomain savedDomain = wrapCatch(
+                ()->inventoryDomainRepository.findById(inventoryDomainDTO.id()),
+                -1
+        ).orElseThrow(
+                ()->InventoryDomainNotFound.domainNotFoundById()
+                        .errorCode(-2)
+                        .id(inventoryToUpdate.getId())
+                        .build()
+        );
+        // update the tag
+        updateTags(inventoryToUpdate.getTags(), savedDomain.getTags());
+    }
+
+    private void updateTags(List<Tag> updatedTag, List<Tag> storedTag) {
+
     }
 
     /**

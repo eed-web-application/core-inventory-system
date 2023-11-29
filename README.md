@@ -109,7 +109,7 @@ for starting the necessary services for the CIS backend to conduct unit and inte
 the `docker-compose-app.yml` is used to enable the CIS backend in demo mode.
 
 ```shell
- docker compose -f docker-compose.yml -f docker-compose-app.yml up
+docker compose -f docker-compose.yml -f docker-compose-app.yml up
 ```
 
 #### Demo Mode Features

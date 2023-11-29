@@ -5,9 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -30,59 +28,52 @@ public class InventoryElement {
      * Is the name of the element
      */
     private String name;
-
     /**
      * The element description
      */
     private String description;
-
     /**
      * specify the domain which the item belong
      */
     private String domainId;
-
     /**
      * IS the id of one of the existing class {@link InventoryClass#id name}
      */
     private String classId;
-
     /**
      * Is the unique id of the parend in the inventory
      */
     private String parentId;
-
     /**
      * represent the full three path from the root to this element that is the leaf
      */
     private String fullTreePath;
-
     /**
      * Teh value for the attributes
      */
     @Builder.Default
     private List<AbstractValue> attributes = emptyList();
-
     /**
      * the list of the connector class that can be used as ID
      */
     @Builder.Default
-    private List<ConnectorClass> connectorClasses  = emptyList();
-
+    private List<ConnectorClass> connectorClasses = emptyList();
     /**
      * IS the history of that element
      */
     @Builder.Default
-    private List<InventoryElementHistory> history  = emptyList();
-
+    private List<InventoryElementHistory> history = emptyList();
     /**
      * Define the ids of the tag associated with the element
      */
     @Builder.Default
     private List<String> tags = emptyList();
-
     @CreatedDate
-    private LocalDateTime createdTime;
-
+    private LocalDateTime createdDate;
     @CreatedBy
     private String createdBy;
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
+    @LastModifiedBy
+    private String lastModifiedBy;
 }

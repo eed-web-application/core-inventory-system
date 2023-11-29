@@ -33,7 +33,7 @@ public abstract class InventoryElementMapper {
     InventoryClassRepository inventoryClassRepository;
 
     public abstract InventoryDomain toModel(NewInventoryDomainDTO newInventoryDomainDTO);
-
+    public abstract InventoryDomain toModel(InventoryDomainDTO inventoryDomainDTO);
     public abstract InventoryDomainDTO toDTO(InventoryDomain domain);
 
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(newInventoryElementDTO.classId(),newInventoryElementDTO.attributes()))")

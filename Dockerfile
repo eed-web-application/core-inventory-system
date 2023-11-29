@@ -1,8 +1,12 @@
+FROM eclipse-temurin:21-jammy as builder
+COPY . /opt/app
+RUN /opt/app/gradlew -p /opt/app/ assemble
+
 FROM eclipse-temurin:21-jammy
 RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u 1001 app
 USER app
 WORKDIR /home/app
-COPY /tools/run.sh /home/app
-COPY build/libs/*.jar /home/app/app.jar
+COPY --from=builder /opt/app/tools/run.sh /home/app
+COPY --from=builder /opt/app/build/libs/*.jar /home/app
 EXPOSE 8080
 ENTRYPOINT ["/home/app/run.sh"]
