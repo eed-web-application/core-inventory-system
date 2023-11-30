@@ -38,6 +38,11 @@ public abstract class InventoryElementMapper {
     @Mapping(target = "tags", source = "updateDomainDTO.tags", conditionExpression = "java(updateDomainDTO.tags() != null)")
     public abstract void updateModel(@MappingTarget InventoryDomain inventoryDomain, UpdateDomainDTO updateDomainDTO);
 
+    @Mapping(target = "tags", source = "updateInventoryElementDTO.tags", conditionExpression = "java(updateInventoryElementDTO.tags() != null)")
+    @Mapping(target = "description", source = "updateInventoryElementDTO.description", conditionExpression = "java(updateInventoryElementDTO.description() != null)")
+    @Mapping(target = "attributes", source = "updateInventoryElementDTO.attributes", conditionExpression = "java(updateInventoryElementDTO.attributes() != null)")
+    public abstract void updateModel(@MappingTarget InventoryElement inventoryElement, UpdateInventoryElementDTO updateInventoryElementDTO);
+
     public abstract InventoryDomain toModel(InventoryDomainDTO inventoryDomainDTO);
 
     public abstract InventoryDomainDTO toDTO(InventoryDomain domain);

@@ -144,4 +144,35 @@ public class InventoryElementController {
                 inventoryElementService.createNew(domainId, newInventoryElementDTO)
         );
     }
+
+    @PutMapping(
+            path = "/{domainId}/element/{elementId}",
+            produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(summary = "Update an inventory element")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResultResponse<Boolean> updateElement(
+            Authentication authentication,
+            @PathVariable(name = "domainId") String domainId,
+            @PathVariable(name = "elementId") String elementId,
+            @Valid @RequestBody UpdateInventoryElementDTO updateInventoryElementDTO
+    ) {
+        // check for auth
+        assertion(
+                NotAuthorized.notAuthorizedBuilder()
+                        .errorCode(-1)
+                        .errorDomain("InventoryElementController::createNewDomain")
+                        .build(),
+                // should be authenticated
+                () -> authService.checkAuthentication(authentication),
+                // should be root for create new domain
+                () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                        authentication,
+                        AuthorizationTypeDTO.Write,
+                        "/cis/domain/%s".formatted(domainId))
+        );
+        return ApiResultResponse.of(
+                true
+        );
+    }
 }
