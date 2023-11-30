@@ -116,6 +116,14 @@ in case of application updates the docker image need to be rebuilt so in this ca
 docker compose -f docker-compose.yml -f docker-compose-app.yml up --build backend
 ```
 
+### Rest API Documentation
+The backend seamlessly provides access to the OpenAPI 3.0 specification for the REST API at the endpoint '/api-docs'. This endpoint serves the OpenAPI 3.0 documentation in JSON format.
+
+To access the documentation when the backend is operating in demo mode, use the following shell command:
+```shell #in case the backend is run in demo mode
+curl http://localhost:8080/api-docs
+```
+
 
 
 #### Demo Mode Features

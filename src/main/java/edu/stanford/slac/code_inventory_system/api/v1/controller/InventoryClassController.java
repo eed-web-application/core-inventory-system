@@ -27,8 +27,8 @@ import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 @AllArgsConstructor
 @Schema(description = "Set of api for the inventory class management")
 public class InventoryClassController {
-    AuthService authService;
-    InventoryClassService inventoryClassService;
+    private final AuthService authService;
+    private final InventoryClassService inventoryClassService;
 
     @PostMapping(
             consumes = {MediaType.APPLICATION_JSON_VALUE},

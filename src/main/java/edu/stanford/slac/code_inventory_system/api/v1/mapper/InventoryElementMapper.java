@@ -26,20 +26,25 @@ import static org.mapstruct.NullValuePropertyMappingStrategy.IGNORE;
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         componentModel = "spring"
 )
+
 public abstract class InventoryElementMapper {
     @Autowired
     InventoryClassRepository inventoryClassRepository;
 
     public abstract InventoryDomain toModel(NewInventoryDomainDTO newInventoryDomainDTO);
+
     @Mapping(target = "name", source = "updateDomainDTO.name", conditionExpression = "java(updateDomainDTO.name() != null)")
     @Mapping(target = "description", source = "updateDomainDTO.description", conditionExpression = "java(updateDomainDTO.description() != null)")
     @Mapping(target = "tags", source = "updateDomainDTO.tags", conditionExpression = "java(updateDomainDTO.tags() != null)")
     public abstract void updateModel(@MappingTarget InventoryDomain inventoryDomain, UpdateDomainDTO updateDomainDTO);
+
     public abstract InventoryDomain toModel(InventoryDomainDTO inventoryDomainDTO);
+
     public abstract InventoryDomainDTO toDTO(InventoryDomain domain);
 
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(newInventoryElementDTO.classId(),newInventoryElementDTO.attributes()))")
     public abstract InventoryElement toModel(NewInventoryElementDTO newInventoryElementDTO);
+
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(inventoryElement.getAttributes()))")
     public abstract InventoryElementDTO toDTO(InventoryElement inventoryElement);
 
@@ -48,7 +53,7 @@ public abstract class InventoryElementMapper {
             String classId,
             List<InventoryElementAttributeValue> inventoryElementAttributeValues) {
         List<AbstractValue> abstractAttributeList = new ArrayList<>();
-        if(inventoryElementAttributeValues==null) return abstractAttributeList;
+        if (inventoryElementAttributeValues == null) return abstractAttributeList;
         InventoryClass ic = wrapCatch(
                 () -> inventoryClassRepository.findById(classId),
                 -1
@@ -72,44 +77,55 @@ public abstract class InventoryElementMapper {
                             .build()
             );
 
-            AbstractValue newAttributeValue = null;
             Class<? extends AbstractValue> valueType = attributeFound.getType().toClassType();
             if (valueType.isAssignableFrom(StringValue.class)) {
-                newAttributeValue = StringValue
-                        .builder()
-                        .name(attributeValue.name())
-                        .value(attributeValue.value())
-                        .build();
+                abstractAttributeList.add(
+                        StringValue
+                                .builder()
+                                .name(attributeValue.name())
+                                .value(attributeValue.value())
+                                .build()
+                );
             } else if (valueType.isAssignableFrom(BooleanValue.class)) {
-                newAttributeValue = BooleanValue
-                        .builder()
-                        .name(attributeValue.name())
-                        .value(Boolean.valueOf(attributeValue.value()))
-                        .build();
+                abstractAttributeList.add(
+                        BooleanValue
+                                .builder()
+                                .name(attributeValue.name())
+                                .value(Boolean.valueOf(attributeValue.value()))
+                                .build()
+                );
             } else if (valueType.isAssignableFrom(NumberValue.class)) {
-                newAttributeValue = NumberValue
-                        .builder()
-                        .name(attributeValue.name())
-                        .value(Long.valueOf(attributeValue.value()))
-                        .build();
+                abstractAttributeList.add(
+                        NumberValue
+                                .builder()
+                                .name(attributeValue.name())
+                                .value(Long.valueOf(attributeValue.value()))
+                                .build()
+                );
             } else if (valueType.isAssignableFrom(DoubleValue.class)) {
-                newAttributeValue = DoubleValue
-                        .builder()
-                        .name(attributeValue.name())
-                        .value(Double.valueOf(attributeValue.value()))
-                        .build();
+                abstractAttributeList.add(
+                        DoubleValue
+                                .builder()
+                                .name(attributeValue.name())
+                                .value(Double.valueOf(attributeValue.value()))
+                                .build()
+                );
             } else if (valueType.isAssignableFrom(DateValue.class)) {
-                newAttributeValue = DateValue
-                        .builder()
-                        .name(attributeValue.name())
-                        .value(LocalDate.parse(attributeValue.value(), DateTimeFormatter.ISO_LOCAL_DATE))
-                        .build();
+                abstractAttributeList.add(
+                        DateValue
+                                .builder()
+                                .name(attributeValue.name())
+                                .value(LocalDate.parse(attributeValue.value(), DateTimeFormatter.ISO_LOCAL_DATE))
+                                .build()
+                );
             } else if (valueType.isAssignableFrom(DateTimeValue.class)) {
-                newAttributeValue = DateTimeValue
-                        .builder()
-                        .name(attributeValue.name())
-                        .value(LocalDateTime.parse(attributeValue.value(), DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                        .build();
+                abstractAttributeList.add(
+                        DateTimeValue
+                                .builder()
+                                .name(attributeValue.name())
+                                .value(LocalDateTime.parse(attributeValue.value(), DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                                .build()
+                );
             } else {
                 throw ControllerLogicException.builder()
                         .errorCode(-4)
@@ -117,8 +133,6 @@ public abstract class InventoryElementMapper {
                         .errorDomain("InventoryElementMapper::toElementAttributeWithClass")
                         .build();
             }
-
-            abstractAttributeList.add(newAttributeValue);
         }
         return abstractAttributeList;
     }
@@ -127,45 +141,45 @@ public abstract class InventoryElementMapper {
     public List<InventoryElementAttributeValue> toElementAttributeWithClass(
             List<AbstractValue> inventoryElementAttributeClass) {
         List<InventoryElementAttributeValue> resultList = new ArrayList<>();
-        if(inventoryElementAttributeClass==null) return resultList;
-        for (AbstractValue abstractValue: inventoryElementAttributeClass) {
+        if (inventoryElementAttributeClass == null) return resultList;
+        for (AbstractValue abstractValue : inventoryElementAttributeClass) {
             InventoryElementAttributeValue newAttributeValue = null;
             Class<? extends AbstractValue> valueType = abstractValue.getClass();
             if (valueType.isAssignableFrom(StringValue.class)) {
                 newAttributeValue = InventoryElementAttributeValue
                         .builder()
                         .name(abstractValue.getName())
-                        .value(((StringValue)abstractValue).getValue())
+                        .value(((StringValue) abstractValue).getValue())
                         .build();
             } else if (valueType.isAssignableFrom(BooleanValue.class)) {
                 newAttributeValue = InventoryElementAttributeValue
                         .builder()
                         .name(abstractValue.getName())
-                        .value(((BooleanValue)abstractValue).getValue().toString())
+                        .value(((BooleanValue) abstractValue).getValue().toString())
                         .build();
             } else if (valueType.isAssignableFrom(NumberValue.class)) {
                 newAttributeValue = InventoryElementAttributeValue
                         .builder()
                         .name(abstractValue.getName())
-                        .value(((NumberValue)abstractValue).getValue().toString())
+                        .value(((NumberValue) abstractValue).getValue().toString())
                         .build();
             } else if (valueType.isAssignableFrom(DoubleValue.class)) {
                 newAttributeValue = InventoryElementAttributeValue
                         .builder()
                         .name(abstractValue.getName())
-                        .value(((DoubleValue)abstractValue).getValue().toString())
+                        .value(((DoubleValue) abstractValue).getValue().toString())
                         .build();
             } else if (valueType.isAssignableFrom(DateValue.class)) {
                 newAttributeValue = InventoryElementAttributeValue
                         .builder()
                         .name(abstractValue.getName())
-                        .value(((DateValue)abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                        .value(((DateValue) abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE))
                         .build();
             } else if (valueType.isAssignableFrom(DateTimeValue.class)) {
                 newAttributeValue = InventoryElementAttributeValue
                         .builder()
                         .name(abstractValue.getName())
-                        .value(((DateTimeValue)abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                        .value(((DateTimeValue) abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                         .build();
             } else {
                 throw ControllerLogicException.builder()
