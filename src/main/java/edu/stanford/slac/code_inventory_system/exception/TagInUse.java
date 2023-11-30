@@ -14,7 +14,7 @@ public class TagInUse extends ControllerLogicException {
     public TagInUse(Integer errorCode, Tag tag) {
         super(errorCode,
                 String.format("The tag '%s' with id '%s' is in use", tag.getName(), tag.getId()),
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 }

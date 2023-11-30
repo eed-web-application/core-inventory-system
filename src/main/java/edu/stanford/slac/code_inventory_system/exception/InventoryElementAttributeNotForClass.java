@@ -13,7 +13,7 @@ public class InventoryElementAttributeNotForClass extends ControllerLogicExcepti
     public InventoryElementAttributeNotForClass(Integer errorCode, String attributeName, String className) {
         super(errorCode,
                 String.format("The inventory attribute '%s' cannot be assigned because not in class '%s'", attributeName, className),
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 }

@@ -16,7 +16,7 @@ public class Utility {
             throw ControllerLogicException.builder()
                     .errorCode(errorCode)
                     .errorMessage(e.getMessage())
-                    .errorDomain(getAllMethodInCall(2))
+                    .errorDomain(getAllMethodInCall())
                     .build(); // or return null, or whatever you want
         }
     }
@@ -33,21 +33,26 @@ public class Utility {
             throw ControllerLogicException.builder()
                     .errorCode(errorCode)
                     .errorMessage(message)
-                    .errorDomain(getAllMethodInCall(2))
+                    .errorDomain(getAllMethodInCall())
                     .build(); // or return null, or whatever you want
         }
     }
 
-    static String getAllMethodInCall(int uptToIndex) {
+    static String getAllMethodInCall() {
         StringBuilder sb = new StringBuilder();
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        for(int idx = stackTraceElements.length-uptToIndex; idx >0; idx--) {
-            sb.append(stackTraceElements[idx].getMethodName());
-            sb.append("->");
-        }
-        var separatorLength = "->".length();
-        if(sb.length() > separatorLength){
-            sb.setLength(sb.length()-separatorLength);
+        for(int idx = 2; idx < stackTraceElements.length; idx++) {
+            if(stackTraceElements[idx].getClassName().contains("edu.stanford.slac.") &&
+                    !stackTraceElements[idx].getClassName().contains("<") &&
+                    !stackTraceElements[idx].getClassName().contains("$") &&
+                    !stackTraceElements[idx].getMethodName().contains("<") &&
+                    !stackTraceElements[idx].getMethodName().contains("$")
+            ) {
+                sb.append(stackTraceElements[idx].getClassName());
+                sb.append("::");
+                sb.append(stackTraceElements[idx].getMethodName());
+                break;
+            }
         }
         return sb.toString();
     }

@@ -11,6 +11,7 @@ import edu.stanford.slac.code_inventory_system.service.InventoryClassService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,7 +39,7 @@ public class InventoryClassController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResultResponse<String> createNewClass(
             Authentication authentication,
-            @RequestBody NewInventoryClassDTO inventoryClassDTO
+            @Valid @RequestBody NewInventoryClassDTO inventoryClassDTO
     ) {
         // check for auth
         assertion(

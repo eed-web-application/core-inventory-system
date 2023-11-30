@@ -14,7 +14,7 @@ public class TagNotFound extends ControllerLogicException {
     public TagNotFound(Integer errorCode, Tag tag) {
         super(errorCode,
                 String.format("The tag '%s' with id '%s' has not been found", tag.getName(), tag.getId()),
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 
@@ -22,7 +22,7 @@ public class TagNotFound extends ControllerLogicException {
     public TagNotFound(Integer errorCode) {
         super(errorCode,
                 "One or more tag has not been found",
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 }

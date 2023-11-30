@@ -13,7 +13,7 @@ public class InventoryDomainParentElementMismatch extends ControllerLogicExcepti
     public InventoryDomainParentElementMismatch(Integer errorCode, String parentElement, String actualDomain) {
         super(errorCode,
                 String.format("The inventory domain of the parent '%s' mismatch with the inventory id %s", parentElement, actualDomain),
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 }

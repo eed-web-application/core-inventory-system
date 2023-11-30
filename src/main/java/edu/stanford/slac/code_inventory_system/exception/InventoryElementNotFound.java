@@ -13,7 +13,7 @@ public class InventoryElementNotFound extends ControllerLogicException {
     public InventoryElementNotFound(Integer errorCode, String id) {
         super(errorCode,
                 String.format("The inventory element with id '%s' has not been found", id),
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 }

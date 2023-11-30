@@ -13,7 +13,7 @@ public class InventoryDomainAlreadyExists extends ControllerLogicException {
     public InventoryDomainAlreadyExists(Integer errorCode, String domainName) {
         super(errorCode,
                 String.format("An inventory domain with name '%s' already exists", domainName),
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 }

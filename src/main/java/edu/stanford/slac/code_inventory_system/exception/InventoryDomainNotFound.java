@@ -13,7 +13,7 @@ public class InventoryDomainNotFound extends ControllerLogicException {
     public InventoryDomainNotFound(Integer errorCode, String id) {
         super(errorCode,
                 String.format("The inventory domain with id '%s' has not been found", id),
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 }

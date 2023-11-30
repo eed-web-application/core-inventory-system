@@ -13,7 +13,7 @@ public class InventoryClassNotFound extends ControllerLogicException {
     public InventoryClassNotFound(Integer errorCode, String id) {
         super(errorCode,
                 String.format("The inventory class with id '%s' has not been found", id),
-                getAllMethodInCall(2)
+                getAllMethodInCall()
         );
     }
 }
