@@ -76,4 +76,6 @@ public class InventoryElement {
     private LocalDateTime lastModifiedDate;
     @LastModifiedBy
     private String lastModifiedBy;
+    @Version
+    private Long version;
 }

@@ -9,10 +9,7 @@ import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
 import edu.stanford.slac.code_inventory_system.model.value.*;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
@@ -23,6 +20,7 @@ import java.util.List;
 
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
+import static org.mapstruct.NullValuePropertyMappingStrategy.IGNORE;
 
 @Mapper(
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
@@ -33,6 +31,10 @@ public abstract class InventoryElementMapper {
     InventoryClassRepository inventoryClassRepository;
 
     public abstract InventoryDomain toModel(NewInventoryDomainDTO newInventoryDomainDTO);
+    @Mapping(target = "name", source = "updateDomainDTO.name", conditionExpression = "java(updateDomainDTO.name() != null)")
+    @Mapping(target = "description", source = "updateDomainDTO.description", conditionExpression = "java(updateDomainDTO.description() != null)")
+    @Mapping(target = "tags", source = "updateDomainDTO.tags", conditionExpression = "java(updateDomainDTO.tags() != null)")
+    public abstract void updateModel(@MappingTarget InventoryDomain inventoryDomain, UpdateDomainDTO updateDomainDTO);
     public abstract InventoryDomain toModel(InventoryDomainDTO inventoryDomainDTO);
     public abstract InventoryDomainDTO toDTO(InventoryDomain domain);
 

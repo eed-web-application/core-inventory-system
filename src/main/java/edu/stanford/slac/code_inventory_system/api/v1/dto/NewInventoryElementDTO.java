@@ -28,5 +28,7 @@ public record NewInventoryElementDTO(
         String parentId,
         @Schema(description = "The description for the specific element of a class type")
         String description,
+        @Schema(description = "The list of tag that describe the element")
+        List<String> tags,
         @Schema(description = "The values for the element attributes(will be checked against those defined in the class)")
         List<InventoryElementAttributeValue> attributes){}

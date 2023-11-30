@@ -4,6 +4,9 @@ import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.Tag;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+
+import java.util.List;
 
 public interface InventoryDomainRepository extends MongoRepository<InventoryDomain, String>, InventoryDomainRepositoryCustom{
 
@@ -40,4 +43,7 @@ public interface InventoryDomainRepository extends MongoRepository<InventoryDoma
      * @return true if a domain with that name has been found
      */
     boolean existsByNameIs(String domainName);
+
+    @Query(value = "{ 'id':?0, 'tags': { $all: ?1 } }", exists = true)
+    boolean existsByIdAndAllTags(String id, List<String> tags);
 }

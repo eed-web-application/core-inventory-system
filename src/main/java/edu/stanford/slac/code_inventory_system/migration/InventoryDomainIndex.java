@@ -52,6 +52,7 @@ public class InventoryDomainIndex {
                                 Sort.Direction.ASC
                         )
                         .named("tags-id")
+                        .sparse()
                         .unique()
         );
     }

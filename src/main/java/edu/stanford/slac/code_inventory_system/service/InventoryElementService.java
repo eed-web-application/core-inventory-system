@@ -1,10 +1,10 @@
 package edu.stanford.slac.code_inventory_system.service;
 
 import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
-import edu.stanford.slac.ad.eed.baselib.utility.StringUtilities;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryDomainDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryDomainDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryElementDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.UpdateDomainDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryElementMapper;
 import edu.stanford.slac.code_inventory_system.exception.*;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
@@ -13,14 +13,18 @@ import edu.stanford.slac.code_inventory_system.model.Tag;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryElementRepository;
+import edu.stanford.slac.code_inventory_system.service.utility.CheckIdInUse;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 import static edu.stanford.slac.ad.eed.baselib.utility.StringUtilities.normalizeStringWithReplace;
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
+import static edu.stanford.slac.code_inventory_system.service.utility.IdValueObjectUtil.updateResource;
 
 import java.util.List;
+import java.util.UUID;
+
 /**
  * HIgh level API for the management of the inventory domain and item
  */
@@ -97,28 +101,54 @@ public class InventoryElementService {
      * 2) tag with id will be checked the information and in case updated
      * 3) tag stored on the database but not in this instance will be deleted
      *
-     * @param inventoryDomainDTO the domain to update
+     * @param updateDomainDTO the domain to update
      */
-    public void update(InventoryDomainDTO inventoryDomainDTO) {
-        InventoryDomain inventoryToUpdate = inventoryElementMapper.toModel(inventoryDomainDTO);
-
-        // get the inventory saved on database for work on tag
+    public void update(String domainId, UpdateDomainDTO updateDomainDTO) {
+        // get the inventory saved on database for work on tag and lock
         InventoryDomain savedDomain = wrapCatch(
-                ()->inventoryDomainRepository.findById(inventoryDomainDTO.id()),
+                () -> inventoryDomainRepository.findById(domainId),
                 -1
         ).orElseThrow(
-                ()->InventoryDomainNotFound.domainNotFoundById()
+                () -> InventoryDomainNotFound.domainNotFoundById()
                         .errorCode(-2)
-                        .id(inventoryToUpdate.getId())
+                        .id(domainId)
                         .build()
         );
+
+        // keep for check the update
+        List<Tag> storedTags = savedDomain.getTags();
+        inventoryElementMapper.updateModel(
+                savedDomain,
+                updateDomainDTO
+        );
+
         // update the tag
-        updateTags(inventoryToUpdate.getTags(), savedDomain.getTags());
+        updateResource(
+                // these are the updated tags
+                savedDomain.getTags(),
+                // these are the stored tags on database
+                storedTags,
+                (tagId) -> inventoryElementRepository.existsByDomainIdIsAndTagsContains(
+                        savedDomain.getId(),
+                        tagId
+                ),
+                (notFoundTag) -> TagNotFound.tagNotFound()
+                        .errorCode(-3)
+                        .tag((Tag) notFoundTag)
+                        .build(),
+                (inUseTag) -> TagInUse.tagInUse()
+                        .errorCode(-3)
+                        .tag((Tag) inUseTag)
+                        .build()
+        );
+
+        // update the domain
+        wrapCatch(
+                () -> inventoryDomainRepository.save(savedDomain),
+                -4
+        );
     }
 
-    private void updateTags(List<Tag> updatedTag, List<Tag> storedTag) {
-
-    }
 
     /**
      * Create a new inventory element
@@ -179,16 +209,26 @@ public class InventoryElementService {
                 () -> inventoryClassRepository.existsById(inventoryElementToSave.getClassId())
         );
 
+        // checks for tag id existance
+        assertion(
+            TagNotFound.tagNotFoundAny()
+                    .errorCode(-4)
+                    .build(),
+            ()->inventoryDomainRepository.existsByIdAndAllTags(
+                    inventoryElementToSave.getDomainId(),
+                    inventoryElementToSave.getTags()
+            )
+        );
 
         if (inventoryElementToSave.getParentId() != null) {
             // check if parent exists and belong to the same domain
             InventoryElement parentElement = wrapCatch(
                     () -> inventoryElementRepository.findById(inventoryElementToSave.getParentId()),
-                    -4
+                    -5
             ).orElseThrow(
                     () -> InventoryElementNotFound
                             .elementNotFoundById()
-                            .errorCode(-4)
+                            .errorCode(-5)
                             .id(inventoryElementToSave.getParentId())
                             .build()
             );
@@ -196,7 +236,7 @@ public class InventoryElementService {
             assertion(
                     InventoryDomainParentElementMismatch
                             .domainMismatch()
-                            .errorCode(-5)
+                            .errorCode(-6)
                             .parentElement(parentElement.getFullTreePath())
                             .actualDomain(inventoryElementToSave.getDomainId())
                             .build(),
@@ -223,7 +263,7 @@ public class InventoryElementService {
                 () -> inventoryElementRepository.save(
                         inventoryElementToSave
                 ),
-                -6
+                -7
         );
         return newlyCreatedElement.getId();
     }

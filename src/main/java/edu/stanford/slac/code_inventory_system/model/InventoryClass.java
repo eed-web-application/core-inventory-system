@@ -1,10 +1,8 @@
 package edu.stanford.slac.code_inventory_system.model;
 
 import lombok.*;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.annotation.*;
+
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -50,10 +48,14 @@ public class InventoryClass {
      */
     @Builder.Default
     List<InventoryClassAttribute> attributes = Collections.emptyList();
-
     @CreatedDate
-    LocalDateTime creationTime;
-
+    private LocalDateTime createdDate;
     @CreatedBy
-    String createdBy;
+    private String createdBy;
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
+    @LastModifiedBy
+    private String lastModifiedBy;
+    @Version
+    private Long version;
 }
