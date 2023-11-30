@@ -229,6 +229,7 @@ public class InventoryElementServiceTest {
         ControllerLogicException checkExceptionNoName = assertThrows(
                 ControllerLogicException.class,
                 () -> inventoryElementService.createNew(
+                        null,
                         NewInventoryElementDTO
                                 .builder()
                                 .build()
@@ -238,6 +239,7 @@ public class InventoryElementServiceTest {
         checkExceptionNoName = assertThrows(
                 ControllerLogicException.class,
                 () -> inventoryElementService.createNew(
+                        null,
                         NewInventoryElementDTO
                                 .builder()
                                 .name("name")
@@ -248,6 +250,7 @@ public class InventoryElementServiceTest {
         checkExceptionNoName = assertThrows(
                 ControllerLogicException.class,
                 () -> inventoryElementService.createNew(
+                        null,
                         NewInventoryElementDTO
                                 .builder()
                                 .name("name")
@@ -259,10 +262,10 @@ public class InventoryElementServiceTest {
         checkExceptionNoName = assertThrows(
                 ControllerLogicException.class,
                 () -> inventoryElementService.createNew(
+                        "did",
                         NewInventoryElementDTO
                                 .builder()
                                 .name("name")
-                                .domainId("did")
                                 .build()
                 )
         );
@@ -303,12 +306,12 @@ public class InventoryElementServiceTest {
 
         String newElementId = assertDoesNotThrow(
                 () -> inventoryElementService.createNew(
+                        newDomainId,
                         NewInventoryElementDTO
                                 .builder()
                                 .name("Building Control")
                                 .description("Main control system building")
                                 .classId(newClassID)
-                                .domainId(newDomainId)
                                 .attributes(
                                         List.of(
                                                 InventoryElementAttributeValue
@@ -378,12 +381,12 @@ public class InventoryElementServiceTest {
 
         String newRootElementId = assertDoesNotThrow(
                 () -> inventoryElementService.createNew(
+                        newDomainId,
                         NewInventoryElementDTO
                                 .builder()
                                 .name("Building Control 1")
                                 .description("Main control system building")
                                 .classId(newBuildingClassID)
-                                .domainId(newDomainId)
                                 .attributes(
                                         List.of(
                                                 InventoryElementAttributeValue
@@ -401,12 +404,12 @@ public class InventoryElementServiceTest {
 
         String newParentElementId = assertDoesNotThrow(
                 () -> inventoryElementService.createNew(
+                        newDomainId,
                         NewInventoryElementDTO
                                 .builder()
                                 .name("Room Control 1")
                                 .description("Main control system building")
                                 .classId(newRoomClassID)
-                                .domainId(newDomainId)
                                 .parentId(newRootElementId)
                                 .attributes(
                                         List.of(
@@ -459,12 +462,12 @@ public class InventoryElementServiceTest {
         InventoryElementNotFound parentNotFoundException = assertThrows(
                 InventoryElementNotFound.class,
                 () -> inventoryElementService.createNew(
+                        newDomainId,
                         NewInventoryElementDTO
                                 .builder()
                                 .name("Room Control 1")
                                 .description("Main control system building")
                                 .classId(newBuildingClassID)
-                                .domainId(newDomainId)
                                 .parentId("bad parent id")
                                 .build()
                 )
@@ -508,12 +511,12 @@ public class InventoryElementServiceTest {
         TagNotFound tagNotFoundError = assertThrows(
                 TagNotFound.class,
                 () -> inventoryElementService.createNew(
+                        newDomainId,
                         NewInventoryElementDTO
                                 .builder()
                                 .name("Building Control 1")
                                 .description("Main control system building")
                                 .classId(newBuildingClassID)
-                                .domainId(newDomainId)
                                 .tags(
                                         List.of(
                                                 "bad tag id"

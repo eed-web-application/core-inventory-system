@@ -4,10 +4,7 @@ import edu.stanford.slac.ad.eed.baselib.api.v1.dto.ApiResultResponse;
 import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationTypeDTO;
 import edu.stanford.slac.ad.eed.baselib.exception.NotAuthorized;
 import edu.stanford.slac.ad.eed.baselib.service.AuthService;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryDomainDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryDomainDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.UpdateDomainDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.service.InventoryClassService;
 import edu.stanford.slac.code_inventory_system.service.InventoryElementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -89,7 +86,7 @@ public class InventoryElementController {
             consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    @Operation(summary = "Create a new inventory domain")
+    @Operation(summary = "Return a full inventory domain")
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<Boolean> updateDomain(
             Authentication authentication,
@@ -115,6 +112,36 @@ public class InventoryElementController {
         inventoryElementService.update(domainId, updateDomainDTO);
         return ApiResultResponse.of(
                 true
+        );
+    }
+
+    @PostMapping(
+            path = "/{domainId}/element",
+            produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(summary = "Create a new inventory element")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResultResponse<String> createNewElement(
+            Authentication authentication,
+            @PathVariable(name = "domainId") String domainId,
+            @Valid @RequestBody NewInventoryElementDTO newInventoryElementDTO
+            ) {
+        // check for auth
+        assertion(
+                NotAuthorized.notAuthorizedBuilder()
+                        .errorCode(-1)
+                        .errorDomain("InventoryElementController::createNewDomain")
+                        .build(),
+                // should be authenticated
+                () -> authService.checkAuthentication(authentication),
+                // should be root for create new domain
+                () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                        authentication,
+                        AuthorizationTypeDTO.Write,
+                        "/cis/domain/%s".formatted(domainId))
+        );
+        return ApiResultResponse.of(
+                inventoryElementService.createNew(domainId, newInventoryElementDTO)
         );
     }
 }

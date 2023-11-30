@@ -43,7 +43,7 @@ public abstract class InventoryElementMapper {
     public abstract InventoryDomainDTO toDTO(InventoryDomain domain);
 
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(newInventoryElementDTO.classId(),newInventoryElementDTO.attributes()))")
-    public abstract InventoryElement toModel(NewInventoryElementDTO newInventoryElementDTO);
+    public abstract InventoryElement toModel(String domainId, NewInventoryElementDTO newInventoryElementDTO);
 
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(inventoryElement.getAttributes()))")
     public abstract InventoryElementDTO toDTO(InventoryElement inventoryElement);

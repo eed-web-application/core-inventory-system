@@ -18,9 +18,6 @@ public record NewInventoryElementDTO(
         @Schema(description = "Is the name of the element")
         String name,
         @NotNull
-        @Schema(description = "Specify the domain which the item belong")
-        String domainId,
-        @NotNull
         @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")
         String classId,
         @NotNull

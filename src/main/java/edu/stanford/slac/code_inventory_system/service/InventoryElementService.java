@@ -158,7 +158,7 @@ public class InventoryElementService {
      *
      * @param newInventoryElementDTO is the new inventory item to create
      */
-    public String createNew(NewInventoryElementDTO newInventoryElementDTO) {
+    public String createNew(String domainId, NewInventoryElementDTO newInventoryElementDTO) {
         if (newInventoryElementDTO == null) return null;
         // check for name id
         assertion(
@@ -172,11 +172,12 @@ public class InventoryElementService {
                 () -> !newInventoryElementDTO.name().isEmpty(),
                 () -> newInventoryElementDTO.classId() != null,
                 () -> !newInventoryElementDTO.classId().isEmpty(),
-                () -> newInventoryElementDTO.domainId() != null,
-                () -> !newInventoryElementDTO.domainId().isEmpty()
+                () -> domainId != null,
+                () -> !domainId.isEmpty()
         );
         // convert element to model
         var inventoryElementToSave = inventoryElementMapper.toModel(
+                domainId,
                 newInventoryElementDTO.toBuilder()
                         .name(
                                 normalizeStringWithReplace(

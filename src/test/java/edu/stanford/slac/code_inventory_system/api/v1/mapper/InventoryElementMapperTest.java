@@ -66,6 +66,7 @@ public class InventoryElementMapperTest {
         var assertForNotFoundAttributeName = assertThrows(
                 InventoryElementAttributeNotForClass.class,
                 () -> inventoryElementMapper.toModel(
+                        "bad_domain_id",
                         NewInventoryElementDTO
                                 .builder()
                                 .classId("id")
@@ -110,6 +111,7 @@ public class InventoryElementMapperTest {
         );
         InventoryElement invElem = assertDoesNotThrow(
                 () -> inventoryElementMapper.toModel(
+                        "did",
                         NewInventoryElementDTO
                                 .builder()
                                 .classId("id")
@@ -167,6 +169,7 @@ public class InventoryElementMapperTest {
         );
         InventoryElement invElem = assertDoesNotThrow(
                 () -> inventoryElementMapper.toModel(
+                        "did",
                         NewInventoryElementDTO
                                 .builder()
                                 .classId("id")
@@ -224,6 +227,7 @@ public class InventoryElementMapperTest {
         );
         InventoryElement invElem = assertDoesNotThrow(
                 () -> inventoryElementMapper.toModel(
+                        "did",
                         NewInventoryElementDTO
                                 .builder()
                                 .classId("id")
@@ -276,6 +280,7 @@ public class InventoryElementMapperTest {
         );
         InventoryElement invElem = assertDoesNotThrow(
                 () -> inventoryElementMapper.toModel(
+                        "did",
                         NewInventoryElementDTO
                                 .builder()
                                 .classId("id")
@@ -325,6 +330,7 @@ public class InventoryElementMapperTest {
         );
         InventoryElement invElem = assertDoesNotThrow(
                 () -> inventoryElementMapper.toModel(
+                        "did",
                         NewInventoryElementDTO
                                 .builder()
                                 .classId("id")
@@ -377,6 +383,7 @@ public class InventoryElementMapperTest {
         );
         InventoryElement invElem = assertDoesNotThrow(
                 () -> inventoryElementMapper.toModel(
+                        "did",
                         NewInventoryElementDTO
                                 .builder()
                                 .classId("id")
