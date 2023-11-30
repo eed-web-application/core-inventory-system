@@ -8,7 +8,6 @@ import edu.stanford.slac.code_inventory_system.exception.TagNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
-import edu.stanford.slac.code_inventory_system.model.Tag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -470,7 +469,7 @@ public class InventoryElementServiceTest {
                                 .build()
                 )
         );
-        assertThat(parentNotFoundException.getErrorCode()).isEqualTo(-4);
+        assertThat(parentNotFoundException.getErrorCode()).isEqualTo(-5);
     }
 
     @Test

@@ -210,15 +210,17 @@ public class InventoryElementService {
         );
 
         // checks for tag id existance
-        assertion(
-            TagNotFound.tagNotFoundAny()
-                    .errorCode(-4)
-                    .build(),
-            ()->inventoryDomainRepository.existsByIdAndAllTags(
-                    inventoryElementToSave.getDomainId(),
-                    inventoryElementToSave.getTags()
-            )
-        );
+        if (!inventoryElementToSave.getTags().isEmpty()) {
+            assertion(
+                    TagNotFound.tagNotFoundAny()
+                            .errorCode(-4)
+                            .build(),
+                    () -> inventoryDomainRepository.existsByIdAndAllTags(
+                            inventoryElementToSave.getDomainId(),
+                            inventoryElementToSave.getTags()
+                    )
+            );
+        }
 
         if (inventoryElementToSave.getParentId() != null) {
             // check if parent exists and belong to the same domain
