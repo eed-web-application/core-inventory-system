@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import static edu.stanford.slac.ad.eed.baselib.exception.Utility.any;
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 
 @RestController()
@@ -70,7 +71,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                // should be root for create new domain
+                // should be a reader to get the domain information
                 () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
                         authentication,
                         AuthorizationTypeDTO.Read,
@@ -101,12 +102,17 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                // should be root for create new domain
-                () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
-                        authentication,
-                        // only admin can update the domain
-                        AuthorizationTypeDTO.Admin,
-                        "/cis/domain/%s".formatted(domainId))
+                ()->any(
+                        // should be root  for update the domain
+                        () -> authService.checkForRoot(authentication),
+                        // or an admin  for update the domain
+                        () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                                authentication,
+                                // only admin can update the domain
+                                AuthorizationTypeDTO.Admin,
+                                "/cis/domain/%s".formatted(domainId))
+                )
+
         );
         // update the domain
         inventoryElementService.update(domainId, updateDomainDTO);
@@ -134,11 +140,16 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                // should be root for create new domain
-                () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
-                        authentication,
-                        AuthorizationTypeDTO.Write,
-                        "/cis/domain/%s".formatted(domainId))
+                ()->any(
+                        // should be root  for update the domain
+                        () -> authService.checkForRoot(authentication),
+                        // or a writer for update the domain
+                        () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                                authentication,
+                                // only admin can update the domain
+                                AuthorizationTypeDTO.Write,
+                                "/cis/domain/%s".formatted(domainId))
+                )
         );
         return ApiResultResponse.of(
                 inventoryElementService.createNew(domainId, newInventoryElementDTO)
@@ -165,14 +176,23 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                // should be root for create new domain
-                () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
-                        authentication,
-                        AuthorizationTypeDTO.Write,
-                        "/cis/domain/%s".formatted(domainId))
+                ()->any(
+                        // should be root  for update the domain
+                        () -> authService.checkForRoot(authentication),
+                        // or a writer for update the domain
+                        () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                                authentication,
+                                // only admin can update the domain
+                                AuthorizationTypeDTO.Write,
+                                "/cis/domain/%s".formatted(domainId))
+                )
         );
-        return ApiResultResponse.of(
-                true
+        // update inventory element
+        inventoryElementService.update(
+                domainId,
+                elementId,
+                updateInventoryElementDTO
         );
+        return ApiResultResponse.of(true);
     }
 }
