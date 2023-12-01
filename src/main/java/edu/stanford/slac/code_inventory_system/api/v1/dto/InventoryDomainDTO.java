@@ -11,6 +11,7 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)

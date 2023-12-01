@@ -537,4 +537,127 @@ public class InventoryElementServiceTest {
 
         assertThat(tagNotFoundError.getErrorCode()).isEqualTo(-4);
     }
+
+    @Test
+    public void updateElementOk() {
+        String newBuildingClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("building class a")
+                                .type(InventoryClassTypeDTO.Building)
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+
+        String newDomainId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("New Domain")
+                                .description("This is the description for the new domain")
+                                .build()
+                )
+        );
+
+        assertDoesNotThrow(
+                () -> inventoryElementService.update(
+                        newDomainId,
+                        UpdateDomainDTO
+                                .builder()
+                                .description("Updated description")
+                                .tags(
+                                        List.of(
+                                                TagDTO
+                                                        .builder()
+                                                        .name("tag a")
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        var fullDomain = assertDoesNotThrow(
+                () -> inventoryElementService.getFullDomain(newDomainId)
+        );
+        // check tag tags are presents
+        assertThat(fullDomain.tags()).hasSize(1);
+
+        var newElementId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        newDomainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Building Control 1")
+                                .description("Main control system building")
+                                .classId(newBuildingClassID)
+                                .attributes(
+                                        List.of(
+                                                InventoryElementAttributeValue
+                                                        .builder()
+                                                        .name("building-number")
+                                                        .value("34")
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        assertThat(newElementId)
+                .isNotNull()
+                .isNotEmpty();
+
+        // update the inventory element
+        assertDoesNotThrow(
+                () -> inventoryElementService.update(
+                        newDomainId,
+                        newElementId,
+                        UpdateInventoryElementDTO
+                                .builder()
+                                .description("updated description")
+                                .attributes(
+                                        List.of(
+                                                InventoryElementAttributeValue
+                                                        .builder()
+                                                        .name("building-number")
+                                                        .value("43")
+                                                        .build()
+                                        )
+                                )
+                                .tags(
+                                        List.of(
+                                                fullDomain.tags().get(0).id()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        var fullElementRead = assertDoesNotThrow(
+                () ->inventoryElementService.getFullElement(
+                        newDomainId,
+                        newElementId
+                )
+        );
+        assertThat(fullElementRead).isNotNull();
+        assertThat(fullElementRead.id()).isEqualTo(newElementId);
+        assertThat(fullElementRead.classId()).isEqualTo(newBuildingClassID);
+        assertThat(fullElementRead.domainId()).isEqualTo(newDomainId);
+        assertThat(fullElementRead.description()).isEqualTo("updated description");
+        assertThat(fullElementRead.tags())
+                .hasSize(1)
+                .extracting(TagDTO::name).contains("tag-a");
+    }
 }

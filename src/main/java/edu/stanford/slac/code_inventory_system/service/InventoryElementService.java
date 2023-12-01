@@ -295,7 +295,7 @@ public class InventoryElementService {
                         .build()
         );
 
-        var inventoryToUpdate = wrapCatch(
+        var inventoryElementToUpdate = wrapCatch(
                 () -> inventoryElementRepository.findById(elementId),
                 -1
         ).orElseThrow(
@@ -313,32 +313,57 @@ public class InventoryElementService {
                         .errorCode(-3)
                         .errorMessage("Domain mismatch for this element")
                         .build(),
-                ()-> Objects.equals(inventoryToUpdate.getDomainId(), domainId)
+                ()-> Objects.equals(inventoryElementToUpdate.getDomainId(), domainId)
         );
 
         // update the model
         inventoryElementMapper.updateModel(
-                inventoryToUpdate,
+                inventoryElementToUpdate,
                 updateInventoryElementDTO
         );
 
         // checks for tag id existence
-        if (!inventoryToUpdate.getTags().isEmpty()) {
+        if (!inventoryElementToUpdate.getTags().isEmpty()) {
             assertion(
                     TagNotFound.tagNotFoundAny()
                             .errorCode(-4)
                             .build(),
                     () -> inventoryDomainRepository.existsByIdAndAllTags(
-                            inventoryToUpdate.getDomainId(),
-                            inventoryToUpdate.getTags()
+                            inventoryElementToUpdate.getDomainId(),
+                            inventoryElementToUpdate.getTags()
                     )
             );
         }
         // save element
         var updatedInventoryElement = wrapCatch(
-                ()->inventoryElementRepository.save(inventoryToUpdate),
+                ()->inventoryElementRepository.save(inventoryElementToUpdate),
                 -5
         );
         log.info("User '{}' updated the inventory element '{}[{}]' ", updatedInventoryElement.getCreatedBy(), updatedInventoryElement.getName(), inventoryDomainFound.getName());
+    }
+
+    /**
+     * Return the full inventory domain
+     * @param domainId the domain id
+     * @param elementId the element id
+     * @return the full inventory element
+     */
+    public InventoryElementDTO getFullElement(String domainId, String elementId) {
+        // check if domain exists
+        assertion(
+                InventoryDomainNotFound.domainNotFoundById()
+                        .errorCode(-1)
+                        .id(domainId)
+                        .build(),
+                ()->inventoryDomainRepository.existsById(domainId)
+        );
+        return inventoryElementRepository.findById(elementId).map(
+                inventoryElementMapper::toDTO
+        ).orElseThrow(
+                ()->InventoryElementNotFound.elementNotFoundById()
+                        .errorCode(-2)
+                        .id(elementId)
+                        .build()
+        );
     }
 }

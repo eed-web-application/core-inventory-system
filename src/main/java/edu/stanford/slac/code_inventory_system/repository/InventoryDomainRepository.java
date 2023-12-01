@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface InventoryDomainRepository extends MongoRepository<InventoryDomain, String>, InventoryDomainRepositoryCustom{
 
@@ -23,7 +24,7 @@ public interface InventoryDomainRepository extends MongoRepository<InventoryDoma
             "{ $project: { 'tags': 1, '_id': 0 } }",
             "{ $replaceRoot: { newRoot: '$tags' } }",
     })
-    Tag findTagById(String id, String tagId);
+    Optional<Tag> findTagById(String id, String tagId);
 
     /**
      * check if the tag exist into the domain
@@ -44,6 +45,6 @@ public interface InventoryDomainRepository extends MongoRepository<InventoryDoma
      */
     boolean existsByNameIs(String domainName);
 
-    @Query(value = "{ 'id':?0, 'tags': { $all: ?1 } }", exists = true)
+    @Query(value = "{ 'id':?0, 'tags._id': { $all: ?1 } }", exists = true)
     boolean existsByIdAndAllTags(String id, List<String> tags);
 }

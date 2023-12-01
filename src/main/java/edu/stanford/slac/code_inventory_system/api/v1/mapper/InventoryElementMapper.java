@@ -4,12 +4,18 @@ import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementAttributeNotForClass;
+import edu.stanford.slac.code_inventory_system.exception.TagNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
+import edu.stanford.slac.code_inventory_system.model.Tag;
 import edu.stanford.slac.code_inventory_system.model.value.*;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
-import org.mapstruct.*;
+import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
@@ -19,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
-import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static org.mapstruct.NullValuePropertyMappingStrategy.IGNORE;
 
 @Mapper(
@@ -30,30 +35,53 @@ import static org.mapstruct.NullValuePropertyMappingStrategy.IGNORE;
 public abstract class InventoryElementMapper {
     @Autowired
     InventoryClassRepository inventoryClassRepository;
+    @Autowired
+    InventoryDomainRepository inventoryDomainRepository;
 
     public abstract InventoryDomain toModel(NewInventoryDomainDTO newInventoryDomainDTO);
 
-    @Mapping(target = "name", source = "updateDomainDTO.name", conditionExpression = "java(updateDomainDTO.name() != null)")
-    @Mapping(target = "description", source = "updateDomainDTO.description", conditionExpression = "java(updateDomainDTO.description() != null)")
-    @Mapping(target = "tags", source = "updateDomainDTO.tags", conditionExpression = "java(updateDomainDTO.tags() != null)")
+    @Mapping(target = "name", source = "updateDomainDTO.name", conditionExpression = "java(updateDomainDTO.name() != null)", nullValuePropertyMappingStrategy = IGNORE)
+    @Mapping(target = "description", source = "updateDomainDTO.description", conditionExpression = "java(updateDomainDTO.description() != null)", nullValuePropertyMappingStrategy = IGNORE)
+    @Mapping(target = "tags", source = "updateDomainDTO.tags", conditionExpression = "java(updateDomainDTO.tags() != null)", nullValuePropertyMappingStrategy = IGNORE)
     public abstract void updateModel(@MappingTarget InventoryDomain inventoryDomain, UpdateDomainDTO updateDomainDTO);
 
-    @Mapping(target = "tags", source = "updateInventoryElementDTO.tags", conditionExpression = "java(updateInventoryElementDTO.tags() != null)")
-    @Mapping(target = "description", source = "updateInventoryElementDTO.description", conditionExpression = "java(updateInventoryElementDTO.description() != null)")
-    @Mapping(target = "attributes", source = "updateInventoryElementDTO.attributes", conditionExpression = "java(updateInventoryElementDTO.attributes() != null)")
+    @Mapping(target = "tags", source = "updateInventoryElementDTO.tags", conditionExpression = "java(updateInventoryElementDTO.tags() != null)", nullValuePropertyMappingStrategy = IGNORE)
+    @Mapping(target = "description", source = "updateInventoryElementDTO.description", conditionExpression = "java(updateInventoryElementDTO.description() != null)", nullValuePropertyMappingStrategy = IGNORE)
+    @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(inventoryElement.getClassId(), updateInventoryElementDTO.attributes()))")
     public abstract void updateModel(@MappingTarget InventoryElement inventoryElement, UpdateInventoryElementDTO updateInventoryElementDTO);
 
     public abstract InventoryDomain toModel(InventoryDomainDTO inventoryDomainDTO);
 
     public abstract InventoryDomainDTO toDTO(InventoryDomain domain);
 
+    public abstract TagDTO toDTO(Tag tag);
+
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(newInventoryElementDTO.classId(),newInventoryElementDTO.attributes()))")
     public abstract InventoryElement toModel(String domainId, NewInventoryElementDTO newInventoryElementDTO);
 
-    @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(inventoryElement.getAttributes()))")
+    @Mapping(target = "attributes", expression = "java(toElementAttributeWithString(inventoryElement.getAttributes()))")
+    @Mapping(target = "tags", expression = "java(toDTOTagsFromId(inventoryElement.getDomainId(),inventoryElement.getTags()))")
     public abstract InventoryElementDTO toDTO(InventoryElement inventoryElement);
 
-    @Named("getFollowingUp")
+    public List<TagDTO> toDTOTagsFromId(String domainId, List<String> tagsId) {
+        List<TagDTO> result = new ArrayList<>();
+        for (String id :
+                tagsId) {
+            result.add(
+                    inventoryDomainRepository.findTagById(domainId, id)
+                            .map(
+                                    this::toDTO
+                            )
+                            .orElseThrow(
+                                    () -> TagNotFound.tagNotFoundAny()
+                                            .errorCode(-1)
+                                            .build()
+                            )
+            );
+        }
+        return result;
+    }
+
     public List<AbstractValue> toElementAttributeWithClass(
             String classId,
             List<InventoryElementAttributeValue> inventoryElementAttributeValues) {
@@ -142,8 +170,7 @@ public abstract class InventoryElementMapper {
         return abstractAttributeList;
     }
 
-    @Named("getFollowingUp")
-    public List<InventoryElementAttributeValue> toElementAttributeWithClass(
+    public List<InventoryElementAttributeValue> toElementAttributeWithString(
             List<AbstractValue> inventoryElementAttributeClass) {
         List<InventoryElementAttributeValue> resultList = new ArrayList<>();
         if (inventoryElementAttributeClass == null) return resultList;
