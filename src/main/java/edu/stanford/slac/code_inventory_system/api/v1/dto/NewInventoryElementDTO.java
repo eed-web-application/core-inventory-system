@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Collections;
 import java.util.List;
-
+@Validated
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -23,6 +24,7 @@ public record NewInventoryElementDTO(
         @NotNull
         @Schema(description = "Is the {@link NewInventoryElementDTO#id} of one of the existing element use as parent")
         String parentId,
+        @NotNull
         @Schema(description = "The description for the specific element of a class type")
         String description,
         @Schema(description = "The list of tag that describe the element")

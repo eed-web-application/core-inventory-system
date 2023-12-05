@@ -1,5 +1,7 @@
 package edu.stanford.slac.code_inventory_system.model;
 
+import edu.stanford.slac.ad.eed.baselib.model.AuthenticationToken;
+import edu.stanford.slac.ad.eed.baselib.model.Authorization;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +39,10 @@ public class InventoryDomain {
      */
     @Builder.Default
     private List<Tag> tags = emptyList();
+    @Builder.Default
+    private List<Authorization> authorizations = emptyList();
+    @Builder.Default
+    private List<AuthenticationToken> authenticationTokens = emptyList();
     @CreatedDate
     private LocalDateTime createdDate;
     @CreatedBy

@@ -5,7 +5,6 @@ import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationTypeDTO;
 import edu.stanford.slac.ad.eed.baselib.exception.NotAuthorized;
 import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
-import edu.stanford.slac.code_inventory_system.service.InventoryClassService;
 import edu.stanford.slac.code_inventory_system.service.InventoryElementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,13 +13,17 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.any;
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 
+@Validated
 @RestController()
-@RequestMapping("/v1/inventory/element")
+@RequestMapping("/v1/inventory")
 @AllArgsConstructor
 @Schema(description = "Set of api for the inventory element management")
 public class InventoryElementController {
@@ -28,6 +31,7 @@ public class InventoryElementController {
     private final InventoryElementService inventoryElementService;
 
     @PostMapping(
+            path = "/domain",
             consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
@@ -54,12 +58,12 @@ public class InventoryElementController {
     }
 
     @GetMapping(
-            path = "/{domainId}",
+            path = "/domain/{domainId}",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(summary = "Create a new inventory domain")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResultResponse<InventoryDomainDTO> getFullDomain(
+    public ApiResultResponse<InventoryDomainDTO> findDomainById(
             Authentication authentication,
             @PathVariable(name = "domainId") String domainId
     ) {
@@ -83,7 +87,7 @@ public class InventoryElementController {
     }
 
     @PutMapping(
-            path = "/{domainId}",
+            path = "/domain/{domainId}",
             consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
@@ -122,7 +126,7 @@ public class InventoryElementController {
     }
 
     @PostMapping(
-            path = "/{domainId}/element",
+            path = "/domain/{domainId}/element",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(summary = "Create a new inventory element")
@@ -157,7 +161,7 @@ public class InventoryElementController {
     }
 
     @PutMapping(
-            path = "/{domainId}/element/{elementId}",
+            path = "/domain/{domainId}/element/{elementId}",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(summary = "Update an inventory element")
@@ -194,5 +198,38 @@ public class InventoryElementController {
                 updateInventoryElementDTO
         );
         return ApiResultResponse.of(true);
+    }
+
+    @GetMapping(
+            path = "/domain/{domainId}/element/{elementId}",
+            produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(summary = "Update an inventory element")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResultResponse<InventoryElementDTO> findElementById(
+            Authentication authentication,
+            @PathVariable(name = "domainId") String domainId,
+            @PathVariable(name = "elementId") String elementId
+    ){
+        // check for auth
+        assertion(
+                NotAuthorized.notAuthorizedBuilder()
+                        .errorCode(-1)
+                        .errorDomain("InventoryElementController::getElement")
+                        .build(),
+                // should be authenticated
+                () -> authService.checkAuthentication(authentication),
+                ()->any(
+                        // should be root  for update the domain
+                        () -> authService.checkForRoot(authentication),
+                        // or a writer for update the domain
+                        () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                                authentication,
+                                // only admin can update the domain
+                                AuthorizationTypeDTO.Read,
+                                "/cis/domain/%s".formatted(domainId))
+                )
+        );
+        return ApiResultResponse.of(null);
     }
 }
