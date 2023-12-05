@@ -16,18 +16,19 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "Describe the full inventory domain information")
 public record UpdateDomainDTO(
-        @NotEmpty
+        @NotEmpty(message = "The name is mandatory")
         @Schema(description = "the name of the domain")
         String name,
-        @NotEmpty
+        @NotEmpty(message = "The description is mandatory")
         @Schema(description = "The description of the domain")
         String description,
-        @NotNull
+        @NotNull(message = "At least an empty list is mandatory")
         @Schema(description = "The list of the tags that can be used for all inventory elements of this domain")
         List<TagDTO> tags,
-        @NotNull
+        @NotNull(message = "At least an empty list is mandatory")
         @Schema(description = "The list of the authorized user, group or authentication tokens")
         List<AuthorizationDTO> authorizations,
+        @NotNull(message = "At least an empty list is mandatory")
         @Schema(description = "The list of the authentication tokens")
         List<AuthenticationTokenDTO> authenticationTokens
 ) {

@@ -269,6 +269,7 @@ public class InventoryElementServiceTest {
                                                         .build()
                                         )
                                 )
+                                .authenticationTokens(emptyList())
                                 .build()
                 )
         );
