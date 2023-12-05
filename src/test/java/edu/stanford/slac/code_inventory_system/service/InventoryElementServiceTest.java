@@ -1,6 +1,9 @@
 package edu.stanford.slac.code_inventory_system.service;
 
+import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationDTO;
 import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
+import edu.stanford.slac.ad.eed.baselib.model.AuthenticationToken;
+import edu.stanford.slac.ad.eed.baselib.model.Authorization;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.exception.InventoryDomainAlreadyExists;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementNotFound;
@@ -8,6 +11,7 @@ import edu.stanford.slac.code_inventory_system.exception.TagNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -23,6 +27,9 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationOwnerTypeDTO.User;
+import static edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationTypeDTO.Write;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,6 +52,8 @@ public class InventoryElementServiceTest {
 
     @BeforeEach
     public void cleanCollection() {
+        mongoTemplate.remove(new Query(), Authorization.class);
+        mongoTemplate.remove(new Query(), AuthenticationToken.class);
         mongoTemplate.remove(new Query(), InventoryClass.class);
         mongoTemplate.remove(new Query(), InventoryDomain.class);
         mongoTemplate.remove(new Query(), InventoryElement.class);
@@ -221,6 +230,107 @@ public class InventoryElementServiceTest {
         // check for tag
         assertThat(updatedDomain.description()).contains("Update the description");
         assertThat(updatedDomain.tags())
+                .hasSize(0);
+    }
+
+    @Test
+    public void updateDomainWithAuthorization() {
+        String newDomainId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("New Domain")
+                                .description("This is the description for the new domain")
+                                .build()
+                )
+        );
+        // update adding the authorization
+        assertDoesNotThrow(
+                () -> inventoryElementService.update(
+                        newDomainId,
+                        UpdateDomainDTO
+                                .builder()
+                                .name("lcls-inventory-updated")
+                                .description("Inventory for the LCLS updated")
+                                .tags(emptyList())
+                                .authorizations(
+                                        List.of(
+                                                AuthorizationDTO
+                                                        .builder()
+                                                        .authorizationType(Write)
+                                                        .owner("user2@slac.stanford.edu")
+                                                        .ownerType(User)
+                                                        .build(),
+                                                AuthorizationDTO
+                                                        .builder()
+                                                        .authorizationType(Write)
+                                                        .owner("user3@slac.stanford.edu")
+                                                        .ownerType(User)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        var updatedDomain = assertDoesNotThrow(
+                () -> inventoryElementService.getFullDomain(newDomainId)
+        );
+        // check for tag
+        assertThat(updatedDomain.authorizations())
+                .hasSize(2);
+
+        // update removing one of the update authorization
+        InventoryDomainDTO finalUpdatedDomain = updatedDomain;
+        assertDoesNotThrow(
+                () -> inventoryElementService.update(
+                        newDomainId,
+                        UpdateDomainDTO
+                                .builder()
+                                .name("lcls-inventory-updated")
+                                .description("Inventory for the LCLS updated")
+                                .tags(emptyList())
+                                .authorizations(
+                                        List.of(
+                                                finalUpdatedDomain.authorizations().get(0)
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        updatedDomain = assertDoesNotThrow(
+                () -> inventoryElementService.getFullDomain(newDomainId)
+        );
+
+        // check that has been removed the second authorization
+        assertThat(updatedDomain.authorizations())
+                .hasSize(1)
+                .extracting(AuthorizationDTO::id)
+                .contains(
+                        updatedDomain.authorizations().get(0).id()
+                );
+
+        // update removing all the authorization
+        assertDoesNotThrow(
+                () -> inventoryElementService.update(
+                        newDomainId,
+                        UpdateDomainDTO
+                                .builder()
+                                .name("lcls-inventory-updated")
+                                .description("Inventory for the LCLS updated")
+                                .tags(emptyList())
+                                .authorizations(emptyList())
+                                .build()
+                )
+        );
+
+        updatedDomain = assertDoesNotThrow(
+                () -> inventoryElementService.getFullDomain(newDomainId)
+        );
+
+        // check that has been removed the second authorization
+        assertThat(updatedDomain.authorizations())
                 .hasSize(0);
     }
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -25,6 +26,8 @@ public record InventoryDomainDTO(
         String description,
         @Schema(description = "The list of the tags that can be used for all inventory elements of this domain")
         List<TagDTO> tags,
+        @Schema(description = "The list of all the authorization for the domain")
+        List<AuthorizationDTO> authorizations,
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         @Schema(description = "The creation time")

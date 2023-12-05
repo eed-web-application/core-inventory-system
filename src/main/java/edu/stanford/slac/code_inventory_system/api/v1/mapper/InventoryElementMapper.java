@@ -1,9 +1,11 @@
 package edu.stanford.slac.code_inventory_system.api.v1.mapper;
 
 import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthenticationTokenDTO;
+import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationDTO;
 import edu.stanford.slac.ad.eed.baselib.api.v1.mapper.AuthMapper;
 import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
 import edu.stanford.slac.ad.eed.baselib.model.AuthenticationToken;
+import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementAttributeNotForClass;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static edu.stanford.slac.code_inventory_system.config.AppProperties.CIS_DOMAIN_AUTH_FORMAT;
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
 import static java.util.Collections.emptyList;
 import static org.mapstruct.NullValuePropertyMappingStrategy.IGNORE;
@@ -42,6 +45,8 @@ public abstract class InventoryElementMapper {
     @Autowired
     AuthMapper authMapper;
     @Autowired
+    AuthService authService;
+    @Autowired
     InventoryClassRepository inventoryClassRepository;
     @Autowired
     InventoryDomainRepository inventoryDomainRepository;
@@ -51,7 +56,6 @@ public abstract class InventoryElementMapper {
     @Mapping(target = "name", source = "updateDomainDTO.name", conditionExpression = "java(updateDomainDTO.name() != null)", nullValuePropertyMappingStrategy = IGNORE)
     @Mapping(target = "description", source = "updateDomainDTO.description", conditionExpression = "java(updateDomainDTO.description() != null)", nullValuePropertyMappingStrategy = IGNORE)
     @Mapping(target = "tags", source = "updateDomainDTO.tags", conditionExpression = "java(updateDomainDTO.tags() != null)", nullValuePropertyMappingStrategy = IGNORE)
-    @Mapping(target = "authenticationTokens", expression = "java(toAuthenticationToken(updateDomainDTO.authenticationTokens()))")
     public abstract void updateModel(@MappingTarget InventoryDomain inventoryDomain, UpdateDomainDTO updateDomainDTO);
 
     @Mapping(target = "tags", source = "updateInventoryElementDTO.tags", conditionExpression = "java(updateInventoryElementDTO.tags() != null)", nullValuePropertyMappingStrategy = IGNORE)
@@ -60,7 +64,7 @@ public abstract class InventoryElementMapper {
     public abstract void updateModel(@MappingTarget InventoryElement inventoryElement, UpdateInventoryElementDTO updateInventoryElementDTO);
 
     public abstract InventoryDomain toModel(InventoryDomainDTO inventoryDomainDTO);
-
+    @Mapping(target = "authorizations", expression = "java(fillAuthorizationField(domain.getId()))")
     public abstract InventoryDomainDTO toDTO(InventoryDomain domain);
 
     public abstract TagDTO toDTO(Tag tag);
@@ -72,15 +76,36 @@ public abstract class InventoryElementMapper {
     @Mapping(target = "tags", expression = "java(toDTOTagsFromId(inventoryElement.getDomainId(),inventoryElement.getTags()))")
     public abstract InventoryElementDTO toDTO(InventoryElement inventoryElement);
 
+    /**
+     * return the list of the authorization DTO from the domain id
+     * @param domainId the id of the domain
+     * @return the list of authorization DTO found
+     */
+    public List<AuthorizationDTO> fillAuthorizationField(String domainId) {
+        if(domainId == null) return emptyList();
+        return authService.findByResourceIs(CIS_DOMAIN_AUTH_FORMAT.formatted(domainId));
+    }
+
+    /**
+     *
+     * @param authenticationTokenDTOS
+     * @return
+     */
     public List<AuthenticationToken> toAuthenticationToken(List<AuthenticationTokenDTO> authenticationTokenDTOS) {
         if(authenticationTokenDTOS == null || authenticationTokenDTOS.isEmpty()) return emptyList();
         return authenticationTokenDTOS.stream()
                 .map(
-                        t->authMapper.toModelApplicationToken(t)
+                        t->authMapper.toModelAuthenticationToken(t)
                 )
                 .toList();
     }
 
+    /**
+     *
+     * @param domainId
+     * @param tagsId
+     * @return
+     */
     public List<TagDTO> toDTOTagsFromId(String domainId, List<String> tagsId) {
         List<TagDTO> result = new ArrayList<>();
         for (String id :
@@ -188,6 +213,11 @@ public abstract class InventoryElementMapper {
         return abstractAttributeList;
     }
 
+    /**
+     *
+     * @param inventoryElementAttributeClass
+     * @return
+     */
     public List<InventoryElementAttributeValue> toElementAttributeWithString(
             List<AbstractValue> inventoryElementAttributeClass) {
         List<InventoryElementAttributeValue> resultList = new ArrayList<>();

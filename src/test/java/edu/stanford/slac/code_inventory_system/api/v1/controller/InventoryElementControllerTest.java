@@ -2,8 +2,8 @@ package edu.stanford.slac.code_inventory_system.api.v1.controller;
 
 import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationDTO;
 import edu.stanford.slac.ad.eed.baselib.config.AppProperties;
-import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
 import edu.stanford.slac.ad.eed.baselib.exception.NotAuthorized;
+import edu.stanford.slac.ad.eed.baselib.model.AuthenticationToken;
 import edu.stanford.slac.ad.eed.baselib.model.Authorization;
 import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryDomainDTO;
@@ -31,8 +31,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import java.util.List;
 import java.util.Optional;
 
+import static edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationOwnerTypeDTO.User;
 import static edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationTypeDTO.Write;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,6 +59,7 @@ public class InventoryElementControllerTest {
     @BeforeAll
     public void createAuthorizationForTests() {
         mongoTemplate.remove(new Query(), Authorization.class);
+        mongoTemplate.remove(new Query(), AuthenticationToken.class);
         appProperties.getRootUserList().clear();
         appProperties.getRootUserList().add("user1@slac.stanford.edu");
         authService.updateRootUser();
@@ -126,7 +128,7 @@ public class InventoryElementControllerTest {
     }
 
     @Test
-    public void updateDomainTest() {
+    public void updateDomainAndCheck() {
         var createDomainByRootResult = assertDoesNotThrow(
                 ()->testControllerHelperService.inventoryElementControllerCreateNewDomain(
                         mockMvc,
@@ -147,7 +149,7 @@ public class InventoryElementControllerTest {
         assertDoesNotThrow(
                 ()->testControllerHelperService.inventoryElementControllerUpdateDomain(
                         mockMvc,
-                        status().isCreated(),
+                        status().isOk(),
                         Optional.of("user1@slac.stanford.edu"),
                         createDomainByRootResult.getPayload(),
                         UpdateDomainDTO
@@ -168,13 +170,26 @@ public class InventoryElementControllerTest {
                                                         .builder()
                                                         .authorizationType(Write)
                                                         .owner("user2@slac.stanford.edu")
-                                                        .ownerType("User")
+                                                        .ownerType(User)
                                                         .build()
                                         )
                                 )
                                 .build()
                 )
         );
+
+        var fullDomain = assertDoesNotThrow(
+                ()->testControllerHelperService.inventoryElementControllerFindDomainById(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        createDomainByRootResult.getPayload()
+                )
+        );
+
+        assertThat(fullDomain.getErrorCode()).isEqualTo(0);
+        assertThat(fullDomain.getPayload().tags()).hasSize(1);
+        assertThat(fullDomain.getPayload().authorizations()).hasSize(1);
     }
 
 }

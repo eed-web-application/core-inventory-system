@@ -1,6 +1,11 @@
 package edu.stanford.slac.code_inventory_system.service;
 
+import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationDTO;
+import edu.stanford.slac.ad.eed.baselib.api.v1.dto.NewAuthorizationDTO;
+import edu.stanford.slac.ad.eed.baselib.api.v1.mapper.AuthMapper;
 import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
+import edu.stanford.slac.ad.eed.baselib.model.Authorization;
+import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryElementMapper;
 import edu.stanford.slac.code_inventory_system.exception.*;
@@ -10,19 +15,19 @@ import edu.stanford.slac.code_inventory_system.model.Tag;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryElementRepository;
-import edu.stanford.slac.code_inventory_system.service.utility.CheckIdInUse;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 import static edu.stanford.slac.ad.eed.baselib.utility.StringUtilities.normalizeStringWithReplace;
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
 import static edu.stanford.slac.code_inventory_system.service.utility.IdValueObjectUtil.updateResource;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * HIgh level API for the management of the inventory domain and item
@@ -31,6 +36,8 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class InventoryElementService {
+    AuthMapper authMapper;
+    AuthService authService;
     InventoryElementMapper inventoryElementMapper;
     InventoryClassRepository inventoryClassRepository;
     InventoryDomainRepository inventoryDomainRepository;
@@ -104,6 +111,7 @@ public class InventoryElementService {
      *
      * @param updateDomainDTO the domain to update
      */
+    @Transactional
     public void update(String domainId, UpdateDomainDTO updateDomainDTO) {
         // get the inventory saved on database for work on tag and lock
         InventoryDomain savedDomain = wrapCatch(
@@ -143,12 +151,65 @@ public class InventoryElementService {
                         .build()
         );
 
+        // update authorization for the domain
+        manageAuthorizationForDomain(savedDomain, updateDomainDTO.authorizations());
+
         // update the domain
         var updateInventoryElement = wrapCatch(
                 () -> inventoryDomainRepository.save(savedDomain),
                 -4
         );
         log.info("User '{}' update the inventory domain '{}' ", updateInventoryElement.getCreatedBy(), updateInventoryElement.getName());
+    }
+
+    /**
+     * Manages the authorization for domain
+     *
+     * @param domain         the domain for which we need to manage the authorization
+     * @param authorizations the list on the new authorization old and new
+     */
+    private void manageAuthorizationForDomain(InventoryDomain domain, List<AuthorizationDTO> authorizations) {
+        String domainAuthorizationResource = "/cis/domain/%s".formatted(domain.getId());
+        List<AuthorizationDTO> allAuthorizationForDomain = new ArrayList<>(authService.findByResourceIs(domainAuthorizationResource));
+        for (AuthorizationDTO authorization :
+                authorizations) {
+            if (authorization.id() == null) {
+                var newAuth = NewAuthorizationDTO
+                        .builder()
+                        .owner(authorization.owner())
+                        .authorizationType(authorization.authorizationType())
+                        .ownerType(authorization.ownerType())
+                        .resource(domainAuthorizationResource)
+                        .build();
+                String newId = authService.addNewAuthorization(
+                        newAuth
+                );
+                log.info("New authorization id {} created for domain {} with values {}", newId, domain.getName(), newAuth);
+            } else {
+                // remove authorization not more needed
+                boolean removed = allAuthorizationForDomain.removeIf(
+                        auth -> auth.id().compareToIgnoreCase(authorization.id()) == 0
+                );
+                // if the authorization has been removed from the allAuthorizationForDomain list
+                // means that it should not be removed
+                assertion(
+                    AuthorizationNotFound.authorizationNotFound()
+                            .errorCode(-1)
+                            .authId(authorization.id())
+                            .build(),
+                    ()->removed
+                );
+            }
+        }
+
+        // all the authorization that are still present on the allAuthorizationForDomain list
+        // needs to be removed
+        allAuthorizationForDomain.forEach(
+            authToRemove-> {
+                authService.deleteAuthorizationById(authToRemove.id());
+                log.info("Removed authorization id {} from domain {} with values {}", authToRemove.id(), domain.getName(), authToRemove);
+            }
+        );
     }
 
 
@@ -277,8 +338,9 @@ public class InventoryElementService {
 
     /**
      * Update the inventory element
-     * @param domainId the domain id where the element belong
-     * @param elementId the element unique identifier
+     *
+     * @param domainId                  the domain id where the element belong
+     * @param elementId                 the element unique identifier
      * @param updateInventoryElementDTO the information updatable
      */
     public void update(String domainId, String elementId, UpdateInventoryElementDTO updateInventoryElementDTO) {
@@ -313,7 +375,7 @@ public class InventoryElementService {
                         .errorCode(-3)
                         .errorMessage("Domain mismatch for this element")
                         .build(),
-                ()-> Objects.equals(inventoryElementToUpdate.getDomainId(), domainId)
+                () -> Objects.equals(inventoryElementToUpdate.getDomainId(), domainId)
         );
 
         // update the model
@@ -336,7 +398,7 @@ public class InventoryElementService {
         }
         // save element
         var updatedInventoryElement = wrapCatch(
-                ()->inventoryElementRepository.save(inventoryElementToUpdate),
+                () -> inventoryElementRepository.save(inventoryElementToUpdate),
                 -5
         );
         log.info("User '{}' updated the inventory element '{}[{}]' ", updatedInventoryElement.getCreatedBy(), updatedInventoryElement.getName(), inventoryDomainFound.getName());
@@ -344,7 +406,8 @@ public class InventoryElementService {
 
     /**
      * Return the full inventory domain
-     * @param domainId the domain id
+     *
+     * @param domainId  the domain id
      * @param elementId the element id
      * @return the full inventory element
      */
@@ -355,12 +418,12 @@ public class InventoryElementService {
                         .errorCode(-1)
                         .id(domainId)
                         .build(),
-                ()->inventoryDomainRepository.existsById(domainId)
+                () -> inventoryDomainRepository.existsById(domainId)
         );
         return inventoryElementRepository.findById(elementId).map(
                 inventoryElementMapper::toDTO
         ).orElseThrow(
-                ()->InventoryElementNotFound.elementNotFoundById()
+                () -> InventoryElementNotFound.elementNotFoundById()
                         .errorCode(-2)
                         .id(elementId)
                         .build()

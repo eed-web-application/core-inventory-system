@@ -39,10 +39,6 @@ public class InventoryDomain {
      */
     @Builder.Default
     private List<Tag> tags = emptyList();
-    @Builder.Default
-    private List<Authorization> authorizations = emptyList();
-    @Builder.Default
-    private List<AuthenticationToken> authenticationTokens = emptyList();
     @CreatedDate
     private LocalDateTime createdDate;
     @CreatedBy
