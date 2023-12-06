@@ -31,7 +31,12 @@ public class TestControllerHelperService {
 
     }
 
-    public ApiResultResponse<String> inventoryClassControllerCreateNew(MockMvc mockMvc, ResultMatcher resultMatcher, Optional<String> userInfo, NewInventoryClassDTO inventoryClassDTO) throws Exception {
+    public ApiResultResponse<String> inventoryClassControllerCreateNew(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo,
+            NewInventoryClassDTO inventoryClassDTO
+    ) throws Exception {
         var requestBuilder = post(
                 "/v1/inventory/class",
                 inventoryClassDTO
@@ -53,7 +58,12 @@ public class TestControllerHelperService {
         );
     }
 
-    public ApiResultResponse<InventoryClassDTO> inventoryClassControllerFindById(MockMvc mockMvc, ResultMatcher resultMatcher, Optional<String> userInfo, String id) throws Exception {
+    public ApiResultResponse<InventoryClassDTO> inventoryClassControllerFindById(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo,
+            String id
+    ) throws Exception {
         var requestBuilder = get(
                 "/v1/inventory/class/{id}",
                 id
@@ -269,6 +279,40 @@ public class TestControllerHelperService {
             String elementId) throws Exception {
         var requestBuilder = get("/v1/inventory/domain/{domainId}/element/{elementId}/children",domainId, elementId)
                 .accept(MediaType.APPLICATION_JSON);
+        return executeHttpRequest(
+                new TypeReference<>() {
+                },
+                mockMvc,
+                resultMatcher,
+                userInfo,
+                requestBuilder
+        );
+    }
+
+    public ApiResultResponse<List<InventoryElementSummaryDTO>> inventoryElementControllerFindAllElements(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo,
+            String domainId,
+            Optional<String> anchorId,
+            Optional<Integer> limitSize,
+            Optional<Integer> contextSize,
+            Optional<String> search,
+            Optional<List<String>> tags,
+            Optional<Boolean> requireAllTags
+            ) throws Exception {
+        var requestBuilder = get("/v1/inventory/domain/{domainId}/element",domainId)
+                .accept(MediaType.APPLICATION_JSON);
+        anchorId.ifPresent(a -> requestBuilder.param("anchorId", a));
+        limitSize.ifPresent(limit -> requestBuilder.param("limit", String.valueOf(limit)));
+        contextSize.ifPresent(context -> requestBuilder.param("contextSize", String.valueOf(context)));
+        search.ifPresent(s -> requestBuilder.param("search", s));
+        tags.ifPresent(tl -> {
+            String[] tlArray = new String[tl.size()];
+            tl.toArray(tlArray);
+            requestBuilder.param("tags", tlArray);
+        });
+        requireAllTags.ifPresent(b -> requestBuilder.param("requireAllTags", String.valueOf(b)));
         return executeHttpRequest(
                 new TypeReference<>() {
                 },

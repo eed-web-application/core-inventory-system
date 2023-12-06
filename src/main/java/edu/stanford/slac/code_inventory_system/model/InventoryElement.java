@@ -48,6 +48,14 @@ public class InventoryElement {
      * represent the full three path from the root to this element that is the leaf
      */
     private String fullTreePath;
+
+    /**
+     *  Indicate for which other InventoryElement this is the implementation
+     *  For example an element that represent a Server001, during the year
+     *  can be implemented using different server machine.
+     */
+    private String implementationFor;
+
     /**
      * Teh value for the attributes
      */

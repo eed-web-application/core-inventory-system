@@ -8,6 +8,7 @@ import edu.stanford.slac.ad.eed.baselib.model.Authorization;
 import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryElementMapper;
+import edu.stanford.slac.code_inventory_system.api.v1.mapper.QueryParameterMapper;
 import edu.stanford.slac.code_inventory_system.exception.*;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 import static edu.stanford.slac.ad.eed.baselib.utility.StringUtilities.normalizeStringWithReplace;
@@ -39,6 +41,7 @@ import static edu.stanford.slac.code_inventory_system.service.utility.IdValueObj
 public class InventoryElementService {
     AuthMapper authMapper;
     AuthService authService;
+    QueryParameterMapper queryParameterMapper;
     InventoryElementMapper inventoryElementMapper;
     InventoryClassRepository inventoryClassRepository;
     InventoryDomainRepository inventoryDomainRepository;
@@ -478,5 +481,22 @@ public class InventoryElementService {
                 .map(
                 inventoryElementMapper::toSummaryDTO
         ).toList();
+    }
+
+    /**
+     * Perform the search operation on all inventory element
+     * @param queryParameterDTO the query information
+     * @return the list of found element
+     */
+    public List<InventoryElementSummaryDTO> findAllElements(QueryParameterDTO queryParameterDTO) {
+        List<InventoryElement> found = wrapCatch(
+                () -> inventoryElementRepository.searchAll(
+                        queryParameterMapper.fromDTO(
+                                queryParameterDTO
+                        )
+                ),
+                -1
+        );
+        return found.stream().map(inventoryElementMapper::toSummaryDTO).toList();
     }
 }

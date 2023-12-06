@@ -7,6 +7,7 @@ import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.service.InventoryElementService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,10 @@ import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.any;
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
@@ -294,6 +298,64 @@ public class InventoryElementController {
         );
         return ApiResultResponse.of(
                 inventoryElementService.getAllChildren(domainId, elementId)
+        );
+    }
+
+    @GetMapping(
+            path = "/domain/{domainId}/element",
+            produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(summary = "Update an inventory element")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResultResponse<List<InventoryElementSummaryDTO>> findAllElements(
+            Authentication authentication,
+            @Parameter(name = "anchorId", description = "Is the domain id where  the search is applyed")
+            @PathVariable(name = "domainId") String domainId,
+            @Parameter(name = "anchorId", description = "Is the id of an entry from where start the search")
+            @RequestParam("anchorId") Optional<String> anchorId,
+            @Parameter(name = "contextSize", description = "Include this number of entries before the startDate (used for highlighting entries)")
+            @RequestParam("contextSize") Optional<Integer> contextSize,
+            @Parameter(name = "limit", description = "Limit the number the number of entries after the start date.")
+            @RequestParam(value = "limit") Optional<Integer> limit,
+            @Parameter(name = "search", description = "Typical search functionality")
+            @RequestParam("search") Optional<String> search,
+            @Parameter(name = "tags", description = "Only include entries that use one of these tags")
+            @RequestParam("tags") Optional<List<String>> tags,
+            @Parameter(name = "requireAllTags", description = "Require that all entries found includes all the tags")
+            @RequestParam(value = "requireAllTags", defaultValue = "false") Optional<Boolean> requireAllTags
+    ){
+        // check for auth
+        assertion(
+                NotAuthorized.notAuthorizedBuilder()
+                        .errorCode(-1)
+                        .errorDomain("InventoryElementController::findAllElements")
+                        .build(),
+                // should be authenticated
+                () -> authService.checkAuthentication(authentication),
+                ()->any(
+                        // should be root  for update the domain
+                        () -> authService.checkForRoot(authentication),
+                        // or a writer for update the domain
+                        () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                                authentication,
+                                // only admin can update the domain
+                                AuthorizationTypeDTO.Read,
+                                "/cis/domain/%s".formatted(domainId))
+                )
+        );
+        return ApiResultResponse.of(
+                inventoryElementService.findAllElements(
+                        QueryParameterDTO
+                                .builder()
+                                .domainId(List.of(domainId))
+                                .anchorID(anchorId.orElse(null))
+                                .contextSize(contextSize.orElse(0))
+                                .limit(limit.orElse(10))
+                                .search(search.orElse(null))
+                                .tags(tags.orElse(Collections.emptyList()))
+                                .requireAllTags(requireAllTags.orElse(false))
+                                .build()
+                )
         );
     }
 }

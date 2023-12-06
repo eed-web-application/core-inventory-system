@@ -21,9 +21,13 @@ public enum InventoryClassType {
      */
     Item,
     /**
-     * A software program can be stored, executed, or managed within the inventory system.
+     * A hardware that is the implementation for an item
      */
-    Software,
+    ItemHardware,
+    /**
+     * A software program that is an implementation for na item
+     */
+    ItemSoftware,
     /**
      * A component that establishes a connection between two or more entities within the inventory system using cable.
      */

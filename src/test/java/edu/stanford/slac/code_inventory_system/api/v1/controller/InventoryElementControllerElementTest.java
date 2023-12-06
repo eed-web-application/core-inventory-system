@@ -202,4 +202,61 @@ public class InventoryElementControllerElementTest {
         assertThat(findAllChildrenResult.getPayload().get(0).id()).isEqualTo(createFloor1Building34Result.getPayload());
     }
 
+    @Test
+    public void findAllTestSimple() {
+        for(int idx = 0; idx < 5; idx++) {
+            int finalIdx = idx;
+            var createBuilding34Result = assertDoesNotThrow(
+                    ()->testControllerHelperService.inventoryElementControllerCreateNewElement(
+                            mockMvc,
+                            status().isCreated(),
+                            Optional.of("user1@slac.stanford.edu"),
+                            environmentBuildInfo.domainId,
+                            NewInventoryElementDTO
+                                    .builder()
+                                    .name("Building %d".formatted(finalIdx))
+                                    .description("Is the control system software engineer office and experimental lab building")
+                                    .classId(environmentBuildInfo.classIds.get("building"))
+                                    .attributes(
+                                            List.of(
+                                                    InventoryElementAttributeValue
+                                                            .builder()
+                                                            .name("building-number")
+                                                            .value(String.valueOf(finalIdx))
+                                                            .build(),
+                                                    InventoryElementAttributeValue
+                                                            .builder()
+                                                            .name("security-level")
+                                                            .value("Green")
+                                                            .build()
+                                            )
+                                    )
+                                    .build()
+                    )
+            );
+
+            assertThat(createBuilding34Result.getErrorCode()).isEqualTo(0);
+            assertThat(createBuilding34Result.getPayload()).isNotNull();
+
+            var createFloor1Building34Result = assertDoesNotThrow(
+                    ()->testControllerHelperService.inventoryElementControllerCreateNewElement(
+                            mockMvc,
+                            status().isCreated(),
+                            Optional.of("user1@slac.stanford.edu"),
+                            environmentBuildInfo.domainId,
+                            NewInventoryElementDTO
+                                    .builder()
+                                    .name("floor1")
+                                    .parentId(createBuilding34Result.getPayload())
+                                    .classId(environmentBuildInfo.classIds.get("floor"))
+                                    .attributes(emptyList())
+                                    .build()
+                    )
+            );
+
+            assertThat(createFloor1Building34Result.getErrorCode()).isEqualTo(0);
+            assertThat(createFloor1Building34Result.getPayload()).isNotNull();
+        }
+
+    }
 }

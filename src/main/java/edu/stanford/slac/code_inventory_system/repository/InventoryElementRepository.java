@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface InventoryElementRepository extends MongoRepository<InventoryElement, String> {
+public interface InventoryElementRepository extends MongoRepository<InventoryElement, String>, InventoryElementRepositoryCustom {
     /**
      * Check if a tag is used by any elements of a specific domainId
      * @param domainId the domain id
