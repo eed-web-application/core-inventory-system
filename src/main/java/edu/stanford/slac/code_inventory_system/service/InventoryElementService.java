@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 import static edu.stanford.slac.ad.eed.baselib.utility.StringUtilities.normalizeStringWithReplace;
@@ -49,6 +50,7 @@ public class InventoryElementService {
      * @param newInventoryDomainDTO the inventory domain
      * @return return the id of the newly create inventory domain
      */
+    @Transactional
     public String createNew(NewInventoryDomainDTO newInventoryDomainDTO) {
         String domainNormalizedName = normalizeStringWithReplace(
                 newInventoryDomainDTO.name(),
@@ -65,6 +67,11 @@ public class InventoryElementService {
                 () -> !inventoryDomainRepository.existsByNameIs(domainNormalizedName)
         );
 
+        // create tag id
+        newInventoryDomainDTO.tags().forEach(
+                tag->tag.toBuilder().id(UUID.randomUUID().toString()).build()
+        );
+
         // name normalization
         var newlyCreatedDomain = wrapCatch(
                 () -> inventoryDomainRepository.save(
@@ -79,28 +86,14 @@ public class InventoryElementService {
                 ),
                 -2
         );
+
+        // update authorization for the domain
+        manageAuthorizationForDomain(newlyCreatedDomain, newInventoryDomainDTO.authorizations());
+
         log.info("User '{}' created a new inventory domain: '{}'", newlyCreatedDomain.getCreatedBy(), newlyCreatedDomain);
         return newlyCreatedDomain.getId();
     }
 
-    /**
-     * Return the full domain
-     */
-    public InventoryDomainDTO getFullDomain(String domainId) {
-        var newlyCreatedDomain = wrapCatch(
-                () -> inventoryDomainRepository.findById(
-                        domainId
-                ),
-                -1
-        ).orElseThrow(
-                () -> InventoryDomainNotFound
-                        .domainNotFoundById()
-                        .errorCode(-2)
-                        .id(domainId)
-                        .build()
-        );
-        return inventoryElementMapper.toDTO(newlyCreatedDomain);
-    }
 
     /**
      * Update the domain applying all integrity check
@@ -159,6 +152,7 @@ public class InventoryElementService {
                 () -> inventoryDomainRepository.save(savedDomain),
                 -4
         );
+
         log.info("User '{}' update the inventory domain '{}' ", updateInventoryElement.getCreatedBy(), updateInventoryElement.getName());
     }
 
@@ -193,11 +187,11 @@ public class InventoryElementService {
                 // if the authorization has been removed from the allAuthorizationForDomain list
                 // means that it should not be removed
                 assertion(
-                    AuthorizationNotFound.authorizationNotFound()
-                            .errorCode(-1)
-                            .authId(authorization.id())
-                            .build(),
-                    ()->removed
+                        AuthorizationNotFound.authorizationNotFound()
+                                .errorCode(-1)
+                                .authId(authorization.id())
+                                .build(),
+                        () -> removed
                 );
             }
         }
@@ -205,13 +199,45 @@ public class InventoryElementService {
         // all the authorization that are still present on the allAuthorizationForDomain list
         // needs to be removed
         allAuthorizationForDomain.forEach(
-            authToRemove-> {
-                authService.deleteAuthorizationById(authToRemove.id());
-                log.info("Removed authorization id {} from domain {} with values {}", authToRemove.id(), domain.getName(), authToRemove);
-            }
+                authToRemove -> {
+                    authService.deleteAuthorizationById(authToRemove.id());
+                    log.info("Removed authorization id {} from domain {} with values {}", authToRemove.id(), domain.getName(), authToRemove);
+                }
         );
     }
 
+    /**
+     * Return the full domain
+     */
+    public InventoryDomainDTO getFullDomain(String domainId) {
+        var newlyCreatedDomain = wrapCatch(
+                () -> inventoryDomainRepository.findById(
+                        domainId
+                ),
+                -1
+        ).orElseThrow(
+                () -> InventoryDomainNotFound
+                        .domainNotFoundById()
+                        .errorCode(-2)
+                        .id(domainId)
+                        .build()
+        );
+        return inventoryElementMapper.toDTO(newlyCreatedDomain);
+    }
+
+    /**
+     * Return all the domain
+     *
+     * @return the complete list of the domain
+     */
+    public List<InventoryDomainSummaryDTO> findAllDomain() {
+        return wrapCatch(
+                () -> inventoryDomainRepository.findAll(),
+                -1
+        ).stream().map(
+                inventoryElementMapper::toSummaryDTO
+        ).toList();
+    }
 
     /**
      * Create a new inventory element
@@ -428,5 +454,29 @@ public class InventoryElementService {
                         .id(elementId)
                         .build()
         );
+    }
+
+    /**
+     * Return all the child of an item
+     * @param domainId the domain id
+     * @param elementId the element id root for the child
+     * @return the list of the summary of all the children
+     */
+    public List<InventoryElementSummaryDTO> getAllChildren(String domainId, String elementId){
+        // check if domain exists
+        assertion(
+                InventoryDomainNotFound.domainNotFoundById()
+                        .errorCode(-1)
+                        .id(domainId)
+                        .build(),
+                () -> inventoryDomainRepository.existsById(domainId)
+        );
+        return inventoryElementRepository.findAllByDomainIdIsAndParentIdIs(
+                domainId,
+                elementId)
+                .stream()
+                .map(
+                inventoryElementMapper::toSummaryDTO
+        ).toList();
     }
 }

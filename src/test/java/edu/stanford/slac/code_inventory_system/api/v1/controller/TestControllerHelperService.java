@@ -20,7 +20,6 @@ import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-
 @Service()
 public class TestControllerHelperService {
     private final JWTHelper jwtHelper;
@@ -155,6 +154,22 @@ public class TestControllerHelperService {
         );
     }
 
+    public ApiResultResponse<List<InventoryDomainSummaryDTO>> inventoryElementControllerFindAllDomain(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo) throws Exception {
+        var requestBuilder = get("/v1/inventory/domain")
+                .accept(MediaType.APPLICATION_JSON);
+        return executeHttpRequest(
+                new TypeReference<>() {
+                },
+                mockMvc,
+                resultMatcher,
+                userInfo,
+                requestBuilder
+        );
+    }
+
     public ApiResultResponse<String> inventoryElementControllerUpdateDomain(
             MockMvc mockMvc,
             ResultMatcher resultMatcher,
@@ -233,16 +248,27 @@ public class TestControllerHelperService {
             ResultMatcher resultMatcher,
             Optional<String> userInfo,
             String domainId,
-            String elementId,
-            UpdateInventoryElementDTO updateInventoryElementDTO) throws Exception {
+            String elementId) throws Exception {
         var requestBuilder = get("/v1/inventory/domain/{domainId}/element/{elementId}",domainId, elementId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(
-                        new ObjectMapper().writeValueAsString(
-                                updateInventoryElementDTO
-                        )
-                );
+                .accept(MediaType.APPLICATION_JSON);
+        return executeHttpRequest(
+                new TypeReference<>() {
+                },
+                mockMvc,
+                resultMatcher,
+                userInfo,
+                requestBuilder
+        );
+    }
+
+    public ApiResultResponse<List<InventoryElementSummaryDTO>> inventoryElementControllerFindAllChildrenByRootId(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo,
+            String domainId,
+            String elementId) throws Exception {
+        var requestBuilder = get("/v1/inventory/domain/{domainId}/element/{elementId}/children",domainId, elementId)
+                .accept(MediaType.APPLICATION_JSON);
         return executeHttpRequest(
                 new TypeReference<>() {
                 },

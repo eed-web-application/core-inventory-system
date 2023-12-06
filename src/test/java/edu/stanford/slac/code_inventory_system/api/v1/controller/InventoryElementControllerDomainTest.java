@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import static edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationOwnerTypeDTO.User;
 import static edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationTypeDTO.Write;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles({"test"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class InventoryElementControllerTest {
+public class InventoryElementControllerDomainTest {
     @Autowired
     AppProperties appProperties;
     @Autowired
@@ -174,6 +175,7 @@ public class InventoryElementControllerTest {
                                                         .build()
                                         )
                                 )
+                                .authenticationTokens(emptyList())
                                 .build()
                 )
         );
@@ -192,4 +194,38 @@ public class InventoryElementControllerTest {
         assertThat(fullDomain.getPayload().authorizations()).hasSize(1);
     }
 
+    @Test
+    public void findAllDomain() {
+        for (int idx = 0; idx <= 99; idx++) {
+            int finalIdx = idx;
+            var createDomainByRootResult = assertDoesNotThrow(
+                    ()->testControllerHelperService.inventoryElementControllerCreateNewDomain(
+                            mockMvc,
+                            status().isCreated(),
+                            Optional.of("user1@slac.stanford.edu"),
+                            NewInventoryDomainDTO
+                                    .builder()
+                                    .name("domain-inventory-%d".formatted(finalIdx))
+                                    .description("Inventory for the LCLS")
+                                    .build()
+                    )
+            );
+            assertThat(createDomainByRootResult).isNotNull();
+            assertThat(createDomainByRootResult.getPayload())
+                    .isNotNull()
+                    .isNotEmpty();
+        }
+
+        // find all domain
+        var findAllDomainResult = assertDoesNotThrow(
+                ()->testControllerHelperService.inventoryElementControllerFindAllDomain(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu")
+                )
+        );
+
+        assertThat(findAllDomainResult.getErrorCode()).isEqualTo(0);
+        assertThat(findAllDomainResult.getPayload()).hasSize(100);
+    }
 }

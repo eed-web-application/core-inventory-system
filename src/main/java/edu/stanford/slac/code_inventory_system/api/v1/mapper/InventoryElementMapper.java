@@ -67,6 +67,8 @@ public abstract class InventoryElementMapper {
     @Mapping(target = "authorizations", expression = "java(fillAuthorizationField(domain.getId()))")
     public abstract InventoryDomainDTO toDTO(InventoryDomain domain);
 
+    public abstract InventoryDomainSummaryDTO toSummaryDTO(InventoryDomain domain);
+
     public abstract TagDTO toDTO(Tag tag);
 
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(newInventoryElementDTO.classId(),newInventoryElementDTO.attributes()))")
@@ -76,6 +78,8 @@ public abstract class InventoryElementMapper {
     @Mapping(target = "tags", expression = "java(toDTOTagsFromId(inventoryElement.getDomainId(),inventoryElement.getTags()))")
     public abstract InventoryElementDTO toDTO(InventoryElement inventoryElement);
 
+    @Mapping(target = "tags", expression = "java(toDTOTagsFromId(inventoryElement.getDomainId(),inventoryElement.getTags()))")
+    public abstract InventoryElementSummaryDTO toSummaryDTO(InventoryElement inventoryElement);
     /**
      * return the list of the authorization DTO from the domain id
      * @param domainId the id of the domain
