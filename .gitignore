@@ -2,5 +2,5 @@ build
 /.idea/
 /bin
 /.gradle
-/gradle.properties-old
+/gradle.properties
 /qodana.yaml
