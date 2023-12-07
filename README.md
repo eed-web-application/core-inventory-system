@@ -1,7 +1,20 @@
 ![logo](./logos/SLAC-lab-hires.png)
 
 # Code Inventory System (CIS)
-
+<!-- TOC -->
+* [Code Inventory System (CIS)](#code-inventory-system-cis)
+  * [SLAC National Accelerator Laboratory](#slac-national-accelerator-laboratory)
+  * [License](#license)
+  * [Overview](#overview)
+  * [Data Structure](#data-structure)
+  * [Configuration](#configuration)
+  * [Demo](#demo)
+    * [Starting the Demo with Docker-Compose Files](#starting-the-demo-with-docker-compose-files)
+    * [Demo Data](#demo-data)
+    * [Rest API Documentation](#rest-api-documentation)
+      * [Demo Mode Features](#demo-mode-features)
+    * [Demo LDAP configuration](#demo-ldap-configuration)
+<!-- TOC -->
 
 ## SLAC National Accelerator Laboratory
 The SLAC National Accelerator Laboratory is operated by Stanford University for the US Departement of Energy.  
@@ -115,6 +128,10 @@ in case of application updates the docker image need to be rebuilt so in this ca
 ```shell
 docker compose -f docker-compose.yml -f docker-compose-app.yml up --build backend
 ```
+
+### Demo Data
+A demo database is established at startup according to the rules specified in the following [file](src/main/resources/demo-structure.yml):
+
 
 ### Rest API Documentation
 The backend seamlessly provides access to the OpenAPI 3.0 specification for the REST API at the endpoint '/api-docs'. This endpoint serves the OpenAPI 3.0 documentation in JSON format.

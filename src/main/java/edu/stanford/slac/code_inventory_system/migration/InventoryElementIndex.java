@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 
 @AllArgsConstructor
-@ChangeUnit(id = "inventory-element-index", order = "1002", author = "bisegni")
+@ChangeUnit(id = "inventory-element-index", order = "1003", author = "bisegni")
 public class InventoryElementIndex {
     private final MongoTemplate mongoTemplate;
 
@@ -63,7 +63,7 @@ public class InventoryElementIndex {
                 InventoryElement.class,
                 mongoTemplate,
                 new Index().on(
-                                "tags_id",
+                                "tags",
                                 Sort.Direction.ASC
                         )
                         .named("tags-id")

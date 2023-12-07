@@ -9,11 +9,9 @@ services:
       - CIS_ADMIN_MONGODB_URI=mongodb://admin:admin@mongodb-primary:27017/?authSource=admin
       - WAIT_LOGGER_LEVEL=debug
       - WAIT_TIMEOUT=90
-      - WAIT_HOSTS=mongodb-primary:27017, minio:9000
-      - SPRING_PROFILES_ACTIVE=test,manage-root-user
+      - WAIT_HOSTS=mongodb-primary:27017
+      - SPRING_PROFILES_ACTIVE=test,manage-root-user,init-demo-database
     ports:
       - "8080:8080"
-    volumes:
-      - ./:/opt/app
     depends_on:
       - mongodb-primary
