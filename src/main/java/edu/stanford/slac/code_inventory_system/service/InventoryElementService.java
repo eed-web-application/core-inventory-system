@@ -16,6 +16,7 @@ import edu.stanford.slac.code_inventory_system.model.Tag;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryElementRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,7 @@ public class InventoryElementService {
      * @return return the id of the newly create inventory domain
      */
     @Transactional
-    public String createNew(NewInventoryDomainDTO newInventoryDomainDTO) {
+    public String createNew(@Valid NewInventoryDomainDTO newInventoryDomainDTO) {
         String domainNormalizedName = normalizeStringWithReplace(
                 newInventoryDomainDTO.name(),
                 " ",
@@ -71,27 +72,30 @@ public class InventoryElementService {
         );
 
         // create tag id
-        newInventoryDomainDTO.tags().forEach(
+        var inventoryDomainToSave =  inventoryElementMapper.toModel(
+                newInventoryDomainDTO
+                        .toBuilder()
+                        .name(
+                                domainNormalizedName
+                        )
+                        .build()
+        );
+        inventoryDomainToSave.getTags().forEach(
                 tag->tag.toBuilder().id(UUID.randomUUID().toString()).build()
         );
 
         // name normalization
         var newlyCreatedDomain = wrapCatch(
                 () -> inventoryDomainRepository.save(
-                        inventoryElementMapper.toModel(
-                                newInventoryDomainDTO
-                                        .toBuilder()
-                                        .name(
-                                                domainNormalizedName
-                                        )
-                                        .build()
-                        )
+                        inventoryDomainToSave
                 ),
                 -2
         );
 
         // update authorization for the domain
-        manageAuthorizationForDomain(newlyCreatedDomain, newInventoryDomainDTO.authorizations());
+        if(newInventoryDomainDTO.authorizations()!=null) {
+            manageAuthorizationForDomain(newlyCreatedDomain, newInventoryDomainDTO.authorizations());
+        }
 
         log.info("User '{}' created a new inventory domain: '{}'", newlyCreatedDomain.getCreatedBy(), newlyCreatedDomain);
         return newlyCreatedDomain.getId();
@@ -108,7 +112,7 @@ public class InventoryElementService {
      * @param updateDomainDTO the domain to update
      */
     @Transactional
-    public void update(String domainId, UpdateDomainDTO updateDomainDTO) {
+    public void update(String domainId, @Valid UpdateDomainDTO updateDomainDTO) {
         // get the inventory saved on database for work on tag and lock
         InventoryDomain savedDomain = wrapCatch(
                 () -> inventoryDomainRepository.findById(domainId),
@@ -148,7 +152,9 @@ public class InventoryElementService {
         );
 
         // update authorization for the domain
-        manageAuthorizationForDomain(savedDomain, updateDomainDTO.authorizations());
+        if(updateDomainDTO.authorizations()!=null) {
+            manageAuthorizationForDomain(savedDomain, updateDomainDTO.authorizations());
+        }
 
         // update the domain
         var updateInventoryElement = wrapCatch(
@@ -165,7 +171,7 @@ public class InventoryElementService {
      * @param domain         the domain for which we need to manage the authorization
      * @param authorizations the list on the new authorization old and new
      */
-    private void manageAuthorizationForDomain(InventoryDomain domain, List<AuthorizationDTO> authorizations) {
+    private void manageAuthorizationForDomain(InventoryDomain domain, @Valid  List<AuthorizationDTO> authorizations) {
         String domainAuthorizationResource = "/cis/domain/%s".formatted(domain.getId());
         List<AuthorizationDTO> allAuthorizationForDomain = new ArrayList<>(authService.findByResourceIs(domainAuthorizationResource));
         for (AuthorizationDTO authorization :
@@ -250,7 +256,7 @@ public class InventoryElementService {
      *
      * @param newInventoryElementDTO is the new inventory item to create
      */
-    public String createNew(String domainId, NewInventoryElementDTO newInventoryElementDTO) {
+    public String createNew(String domainId, @Valid NewInventoryElementDTO newInventoryElementDTO) {
         if (newInventoryElementDTO == null) return null;
 
         // check for name id
@@ -372,7 +378,7 @@ public class InventoryElementService {
      * @param elementId                 the element unique identifier
      * @param updateInventoryElementDTO the information updatable
      */
-    public void update(String domainId, String elementId, UpdateInventoryElementDTO updateInventoryElementDTO) {
+    public void update(String domainId, String elementId, @Valid UpdateInventoryElementDTO updateInventoryElementDTO) {
         if (updateInventoryElementDTO == null) return;
 
         var inventoryDomainFound = wrapCatch(
@@ -488,7 +494,7 @@ public class InventoryElementService {
      * @param queryParameterDTO the query information
      * @return the list of found element
      */
-    public List<InventoryElementSummaryDTO> findAllElements(QueryParameterDTO queryParameterDTO) {
+    public List<InventoryElementSummaryDTO> findAllElements(@Valid QueryParameterDTO queryParameterDTO) {
         List<InventoryElement> found = wrapCatch(
                 () -> inventoryElementRepository.searchAll(
                         queryParameterMapper.fromDTO(

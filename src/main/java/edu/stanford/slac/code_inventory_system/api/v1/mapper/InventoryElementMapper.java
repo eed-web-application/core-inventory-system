@@ -50,7 +50,8 @@ public abstract class InventoryElementMapper {
     InventoryClassRepository inventoryClassRepository;
     @Autowired
     InventoryDomainRepository inventoryDomainRepository;
-
+    public abstract Tag toModel(TagDTO tagDTO);
+    @Mapping(target = "tags", source = "newInventoryDomainDTO.tags", conditionExpression = "java(newInventoryDomainDTO.tags() != null)", nullValuePropertyMappingStrategy = IGNORE)
     public abstract InventoryDomain toModel(NewInventoryDomainDTO newInventoryDomainDTO);
 
     @Mapping(target = "name", source = "updateDomainDTO.name", conditionExpression = "java(updateDomainDTO.name() != null)", nullValuePropertyMappingStrategy = IGNORE)

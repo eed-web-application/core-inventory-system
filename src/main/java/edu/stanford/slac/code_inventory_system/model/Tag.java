@@ -11,7 +11,7 @@ import org.springframework.data.annotation.Id;
  * Define a tag
  */
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tag implements IdNameInterface {
