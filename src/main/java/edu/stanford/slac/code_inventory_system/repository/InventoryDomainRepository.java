@@ -4,6 +4,10 @@ import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.Tag;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface InventoryDomainRepository extends MongoRepository<InventoryDomain, String>, InventoryDomainRepositoryCustom{
 
@@ -20,7 +24,7 @@ public interface InventoryDomainRepository extends MongoRepository<InventoryDoma
             "{ $project: { 'tags': 1, '_id': 0 } }",
             "{ $replaceRoot: { newRoot: '$tags' } }",
     })
-    Tag findTagById(String id, String tagId);
+    Optional<Tag> findTagById(String id, String tagId);
 
     /**
      * check if the tag exist into the domain
@@ -33,4 +37,14 @@ public interface InventoryDomainRepository extends MongoRepository<InventoryDoma
             "{ $project: { 'tagExists': { $anyElementTrue: { $map: { input: '$tags', as: 'tag', in: { $eq: ['$$tag._id', ?1] } } } }, '_id': 0 } }"
     })
     boolean existsTagById(String id, String tagId);
+
+    /**
+     * Check if exists a domain with a specific name
+     * @param domainName the domain name
+     * @return true if a domain with that name has been found
+     */
+    boolean existsByNameIs(String domainName);
+
+    @Query(value = "{ 'id':?0, 'tags._id': { $all: ?1 } }", exists = true)
+    boolean existsByIdAndAllTags(String id, List<String> tags);
 }

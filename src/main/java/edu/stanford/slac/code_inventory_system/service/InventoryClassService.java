@@ -66,7 +66,6 @@ public class InventoryClassService {
                                 .classNotFoundById()
                                 .errorCode(-2)
                                 .id(id)
-                                .errorDomain("InventoryClassService::findById")
                                 .build()
                 );
     }

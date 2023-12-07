@@ -16,8 +16,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -131,10 +131,10 @@ public class InventoryDomainRepositoryTest {
 
         //find tag by his id
         var foundTag = inventoryDomainRepository.findTagById(newDomain.getId(), newIdTagB);
-
-        assertThat(foundTag)
+        assertThat(foundTag.isPresent()).isTrue();
+        assertThat(foundTag.get())
                 .isNotNull()
-                .extracting(Tag::getId)
+                .extracting("id")
                 .isEqualTo(newIdTagB);
 
         // check the exists api if works
@@ -164,13 +164,46 @@ public class InventoryDomainRepositoryTest {
 
         //find tag by his id
         var foundTag = inventoryDomainRepository.findTagById(newDomain.getId(), "bad id");
-
-        assertThat(foundTag)
-                .isNull();
+        assertThat(foundTag.isPresent())
+                .isFalse();
 
         // check the exists api if works
         var existsTag = inventoryDomainRepository.existsTagById(newDomain.getId(), "bad id");
         assertThat(existsTag)
                 .isFalse();
+    }
+
+    @Test
+    public void checkExistsWithAllTagId() {
+        // create domain
+        var newDomain = inventoryDomainRepository.save(
+                InventoryDomain.builder()
+                        .name("domain-a")
+                        .description("domain a description")
+                        .build()
+        );
+
+        String newIdTagA = inventoryDomainRepository.ensureTag(
+                newDomain.getId(),
+                Tag
+                        .builder()
+                        .name("tag-a")
+                        .build()
+        );
+        String newIdTagB = inventoryDomainRepository.ensureTag(
+                newDomain.getId(),
+                Tag
+                        .builder()
+                        .name("tag-b")
+                        .build()
+        );
+
+        //find tag by his id
+        var foundTag = inventoryDomainRepository.existsByIdAndAllTags(newDomain.getId(),
+                List.of(
+                        newIdTagA,
+                        newIdTagB
+                ));
+        assertThat(foundTag).isTrue();
     }
 }

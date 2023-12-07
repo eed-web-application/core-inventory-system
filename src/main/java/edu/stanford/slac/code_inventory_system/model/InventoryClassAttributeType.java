@@ -7,7 +7,7 @@ import edu.stanford.slac.code_inventory_system.model.value.*;
  */
 public enum InventoryClassAttributeType {
     String(StringValue.class),
-    Integer(NumberValue.class),
+    Number(NumberValue.class),
     Double(DoubleValue.class),
     Boolean(BooleanValue.class),
     Date(DateValue.class),

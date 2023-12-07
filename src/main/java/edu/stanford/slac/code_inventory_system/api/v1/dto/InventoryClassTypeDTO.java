@@ -15,8 +15,10 @@ public enum InventoryClassTypeDTO {
     Room,
     @Schema(description = "A physical object that can be stored, tracked, or managed within the inventory system.")
     Item,
-    @Schema(description = "A software program can be stored, executed, or managed within the inventory system.")
-    Software,
+    @Schema(description = "An hardware that is the implementation for an item")
+    ItemHardware,
+    @Schema(description = "A software program that is an implementation for na item")
+    ItemSoftware,
     @Schema(description = "A component that establishes a connection between two or more entities within the inventory system using cable.")
     Connector,
     @Schema(description = "A flexible conductor that carries signals or electrical power between two connector within the inventory system.")

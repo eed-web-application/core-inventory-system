@@ -58,6 +58,7 @@ public class InventoryClassControllerTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("Building 001")
+                                .description("description")
                                 .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
@@ -120,6 +121,7 @@ public class InventoryClassControllerTest {
                             NewInventoryClassDTO
                                     .builder()
                                     .name("Building %03d".formatted(finalIdx))
+                                    .description("description")
                                     .type(InventoryClassTypeDTO.Building)
                                     .attributes(
                                             List.of(
@@ -173,6 +175,7 @@ public class InventoryClassControllerTest {
                             NewInventoryClassDTO
                                     .builder()
                                     .name("Building %03d".formatted(finalIdx))
+                                    .description("description")
                                     .type(currentType)
                                     .attributes(
                                             List.of(
@@ -234,6 +237,7 @@ public class InventoryClassControllerTest {
                             NewInventoryClassDTO
                                     .builder()
                                     .name("Building %03d".formatted(finalIdx))
+                                    .description("description")
                                     .type(currentType)
                                     .attributes(
                                             List.of(
