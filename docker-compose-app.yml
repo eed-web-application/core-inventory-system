@@ -10,7 +10,7 @@ services:
       - WAIT_LOGGER_LEVEL=debug
       - WAIT_TIMEOUT=90
       - WAIT_HOSTS=mongodb-primary:27017
-      - SPRING_PROFILES_ACTIVE=test,manage-root-user
+      - SPRING_PROFILES_ACTIVE=test,manage-root-user,init-demo-database
     ports:
       - "8080:8080"
     depends_on:

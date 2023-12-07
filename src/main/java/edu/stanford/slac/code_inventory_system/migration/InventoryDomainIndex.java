@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 
 @AllArgsConstructor
-@ChangeUnit(id = "inventory-domain-index", order = "1000", author = "bisegni")
+@ChangeUnit(id = "inventory-domain-index", order = "1002", author = "bisegni")
 public class InventoryDomainIndex {
     private final MongoTemplate mongoTemplate;
 
