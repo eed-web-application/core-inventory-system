@@ -101,6 +101,9 @@ public class InventoryElementControllerDomainTest {
                                 .builder()
                                 .name("lcls-inventory")
                                 .description("Inventory for the LCLS")
+                                .tags(emptyList())
+                                .authorizations(emptyList())
+                                .authenticationTokens(emptyList())
                                 .build()
                 )
         );
@@ -122,6 +125,9 @@ public class InventoryElementControllerDomainTest {
                                 .builder()
                                 .name("lcls-inventory")
                                 .description("Inventory for the LCLS")
+                                .tags(emptyList())
+                                .authorizations(emptyList())
+                                .authenticationTokens(emptyList())
                                 .build()
                 )
         );
@@ -139,6 +145,9 @@ public class InventoryElementControllerDomainTest {
                                 .builder()
                                 .name("lcls-inventory")
                                 .description("Inventory for the LCLS")
+                                .tags(emptyList())
+                                .authorizations(emptyList())
+                                .authenticationTokens(emptyList())
                                 .build()
                 )
         );
@@ -207,6 +216,9 @@ public class InventoryElementControllerDomainTest {
                                     .builder()
                                     .name("domain-inventory-%d".formatted(finalIdx))
                                     .description("Inventory for the LCLS")
+                                    .tags(emptyList())
+                                    .authorizations(emptyList())
+                                    .authenticationTokens(emptyList())
                                     .build()
                     )
             );
