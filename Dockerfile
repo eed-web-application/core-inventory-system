@@ -2,9 +2,8 @@ FROM eclipse-temurin:21-jammy as builder
 
 ARG USERNAME
 ARG TOKEN
-ENV USERNAME=$USERNAME
-ENV TOKEN=$TOKEN
-
+ENV GH_USERNAME=$USERNAME
+ENV GH_TOKEN=$TOKEN
 COPY . /opt/app
 RUN /opt/app/gradlew -p /opt/app/ assemble
 
