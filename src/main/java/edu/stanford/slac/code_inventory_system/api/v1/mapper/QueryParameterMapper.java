@@ -10,6 +10,5 @@ import org.mapstruct.ReportingPolicy;
         componentModel = "spring"
 )
 public abstract class QueryParameterMapper {
-
     public abstract QueryParameter fromDTO(QueryParameterDTO queryParameterDTO);
 }

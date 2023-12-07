@@ -16,14 +16,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
+
 @Repository
 @AllArgsConstructor
 public class InventoryElementRepositoryImpl implements InventoryElementRepositoryCustom {
     MongoTemplate mongoTemplate;
 
+    private String getAnchorName(String anchorId) {
+        Query q = new Query();
+        q.addCriteria(Criteria.where("id").is(anchorId));
+        q.fields().include("name");
+        var inventoryElementFound =  mongoTemplate.findOne(q, InventoryElement.class);
+        return (inventoryElementFound!=null)?inventoryElementFound.getName():null;
+    }
+
     @Override
     public List<InventoryElement> searchAll(QueryParameter queryParameter) {
-        if (queryParameter.getContextSize() != null && queryParameter.getAnchorID() == null) {
+        if (
+                queryParameter.getContextSize() != null &&
+                queryParameter.getContextSize() >0 &&
+                        queryParameter.getAnchorID() == null
+        ) {
             throw ControllerLogicException.of(
                     -1,
                     "The context count cannot be used without the ancor",
@@ -48,23 +62,42 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
             );
         }
 
+        if(queryParameter.getDomainId()!=null && !queryParameter.getDomainId().isEmpty()) {
+            allCriteria.add(
+                    Criteria.where("domainId").in(queryParameter.getDomainId())
+            );
+
+        }
+
         if (
                 queryParameter.getContextSize() != null
                         && queryParameter.getContextSize() > 0
         ) {
-
+            String anchorName = getAnchorName(queryParameter.getAnchorID());
+            assertion(
+                    ControllerLogicException.of(
+                            -1,
+                            "error searching anchor name",
+                            "InventoryElementRepositoryImpl::searchAll"),
+                    ()->anchorName!=null
+            );
             List<Criteria> localAllCriteria = allCriteria;
             localAllCriteria.add(
-                    Criteria.where("id").is(queryParameter.getAnchorID())
+                    Criteria.where("name").lte(anchorName)
             );
-            // at this point the anchor id is nto n
+
+            // at this point the anchor id is not null
             Query query = getQuery(queryParameter);
-            query.addCriteria(
-                    // all general criteria
-                    new Criteria().andOperator(localAllCriteria)
-            ).with(
+            if(!localAllCriteria.isEmpty()) {
+                query.addCriteria(
+                        new Criteria().andOperator(
+                                localAllCriteria
+                        )
+                );
+            }
+            query.with(
                     Sort.by(
-                            Sort.Direction.ASC, "fullTreePath")
+                            Sort.Direction.DESC, "fullTreePath")
             ).limit(queryParameter.getContextSize());
             elementsBeforeAnchor.addAll(
                     mongoTemplate.find(
@@ -80,16 +113,22 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
             List<Criteria> localAllCriteria = allCriteria;
             Query query = getQuery(queryParameter);
             if (queryParameter.getAnchorID() != null) {
+                String anchorName = getAnchorName(queryParameter.getAnchorID());
                 localAllCriteria.add(
-                        Criteria.where("id").is(queryParameter.getAnchorID())
+                        Criteria.where("name").gt(anchorName)
                 );
             }
-            query.addCriteria(new Criteria().andOperator(
-                            localAllCriteria
+            if(!localAllCriteria.isEmpty()) {
+                query.addCriteria(
+                        new Criteria().andOperator(
+                        localAllCriteria
                     )
-            ).with(
+                );
+            }
+
+            query.with(
                     Sort.by(
-                            Sort.Direction.DESC, "fullTreePath")
+                            Sort.Direction.ASC, "fullTreePath")
             ).limit(queryParameter.getLimit());
             elementsAfterAnchor.addAll(
                     mongoTemplate.find(

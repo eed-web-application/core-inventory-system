@@ -1,15 +1,15 @@
 package edu.stanford.slac.code_inventory_system.api.v1.controller;
 
-import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationDTO;
 import edu.stanford.slac.ad.eed.baselib.config.AppProperties;
-import edu.stanford.slac.ad.eed.baselib.exception.NotAuthorized;
 import edu.stanford.slac.ad.eed.baselib.model.AuthenticationToken;
 import edu.stanford.slac.ad.eed.baselib.model.Authorization;
 import edu.stanford.slac.ad.eed.baselib.service.AuthService;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementAttributeValue;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryElementDTO;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,17 +24,13 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 import java.util.Optional;
 
-import static edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationOwnerTypeDTO.User;
-import static edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationTypeDTO.Write;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -204,7 +200,7 @@ public class InventoryElementControllerElementTest {
 
     @Test
     public void findAllTestSimple() {
-        for(int idx = 0; idx < 5; idx++) {
+        for(int idx = 0; idx < 20; idx++) {
             int finalIdx = idx;
             var createBuilding34Result = assertDoesNotThrow(
                     ()->testControllerHelperService.inventoryElementControllerCreateNewElement(
@@ -214,7 +210,7 @@ public class InventoryElementControllerElementTest {
                             environmentBuildInfo.domainId,
                             NewInventoryElementDTO
                                     .builder()
-                                    .name("Building %d".formatted(finalIdx))
+                                    .name(" %03d Building".formatted(finalIdx))
                                     .description("Is the control system software engineer office and experimental lab building")
                                     .classId(environmentBuildInfo.classIds.get("building"))
                                     .attributes(
@@ -246,7 +242,7 @@ public class InventoryElementControllerElementTest {
                             environmentBuildInfo.domainId,
                             NewInventoryElementDTO
                                     .builder()
-                                    .name("floor1")
+                                    .name("%03d floor".formatted(finalIdx))
                                     .parentId(createBuilding34Result.getPayload())
                                     .classId(environmentBuildInfo.classIds.get("floor"))
                                     .attributes(emptyList())
@@ -258,5 +254,38 @@ public class InventoryElementControllerElementTest {
             assertThat(createFloor1Building34Result.getPayload()).isNotNull();
         }
 
+        var searchResultForward = assertDoesNotThrow(
+                ()->testControllerHelperService.inventoryElementControllerFindAllElements(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        Optional.empty(),
+                        Optional.of(10),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty()
+                        )
+        );
+        assertThat(searchResultForward.getErrorCode()).isEqualTo(0);
+        assertThat(searchResultForward.getPayload()).hasSize(10);
+
+        var searchResultBackward = assertDoesNotThrow(
+                ()->testControllerHelperService.inventoryElementControllerFindAllElements(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        Optional.of(searchResultForward.getPayload().get(9).id()),
+                        Optional.of(0),
+                        Optional.of(10),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty()
+                )
+        );
+        assertThat(searchResultBackward.getErrorCode()).isEqualTo(0);
+        assertThat(searchResultBackward.getPayload()).hasSize(10);
     }
 }
