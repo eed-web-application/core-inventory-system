@@ -390,7 +390,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -446,7 +445,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("building class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -465,7 +463,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("room class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -545,7 +542,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("building class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -593,7 +589,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("building class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -656,7 +651,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("building class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO

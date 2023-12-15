@@ -3,12 +3,8 @@ package edu.stanford.slac.code_inventory_system.api.v1.mapper;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryClassAttributeType;
-import edu.stanford.slac.code_inventory_system.model.InventoryClassType;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
-
-import java.util.List;
 
 @Mapper(
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
@@ -44,8 +40,4 @@ public abstract class InventoryClassMapper {
                 inventoryClassAttributeTypeDTO.name()
         );
     }
-
-    abstract public InventoryClassType toModel(InventoryClassTypeDTO inventoryClassTypeDTO);
-
-    abstract public InventoryClassTypeDTO toDTO(InventoryClassType inventoryClassTypeDTO);
 }

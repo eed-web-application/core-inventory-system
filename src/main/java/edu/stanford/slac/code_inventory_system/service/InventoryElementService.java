@@ -10,6 +10,7 @@ import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryElementMapper;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.QueryParameterMapper;
 import edu.stanford.slac.code_inventory_system.exception.*;
+import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
 import edu.stanford.slac.code_inventory_system.model.Tag;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static edu.stanford.slac.ad.eed.baselib.exception.Utility.any;
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.assertion;
 import static edu.stanford.slac.ad.eed.baselib.utility.StringUtilities.normalizeStringWithReplace;
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
@@ -334,7 +336,7 @@ public class InventoryElementService {
                             .id(inventoryElementToSave.getParentId())
                             .build()
             );
-
+            // fault-tolerant check, this should never happen
             assertion(
                     InventoryDomainParentElementMismatch
                             .domainMismatch()
@@ -343,6 +345,30 @@ public class InventoryElementService {
                             .actualDomain(inventoryElementToSave.getDomainId())
                             .build(),
                     () -> inventoryElementRepository.existsById(inventoryElementToSave.getParentId())
+            );
+
+            // check if parent class permit to has
+            // inventoryElementToSave as child
+            InventoryClass parentClass = inventoryClassRepository.findById(
+                    parentElement.getClassId()
+            ).orElseThrow(
+                    ()->InventoryClassNotFound.classNotFoundById()
+                            .errorCode(-7)
+                            .id(parentElement.getClassId())
+                            .build()
+            );
+
+            assertion(
+                    ControllerLogicException.builder()
+                            .errorCode(-8)
+                    .errorMessage("Parent class cannot permit to have this kind of element as child")
+                            .build(),
+                    ()->any(
+                            // if is empty element from any class can be a child
+                            ()->parentClass.getPermittedChildClass()==null || parentClass.getPermittedChildClass().isEmpty(),
+                            // the class id of the child need to mach one within the list
+                            ()->parentClass.getPermittedChildClass().stream().filter(c->c.compareTo(inventoryElementToSave.getClassId())==0).count()==1
+                    )
             );
 
             inventoryElementToSave.setParentId(inventoryElementToSave.getParentId());

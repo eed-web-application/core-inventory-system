@@ -3,7 +3,6 @@ package edu.stanford.slac.code_inventory_system.repository;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryClassAttribute;
 import edu.stanford.slac.code_inventory_system.model.InventoryClassAttributeType;
-import edu.stanford.slac.code_inventory_system.model.InventoryClassType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -43,7 +42,6 @@ public class InventoryClassRepositoryTest {
         InventoryClass ic = InventoryClass
                 .builder()
                 .name("Laboratory Building")
-                .type(InventoryClassType.Building)
                 .attributes(
                         List.of(
                                 InventoryClassAttribute
@@ -79,80 +77,5 @@ public class InventoryClassRepositoryTest {
                 .usingRecursiveComparison()
                 .ignoringActualNullFields()
                 .isEqualTo(ic);
-    }
-
-    @Test
-    public void testDistinctTypeQuery() {
-        inventoryClassRepository.save(
-                InventoryClass
-                        .builder()
-                        .name("Laboratory Building")
-                        .type(InventoryClassType.Building)
-                        .attributes(
-                                List.of(
-                                        InventoryClassAttribute
-                                                .builder()
-                                                .name("Alias")
-                                                .description("Is the simple code for describe the building")
-                                                .mandatory(true)
-                                                .type(InventoryClassAttributeType.String)
-                                                .build(),
-                                        InventoryClassAttribute
-                                                .builder()
-                                                .name("Building access manager")
-                                                .description("Is the access manage user identification")
-                                                .mandatory(true)
-                                                .type(InventoryClassAttributeType.String)
-                                                .build(),
-                                        InventoryClassAttribute
-                                                .builder()
-                                                .name("Area access level")
-                                                .description("Is the access level code that identify who can access the building")
-                                                .mandatory(true)
-                                                .type(InventoryClassAttributeType.String)
-                                                .build()
-                                )
-                        )
-                        .build()
-        );
-        inventoryClassRepository.save(
-                InventoryClass
-                        .builder()
-                        .name("Laboratory Building")
-                        .type(InventoryClassType.Room)
-                        .attributes(
-                                List.of(
-                                        InventoryClassAttribute
-                                                .builder()
-                                                .name("Alias")
-                                                .description("Is the simple code for describe the building")
-                                                .mandatory(true)
-                                                .type(InventoryClassAttributeType.String)
-                                                .build(),
-                                        InventoryClassAttribute
-                                                .builder()
-                                                .name("Building access manager")
-                                                .description("Is the access manage user identification")
-                                                .mandatory(true)
-                                                .type(InventoryClassAttributeType.String)
-                                                .build(),
-                                        InventoryClassAttribute
-                                                .builder()
-                                                .name("Area access level")
-                                                .description("Is the access level code that identify who can access the building")
-                                                .mandatory(true)
-                                                .type(InventoryClassAttributeType.String)
-                                                .build()
-                                )
-                        )
-                        .build()
-        );
-        var distinctTypes = inventoryClassRepository.findDistinctTypes();
-        assertThat(distinctTypes)
-                .hasSize(2)
-                .contains(
-                        InventoryClassType.Building,
-                        InventoryClassType.Room
-                );
     }
 }

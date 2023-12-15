@@ -2,7 +2,6 @@ package edu.stanford.slac.code_inventory_system.service;
 
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeTypeDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassTypeDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
 import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
@@ -47,7 +46,6 @@ public class InventoryClassServiceTest {
         var newInventoryDTO = NewInventoryClassDTO
                 .builder()
                 .name("new class")
-                .type(InventoryClassTypeDTO.Building)
                 .attributes(
                         List.of(
                                 InventoryClassAttributeDTO
@@ -72,12 +70,9 @@ public class InventoryClassServiceTest {
         assertThat(foundInventoryDTO)
                 .hasFieldOrPropertyWithValue(
                         "name", "new-class"
-                )
-                .hasFieldOrPropertyWithValue(
-                        "type", InventoryClassTypeDTO.Building
                 );
 
-        // check if the attribute name has been nromalized
+        // check if the attribute name has been normalized
         assertThat(foundInventoryDTO.attributes())
                 .hasSize(1)
                 .contains(

@@ -80,7 +80,6 @@ public class BuildEnvironmentForElementTest {
                                 .builder()
                                 .name("Building")
                                 .description("building")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -102,7 +101,6 @@ public class BuildEnvironmentForElementTest {
                                 .builder()
                                 .name("Experimental Facility")
                                 .description("experimental facility")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -124,7 +122,6 @@ public class BuildEnvironmentForElementTest {
                                 .builder()
                                 .name("Floor")
                                 .description("simple floor")
-                                .type(InventoryClassTypeDTO.Floor)
                                 .attributes(emptyList())
                                 .build(),
                         NewInventoryClassDTO
@@ -132,21 +129,18 @@ public class BuildEnvironmentForElementTest {
                                 .name("Office")
                                 .description("simple office")
                                 .attributes(emptyList())
-                                .type(InventoryClassTypeDTO.Room)
                                 .build(),
                         NewInventoryClassDTO
                                 .builder()
                                 .name("Laboratory")
                                 .description("laboratory")
                                 .attributes(emptyList())
-                                .type(InventoryClassTypeDTO.Room)
                                 .build(),
                         NewInventoryClassDTO
                                 .builder()
                                 .name("Server room")
                                 .description("server room")
                                 .attributes(emptyList())
-                                .type(InventoryClassTypeDTO.Room)
                                 .build()
                 ),
                 NewInventoryDomainDTO
