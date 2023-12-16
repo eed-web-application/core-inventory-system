@@ -347,7 +347,7 @@ public class InventoryElementService {
                     () -> inventoryElementRepository.existsById(inventoryElementToSave.getParentId())
             );
 
-            // check if parent class permit to has
+            // check if this element can be a child for the parent
             // inventoryElementToSave as child
             InventoryClass parentClass = inventoryClassRepository.findById(
                     parentElement.getClassId()
@@ -358,6 +358,7 @@ public class InventoryElementService {
                             .build()
             );
 
+            //check for permission to be a child of the parent
             assertion(
                     ControllerLogicException.builder()
                             .errorCode(-8)

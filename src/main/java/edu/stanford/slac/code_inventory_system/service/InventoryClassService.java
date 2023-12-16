@@ -3,16 +3,18 @@ package edu.stanford.slac.code_inventory_system.service;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassSummaryDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.UpdateInventoryClassDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryClassMapper;
 import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
+import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
-import static edu.stanford.slac.ad.eed.baselib.exception.Utility.wrapCatch;
+import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
+
 
 /**
  * Defines high level api for the management of the inventory classes
@@ -36,10 +38,36 @@ public class InventoryClassService {
                                 newInventoryClassDTO
                         )
                 ),
+                -1
+        );
+        return newInventoryClass.getId();
+    }
+
+    /**
+     * Update existing inventory class
+     */
+    public boolean update(String id, UpdateInventoryClassDTO updateInventoryClassDTO) {
+        InventoryClass icToUpdate = wrapCatch(
+                ()->inventoryClassRepository.findById(id),
+                -1,
+                "InventoryClassService::createNew"
+        ).orElseThrow(
+                ()->InventoryClassNotFound.classNotFoundById()
+                        .errorCode(-1)
+                        .id(id)
+                        .build()
+        );
+        inventoryClassMapper.updateModel(icToUpdate, updateInventoryClassDTO)
+        ;
+        var updatedInventoryClass = wrapCatch(
+                () -> inventoryClassRepository.save(
+                                icToUpdate
+
+                ),
                 -1,
                 "InventoryClassService::createNew"
         );
-        return newInventoryClass.getId();
+        return updatedInventoryClass != null;
     }
 
     /**
