@@ -13,7 +13,6 @@ import java.util.List;
  * {
  *   "_id": "serverClass",
  *   "name": "Server",
- *   "type": "Item",
  *   "attributes": {
  *     {name:"CPU", "mandatory": true, "type": "string", "unit": ""},
  *     {name:"RAM", "mandatory": true, "type": "string", "unit": "GB"},
@@ -40,9 +39,18 @@ public class InventoryClass {
      */
     String description;
     /**
-     * Define to which type belong the element
+     * The list of Ids of class that are extended by this
      */
-    InventoryClassType type;
+    @Builder.Default
+    List<String> extendsClass = Collections.emptyList();
+
+    /**
+     * Define the ids of all the class that this
+     * class can be a parent of
+     */
+    @Builder.Default
+    List<String> permittedChildClass = Collections.emptyList();
+
     /**
      * Define the list for that can be used to specialize the element
      */

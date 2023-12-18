@@ -15,8 +15,6 @@ public record InventoryClassSummaryDTO(
         @Schema(description = "The unique identifier of the inventory class")
         String id,
         @Schema(description = "The name of the inventory class")
-        String name,
-        @Schema(description = "The type to which the inventory class belongs")
-        InventoryClassTypeDTO type
+        String name
 ) {
 }

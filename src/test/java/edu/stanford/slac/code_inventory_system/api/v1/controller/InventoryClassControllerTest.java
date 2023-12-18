@@ -1,9 +1,6 @@
 package edu.stanford.slac.code_inventory_system.api.v1.controller;
 
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeTypeDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassTypeDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +18,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
+import static com.google.common.collect.ImmutableList.of;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -59,7 +57,8 @@ public class InventoryClassControllerTest {
                                 .builder()
                                 .name("Building 001")
                                 .description("description")
-                                .type(InventoryClassTypeDTO.Building)
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -82,7 +81,8 @@ public class InventoryClassControllerTest {
                         mockMvc,
                         status().isOk(),
                         Optional.of("user1@slac.stanford.edu"),
-                        createNewClassResult.getPayload()
+                        createNewClassResult.getPayload(),
+                        Optional.empty()
                 )
         );
 
@@ -96,14 +96,15 @@ public class InventoryClassControllerTest {
     }
 
     @Test
-    public void findClassFailsWithUnexistingId() {
+    public void findClassFailsWithNonExistingId() {
         var classNotfound = assertThrows(
                 InventoryClassNotFound.class,
                 () -> testControllerHelperService.inventoryClassControllerFindById(
                         mockMvc,
                         status().isNotFound(),
                         Optional.of("user1@slac.stanford.edu"),
-                        "bad id"
+                        "bad id",
+                        Optional.empty()
                 )
         );
         assertThat(classNotfound.getErrorCode()).isEqualTo(-2);
@@ -122,7 +123,8 @@ public class InventoryClassControllerTest {
                                     .builder()
                                     .name("Building %03d".formatted(finalIdx))
                                     .description("description")
-                                    .type(InventoryClassTypeDTO.Building)
+                                    .extendsClass(emptyList())
+                                    .permittedChildClass(emptyList())
                                     .attributes(
                                             List.of(
                                                     InventoryClassAttributeDTO
@@ -152,128 +154,97 @@ public class InventoryClassControllerTest {
         );
         assertThat(findAllClassResult.getErrorCode()).isEqualTo(0);
         assertThat(findAllClassResult.getPayload()).hasSize(50);
-    }
 
-    @Test
-    public void findAllClassesByType() {
-        Random random = new Random();
-        InventoryClassTypeDTO[] classTypesArray = InventoryClassTypeDTO.values();
-        int classTypeOccurence[] = new int[classTypesArray.length];
-        for (int idx = 0; idx < 50; idx++) {
-            int finalIdx = idx;
-            int currentTypeIndex = random.nextInt(classTypesArray.length);
-            // get the current type
-            var currentType = classTypesArray[currentTypeIndex];
-            // increment the used type
-            classTypeOccurence[currentTypeIndex]++;
-            //create class type
-            var createNewClassResult = assertDoesNotThrow(
-                    () -> testControllerHelperService.inventoryClassControllerCreateNew(
-                            mockMvc,
-                            status().isCreated(),
-                            Optional.of("user1@slac.stanford.edu"),
-                            NewInventoryClassDTO
-                                    .builder()
-                                    .name("Building %03d".formatted(finalIdx))
-                                    .description("description")
-                                    .type(currentType)
-                                    .attributes(
-                                            List.of(
-                                                    InventoryClassAttributeDTO
-                                                            .builder()
-                                                            .name("Security Level")
-                                                            .description("Determinate the security level choosing form [Green, Yellow, Red]")
-                                                            .type(InventoryClassAttributeTypeDTO.String)
-                                                            .build()
-                                            )
-                                    )
-                                    .build()
-                    )
-            );
-
-            assertThat(createNewClassResult.getErrorCode()).isEqualTo(0);
-            assertThat(createNewClassResult.getPayload()).isNotNull();
-        }
-
-        // choose a rando type of class to fetch
-        int randomTypeIndexForFindAll = random.nextInt(classTypesArray.length);
-        Optional<List<InventoryClassTypeDTO>> typeToFind = Optional.of(
-                List.of(
-                        classTypesArray[randomTypeIndexForFindAll]
-                )
-        );
-
-        // find all class
-        var findAllClassResult = assertDoesNotThrow(
+        var findAllClassTextFilteringResult = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryClassControllerFindAll(
                         mockMvc,
                         status().isOk(),
                         Optional.of("user1@slac.stanford.edu"),
-                        typeToFind
+                        Optional.of("004")
                 )
         );
-        assertThat(findAllClassResult.getErrorCode()).isEqualTo(0);
-        assertThat(findAllClassResult.getPayload()).hasSize(classTypeOccurence[randomTypeIndexForFindAll]);
+        assertThat(findAllClassTextFilteringResult.getErrorCode()).isEqualTo(0);
+        assertThat(findAllClassTextFilteringResult.getPayload())
+                .hasSize(1)
+                .extracting(InventoryClassSummaryDTO::name)
+                .containsExactly("building-004");
     }
 
     @Test
-    public void findAllClassTypes() {
-        Random random = new Random();
-        InventoryClassTypeDTO[] classTypesArray = InventoryClassTypeDTO.values();
-        int classTypeOccurence[] = new int[classTypesArray.length];
-        for (int idx = 0; idx < 50; idx++) {
-            int finalIdx = idx;
-            int currentTypeIndex = random.nextInt(classTypesArray.length);
-            // get the current type
-            var currentType = classTypesArray[currentTypeIndex];
-            // increment the used type
-            classTypeOccurence[currentTypeIndex]++;
-            //create class type
-            var createNewClassResult = assertDoesNotThrow(
-                    () -> testControllerHelperService.inventoryClassControllerCreateNew(
-                            mockMvc,
-                            status().isCreated(),
-                            Optional.of("user1@slac.stanford.edu"),
-                            NewInventoryClassDTO
-                                    .builder()
-                                    .name("Building %03d".formatted(finalIdx))
-                                    .description("description")
-                                    .type(currentType)
-                                    .attributes(
-                                            List.of(
-                                                    InventoryClassAttributeDTO
-                                                            .builder()
-                                                            .name("Security Level")
-                                                            .description("Determinate the security level choosing form [Green, Yellow, Red]")
-                                                            .type(InventoryClassAttributeTypeDTO.String)
-                                                            .build()
-                                            )
-                                    )
-                                    .build()
-                    )
-            );
-
-            assertThat(createNewClassResult.getErrorCode()).isEqualTo(0);
-            assertThat(createNewClassResult.getPayload()).isNotNull();
-        }
-        List<InventoryClassTypeDTO> usedTypes = new ArrayList<>();
-        // choose a rando type of class to fetch
-        for(int idx =0 ; idx < classTypeOccurence.length; idx++) {
-            if(classTypeOccurence[idx]>0) {
-                usedTypes.add(classTypesArray[idx]);
-            }
-        }
-
-
-        // find all class
-        var findAllClassTypeResult = assertDoesNotThrow(
-                () -> testControllerHelperService.inventoryClassControllerFindAllType(
+    public void createAndGetClassWithInheritance() {
+        var createNewRootClassResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerCreateNew(
                         mockMvc,
-                        status().isOk(),
-                        Optional.of("user1@slac.stanford.edu")
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("General building")
+                                .description("description")
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("1")
+                                                        .description("Determinate the security level choosing form [Green, Yellow, Red]")
+                                                        .type(InventoryClassAttributeTypeDTO.String)
+                                                        .build()
+                                        )
+                                )
+                                .build()
                 )
         );
-        assertThat(findAllClassTypeResult.getErrorCode()).isEqualTo(0);
-        assertThat(findAllClassTypeResult.getPayload()).containsAll(usedTypes);
+
+        assertThat(createNewRootClassResult.getErrorCode()).isEqualTo(0);
+        assertThat(createNewRootClassResult.getPayload()).isNotNull();
+
+        var createNewSubClassResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerCreateNew(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("Laboratory building")
+                                .description("description")
+                                .extendsClass(of(createNewRootClassResult.getPayload()))
+                                .permittedChildClass(emptyList())
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("2")
+                                                        .description("Determinate the security level choosing form [Green, Yellow, Red]")
+                                                        .type(InventoryClassAttributeTypeDTO.String)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        assertThat(createNewSubClassResult.getErrorCode()).isEqualTo(0);
+        assertThat(createNewSubClassResult.getPayload()).isNotNull();
+
+        var findByIdResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerFindById(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        createNewSubClassResult.getPayload(),
+                        Optional.of(true)
+                )
+        );
+
+        assertThat(findByIdResult.getErrorCode()).isEqualTo(0);
+        assertThat(findByIdResult.getPayload()).isNotNull();
+        assertThat(findByIdResult.getPayload().id()).isEqualTo(createNewSubClassResult.getPayload());
+        assertThat(findByIdResult.getPayload().attributes()).hasSize(2);
+        assertThat(findByIdResult.getPayload().attributes())
+                .extracting(InventoryClassAttributeDTO::name)
+                .contains("1", "2");
+
     }
 }

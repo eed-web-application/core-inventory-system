@@ -11,9 +11,7 @@ import java.util.List;
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record InventoryClassDTO(
-        @Schema(description = "The unique identifier of the inventory class")
-        String id,
+public record UpdateInventoryClassDTO(
         @Schema(description = "The name of the inventory class")
         String name,
         @Schema(description = "The description of the inventory class")

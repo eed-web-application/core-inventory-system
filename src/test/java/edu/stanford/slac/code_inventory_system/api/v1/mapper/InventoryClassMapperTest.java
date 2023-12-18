@@ -2,7 +2,6 @@ package edu.stanford.slac.code_inventory_system.api.v1.mapper;
 
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeTypeDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassTypeDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryClassAttribute;
@@ -36,7 +35,6 @@ public class InventoryClassMapperTest {
         var newInventoryDTO = NewInventoryClassDTO
                 .builder()
                 .name("new class")
-                .type(InventoryClassTypeDTO.Building)
                 .attributes(
                         List.of(
                                 InventoryClassAttributeDTO
@@ -54,7 +52,6 @@ public class InventoryClassMapperTest {
         );
         assertThat(newInventoryClassModel).isNotNull();
         assertThat(newInventoryClassModel.getName()).isEqualTo(newInventoryDTO.name());
-        assertThat(newInventoryClassModel.getType().name()).isEqualTo(newInventoryDTO.type().name());
 
         assertThat(
                 newInventoryClassModel.getAttributes().size()

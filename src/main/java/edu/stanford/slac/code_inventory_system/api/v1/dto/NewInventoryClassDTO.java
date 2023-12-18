@@ -21,8 +21,11 @@ public record NewInventoryClassDTO(
         @Schema(description = "The description of the inventory class")
         String description,
         @NotNull
-        @Schema(description = "The type to which the inventory class belongs")
-        InventoryClassTypeDTO type,
+        @Schema(description = "The class id that thi class extend")
+        List<String> extendsClass,
+        @NotNull
+        @Schema(description = "The list of class id that can be child of this one")
+        List<String> permittedChildClass,
         @NotNull
         @Schema(description = "The list of attributes that can be used to specialize the inventory class")
         List<InventoryClassAttributeDTO> attributes

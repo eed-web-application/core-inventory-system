@@ -62,13 +62,15 @@ public class TestControllerHelperService {
             MockMvc mockMvc,
             ResultMatcher resultMatcher,
             Optional<String> userInfo,
-            String id
+            String id,
+            Optional<Boolean> resolveInheritance
     ) throws Exception {
         var requestBuilder = get(
                 "/v1/inventory/class/{id}",
                 id
         )
                 .accept(MediaType.APPLICATION_JSON);
+        resolveInheritance.ifPresent(b->requestBuilder.param("resolveInheritance", String.valueOf(b)));
         return executeHttpRequest(
                 new TypeReference<>() {
                 },
@@ -83,34 +85,17 @@ public class TestControllerHelperService {
             MockMvc mockMvc,
             ResultMatcher resultMatcher,
             Optional<String> userInfo,
-            Optional<List<InventoryClassTypeDTO>> inventoryClassTypeDTOList) throws Exception {
+            Optional<String> search) throws Exception {
         var requestBuilder = get(
                 "/v1/inventory/class"
         )
                 .accept(MediaType.APPLICATION_JSON);
-        inventoryClassTypeDTOList.ifPresent(typeList -> {
-            String[] typeArray = new String[typeList.size()];
-            typeList.stream().map(Enum::name).toList().toArray(typeArray);
-            requestBuilder.param("classTypes", typeArray);
-        });
-        return executeHttpRequest(
-                new TypeReference<>() {
-                },
-                mockMvc,
-                resultMatcher,
-                userInfo,
-                requestBuilder
-        );
-    }
-
-    public ApiResultResponse<List<InventoryClassTypeDTO>> inventoryClassControllerFindAllType(
-            MockMvc mockMvc,
-            ResultMatcher resultMatcher,
-            Optional<String> userInfo) throws Exception {
-        var requestBuilder = get(
-                "/v1/inventory/class/types"
-        )
-                .accept(MediaType.APPLICATION_JSON);
+//        inventoryClassTypeDTOList.ifPresent(typeList -> {
+//            String[] typeArray = new String[typeList.size()];
+//            typeList.stream().map(Enum::name).toList().toArray(typeArray);
+//            requestBuilder.param("classTypes", typeArray);
+//        });
+        search.ifPresent(s->requestBuilder.param("search", s));
         return executeHttpRequest(
                 new TypeReference<>() {
                 },

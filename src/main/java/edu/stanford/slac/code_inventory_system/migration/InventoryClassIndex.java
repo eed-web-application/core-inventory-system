@@ -31,7 +31,7 @@ public class InventoryClassIndex {
      * Ensure base index
      */
     private void ensureIndex() {
-        //entry index
+        // class name
         MongoDDLOps.createIndex(
                 InventoryClass.class,
                 mongoTemplate,
@@ -40,6 +40,28 @@ public class InventoryClassIndex {
                                 Sort.Direction.ASC
                         )
                         .named("name")
+                        .sparse()
+        );
+        // class extends id list
+        MongoDDLOps.createIndex(
+                InventoryClass.class,
+                mongoTemplate,
+                new Index().on(
+                                "extendsClass",
+                                Sort.Direction.ASC
+                        )
+                        .named("extendsClass")
+                        .sparse()
+        );
+        // child class id
+        MongoDDLOps.createIndex(
+                InventoryClass.class,
+                mongoTemplate,
+                new Index().on(
+                                "childClass",
+                                Sort.Direction.ASC
+                        )
+                        .named("permittedChildClass")
                         .sparse()
         );
     }

@@ -5,6 +5,7 @@ import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
 import edu.stanford.slac.ad.eed.baselib.model.AuthenticationToken;
 import edu.stanford.slac.ad.eed.baselib.model.Authorization;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
+import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryClassMapper;
 import edu.stanford.slac.code_inventory_system.exception.InventoryDomainAlreadyExists;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementNotFound;
 import edu.stanford.slac.code_inventory_system.exception.TagNotFound;
@@ -49,6 +50,8 @@ public class InventoryElementServiceTest {
     InventoryClassService inventoryClassService;
     @Autowired
     InventoryElementService inventoryElementService;
+    @Autowired
+    InventoryClassMapper inventoryClassMapper;
 
     @BeforeEach
     public void cleanCollection() {
@@ -390,7 +393,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -446,7 +448,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("building class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -465,7 +466,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("room class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -539,13 +539,131 @@ public class InventoryElementServiceTest {
     }
 
     @Test
+    public void createNewElementWithParentFailWithWrongChildClass() {
+        String newBuildingClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("building class a")
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        String newRoomClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("room class a")
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Room Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        String newFloorClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("Normal Floor")
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        // update building adding floor as child
+        InventoryClassDTO inventoryClassDTOBuildingToUpdate = assertDoesNotThrow(
+                ()->inventoryClassService.findById(newBuildingClassID, false)
+        );
+        UpdateInventoryClassDTO uicDTO =  inventoryClassMapper.toUpdate(inventoryClassDTOBuildingToUpdate);
+        boolean updateResult = assertDoesNotThrow(
+                ()->inventoryClassService.update(
+                        newBuildingClassID,
+                        uicDTO
+                                .toBuilder()
+                                .permittedChildClass(
+                                        List.of(newFloorClassID)
+                                )
+                                .build()
+                        )
+        );
+
+        String newDomainId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("New Domain")
+                                .description("This is the description for the new domain")
+                                .build()
+                )
+        );
+
+        String newRootElementId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        newDomainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Building Control 1")
+                                .description("Main control system building")
+                                .classId(newBuildingClassID)
+                                .attributes(
+                                        List.of(
+                                                InventoryElementAttributeValue
+                                                        .builder()
+                                                        .name("building-number")
+                                                        .value("34")
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        assertThat(newRootElementId).isNotNull().isNotEmpty();
+        // this should fail because the room class is not a
+        // possible child class
+        ControllerLogicException newParentElementId = assertThrows(
+                ControllerLogicException.class,
+                () -> inventoryElementService.createNew(
+                        newDomainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Room Control 1")
+                                .description("Main control system building")
+                                .classId(newRoomClassID)
+                                .parentId(newRootElementId)
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(newParentElementId.getErrorCode()).isEqualTo(-8);
+    }
+
+    @Test
     public void createNewElementWithParentFailWithBadParentOK() {
         String newBuildingClassID = assertDoesNotThrow(
                 () -> inventoryClassService.createNew(
                         NewInventoryClassDTO
                                 .builder()
                                 .name("building class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -593,7 +711,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("building class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -656,7 +773,6 @@ public class InventoryElementServiceTest {
                         NewInventoryClassDTO
                                 .builder()
                                 .name("building class a")
-                                .type(InventoryClassTypeDTO.Building)
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
