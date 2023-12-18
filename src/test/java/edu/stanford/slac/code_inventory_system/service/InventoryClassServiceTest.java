@@ -64,7 +64,7 @@ public class InventoryClassServiceTest {
         );
 
         var foundInventoryDTO = assertDoesNotThrow(
-                () -> inventoryClassService.findById(newInventoryClassId)
+                () -> inventoryClassService.findById(newInventoryClassId, false)
         );
 
         // check if the name has been normalized
@@ -91,7 +91,7 @@ public class InventoryClassServiceTest {
     public void testFailingSearchingNonExistingClassId() {
         InventoryClassNotFound notFoundException = assertThrows(
                 InventoryClassNotFound.class,
-                () -> inventoryClassService.findById("bad i")
+                () -> inventoryClassService.findById("bad i", false)
         );
         assertThat(notFoundException.getErrorCode())
                 .isEqualTo(-2);
@@ -198,7 +198,7 @@ public class InventoryClassServiceTest {
         assertThat(newFinalClassId).isNotNull();
 
         var fullInventoryClass = assertDoesNotThrow(
-                ()->inventoryClassService.findById(newFinalClassId)
+                ()->inventoryClassService.findById(newFinalClassId, true)
         );
 
         assertThat(fullInventoryClass.attributes())

@@ -64,7 +64,9 @@ public class InventoryClassController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<InventoryClassDTO> finById(
             Authentication authentication,
-            @PathVariable String id
+            @PathVariable String id,
+            @Parameter(name = "resolveInheritance", description = "Resolve the inheritance filling filed from the extended class")
+            @RequestParam(value = "resolveInheritance", defaultValue = "false") Optional<Boolean> resolveInheritance
     ) {
         // check for auth
         assertion(
@@ -76,7 +78,7 @@ public class InventoryClassController {
                 () -> authService.checkAuthentication(authentication)
         );
         return ApiResultResponse.of(
-                inventoryClassService.findById(id)
+                inventoryClassService.findById(id, resolveInheritance.orElse(false))
         );
     }
 
@@ -87,7 +89,9 @@ public class InventoryClassController {
     @Operation(summary = "Return all the classes")
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryClassSummaryDTO>> findAll(
-            Authentication authentication
+            Authentication authentication,
+            @Parameter(name = "search", description = "Search by text string")
+            @RequestParam(value = "search") Optional<String> search
             ){
         // check for auth
         assertion(
@@ -99,7 +103,7 @@ public class InventoryClassController {
                 () -> authService.checkAuthentication(authentication)
         );
         return ApiResultResponse.of(
-                inventoryClassService.findAll()
+                inventoryClassService.findAll(search)
         );
     }
 }

@@ -590,7 +590,7 @@ public class InventoryElementServiceTest {
 
         // update building adding floor as child
         InventoryClassDTO inventoryClassDTOBuildingToUpdate = assertDoesNotThrow(
-                ()->inventoryClassService.findById(newBuildingClassID)
+                ()->inventoryClassService.findById(newBuildingClassID, false)
         );
         UpdateInventoryClassDTO uicDTO =  inventoryClassMapper.toUpdate(inventoryClassDTOBuildingToUpdate);
         boolean updateResult = assertDoesNotThrow(

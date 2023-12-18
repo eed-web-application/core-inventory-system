@@ -6,17 +6,12 @@ import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryClassAttribute;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
 
@@ -83,7 +78,7 @@ public class InventoryClassService {
      * @throws edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException in case of error on database
      * @throws InventoryClassNotFound                                              if the inventory class will not be found
      */
-    public InventoryClassDTO findById(String id) {
+    public InventoryClassDTO findById(String id, boolean resolveInheritance) {
         var inventoryClass = wrapCatch(
                 () -> inventoryClassRepository.findById(
                         id
@@ -97,19 +92,20 @@ public class InventoryClassService {
                         .id(id)
                         .build()
         );
+        if(resolveInheritance) {
+            InheritedClassField inheritedClassField = InheritedClassField.builder().build();
+            getInheritedField(inventoryClass.getExtendsClass(), inheritedClassField);
 
-        InheritedClassField inheritedClassField = InheritedClassField.builder().build();
-        getInheritedField(inventoryClass.getExtendsClass(), inheritedClassField);
+            // add the principal class to the sets
+            inheritedClassField.extendsClass.addAll(inventoryClass.getExtendsClass());
+            inheritedClassField.permittedChildClass.addAll(inventoryClass.getPermittedChildClass());
+            inheritedClassField.attributes.addAll(inventoryClass.getAttributes());
 
-        // add the principal class to the sets
-        inheritedClassField.extendsClass.addAll(inventoryClass.getExtendsClass());
-        inheritedClassField.permittedChildClass.addAll(inventoryClass.getPermittedChildClass());
-        inheritedClassField.attributes.addAll(inventoryClass.getAttributes());
-
-        // override all found into the original class
-        inventoryClass.setExtendsClass(inheritedClassField.extendsClass.stream().toList());
-        inventoryClass.setPermittedChildClass(inheritedClassField.permittedChildClass.stream().toList());
-        inventoryClass.setAttributes(inheritedClassField.attributes.stream().toList());
+            // override all found into the original class
+            inventoryClass.setExtendsClass(inheritedClassField.extendsClass.stream().toList());
+            inventoryClass.setPermittedChildClass(inheritedClassField.permittedChildClass.stream().toList());
+            inventoryClass.setAttributes(inheritedClassField.attributes.stream().toList());
+        }
         return inventoryClassMapper.toDTO(inventoryClass);
 
     }
@@ -164,9 +160,9 @@ public class InventoryClassService {
      *
      * @return a list of all the class
      */
-    public List<InventoryClassSummaryDTO> findAll() {
+    public List<InventoryClassSummaryDTO> findAll(Optional<String> search) {
         var allClass = wrapCatch(
-                () -> inventoryClassRepository.findAll(),
+                () -> search.isPresent()? inventoryClassRepository.findAllByNameContainsIgnoreCase(search.get()):inventoryClassRepository.findAll(),
                 -1,
                 "InventoryClassService::findById"
         );
