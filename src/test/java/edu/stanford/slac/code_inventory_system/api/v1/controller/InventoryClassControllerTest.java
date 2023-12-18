@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -57,6 +58,8 @@ public class InventoryClassControllerTest {
                                 .builder()
                                 .name("Building 001")
                                 .description("description")
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -119,6 +122,8 @@ public class InventoryClassControllerTest {
                                     .builder()
                                     .name("Building %03d".formatted(finalIdx))
                                     .description("description")
+                                    .extendsClass(emptyList())
+                                    .permittedChildClass(emptyList())
                                     .attributes(
                                             List.of(
                                                     InventoryClassAttributeDTO

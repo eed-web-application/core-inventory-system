@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static com.google.common.collect.ImmutableList.of;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,7 +44,7 @@ public class InventoryClassServiceTest {
 
     @Test
     public void testCreateNewClass() {
-        var newInventoryDTO = NewInventoryClassDTO
+        var newInventoryClassDTO = NewInventoryClassDTO
                 .builder()
                 .name("new class")
                 .attributes(
@@ -59,7 +60,7 @@ public class InventoryClassServiceTest {
                 )
                 .build();
         String newInventoryClassId = assertDoesNotThrow(
-                () -> inventoryClassService.createNew(newInventoryDTO)
+                () -> inventoryClassService.createNew(newInventoryClassDTO)
         );
 
         var foundInventoryDTO = assertDoesNotThrow(
@@ -94,5 +95,118 @@ public class InventoryClassServiceTest {
         );
         assertThat(notFoundException.getErrorCode())
                 .isEqualTo(-2);
+    }
+
+    @Test
+    public void testInheritanceForSubclass() {
+        var newRootClassId = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(NewInventoryClassDTO
+                        .builder()
+                        .name("new base class")
+                        .attributes(
+                                of(
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("1")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+        );
+        assertThat(newRootClassId).isNotNull();
+        //middle class
+        var newMiddleClassIdOne = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(NewInventoryClassDTO
+                        .builder()
+                        .name("new middle class")
+                        .extendsClass(of(newRootClassId))
+                        .attributes(
+                                of(
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("2")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build(),
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("3")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+        );
+        assertThat(newMiddleClassIdOne).isNotNull();
+
+        //middle class
+        var newMiddleClassIdTwo = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(NewInventoryClassDTO
+                        .builder()
+                        .name("new middle class")
+                        .extendsClass(of(newRootClassId))
+                        .attributes(
+                                of(
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("3")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build(),
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("4")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+        );
+        assertThat(newMiddleClassIdTwo).isNotNull();
+
+        var newFinalClassId = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(NewInventoryClassDTO
+                        .builder()
+                        .name("new base class")
+                        .extendsClass(of(newMiddleClassIdTwo, newMiddleClassIdOne))
+                        .attributes(
+                                of(
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("5")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+        );
+        assertThat(newFinalClassId).isNotNull();
+
+        var fullInventoryClass = assertDoesNotThrow(
+                ()->inventoryClassService.findById(newFinalClassId)
+        );
+
+        assertThat(fullInventoryClass.attributes())
+                .hasSize(5)
+                .extracting(InventoryClassAttributeDTO::name)
+                .contains("1","2","3","4","5");
+        assertThat(fullInventoryClass.extendsClass())
+                .hasSize(3)
+                .contains(newRootClassId, newMiddleClassIdOne, newMiddleClassIdTwo);
     }
 }

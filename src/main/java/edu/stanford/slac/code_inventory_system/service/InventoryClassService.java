@@ -1,17 +1,22 @@
 package edu.stanford.slac.code_inventory_system.service;
 
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassSummaryDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.UpdateInventoryClassDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryClassMapper;
 import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
+import edu.stanford.slac.code_inventory_system.model.InventoryClassAttribute;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.stanford.slac.code_inventory_system.exception.Utility.wrapCatch;
 
@@ -48,11 +53,11 @@ public class InventoryClassService {
      */
     public boolean update(String id, UpdateInventoryClassDTO updateInventoryClassDTO) {
         InventoryClass icToUpdate = wrapCatch(
-                ()->inventoryClassRepository.findById(id),
+                () -> inventoryClassRepository.findById(id),
                 -1,
                 "InventoryClassService::createNew"
         ).orElseThrow(
-                ()->InventoryClassNotFound.classNotFoundById()
+                () -> InventoryClassNotFound.classNotFoundById()
                         .errorCode(-1)
                         .id(id)
                         .build()
@@ -61,7 +66,7 @@ public class InventoryClassService {
         ;
         var updatedInventoryClass = wrapCatch(
                 () -> inventoryClassRepository.save(
-                                icToUpdate
+                        icToUpdate
 
                 ),
                 -1,
@@ -79,24 +84,80 @@ public class InventoryClassService {
      * @throws InventoryClassNotFound                                              if the inventory class will not be found
      */
     public InventoryClassDTO findById(String id) {
-        var optionalInventoryClass = wrapCatch(
+        var inventoryClass = wrapCatch(
                 () -> inventoryClassRepository.findById(
                         id
                 ),
                 -1,
                 "InventoryClassService::findById"
+        ).orElseThrow(
+                () -> InventoryClassNotFound
+                        .classNotFoundById()
+                        .errorCode(-2)
+                        .id(id)
+                        .build()
         );
-        return optionalInventoryClass
-                .map(inventoryClassMapper::toDTO)
-                .orElseThrow(
-                        () -> InventoryClassNotFound
-                                .classNotFoundById()
-                                .errorCode(-2)
-                                .id(id)
-                                .build()
-                );
+
+        InheritedClassField inheritedClassField = InheritedClassField.builder().build();
+        getInheritedField(inventoryClass.getExtendsClass(), inheritedClassField);
+
+        // add the principal class to the sets
+        inheritedClassField.extendsClass.addAll(inventoryClass.getExtendsClass());
+        inheritedClassField.permittedChildClass.addAll(inventoryClass.getPermittedChildClass());
+        inheritedClassField.attributes.addAll(inventoryClass.getAttributes());
+
+        // override all found into the original class
+        inventoryClass.setExtendsClass(inheritedClassField.extendsClass.stream().toList());
+        inventoryClass.setPermittedChildClass(inheritedClassField.permittedChildClass.stream().toList());
+        inventoryClass.setAttributes(inheritedClassField.attributes.stream().toList());
+        return inventoryClassMapper.toDTO(inventoryClass);
+
     }
 
+    /**
+     * Represents a field of the inherited class.
+     */
+    @Builder
+    private static class InheritedClassField {
+        @Builder.Default
+        Set<String> extendsClass = new HashSet<>();
+        @Builder.Default
+        Set<String> permittedChildClass = new HashSet<>();
+        @Builder.Default
+        Set<InventoryClassAttribute> attributes = new HashSet<>();
+    }
+
+    /**
+     * Retrieves the inherited fields from the given list of subclass IDs and populates the provided InheritedClassField object.
+     *
+     * @param subclassIds The list of subclass IDs from which to retrieve the inherited fields
+     * @param inheritedClassField The InheritedClassField object to populate with the inherited fields
+     */
+    private void getInheritedField(@NonNull List<String> subclassIds, @NonNull InheritedClassField inheritedClassField) {
+        if (subclassIds.isEmpty()) return;
+        for (String classId : subclassIds) {
+            var inventoryClass = wrapCatch(
+                    () -> inventoryClassRepository.findById(
+                            classId
+                    ),
+                    -1
+            ).orElseThrow(
+                    () -> InventoryClassNotFound
+                            .classNotFoundById()
+                            .errorCode(-2)
+                            .id(classId)
+                            .build()
+            );
+
+            inheritedClassField.extendsClass.addAll(inventoryClass.getExtendsClass());
+            inheritedClassField.permittedChildClass.addAll(inventoryClass.getPermittedChildClass());
+            inheritedClassField.attributes.addAll(inventoryClass.getAttributes());
+
+            if (!inventoryClass.getExtendsClass().isEmpty()) {
+                getInheritedField(inventoryClass.getExtendsClass(), inheritedClassField);
+            }
+        }
+    }
 
     /**
      * Return all the found class

@@ -80,6 +80,8 @@ public class BuildEnvironmentForElementTest {
                                 .builder()
                                 .name("Building")
                                 .description("building")
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -101,6 +103,8 @@ public class BuildEnvironmentForElementTest {
                                 .builder()
                                 .name("Experimental Facility")
                                 .description("experimental facility")
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -123,24 +127,32 @@ public class BuildEnvironmentForElementTest {
                                 .name("Floor")
                                 .description("simple floor")
                                 .attributes(emptyList())
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
                                 .build(),
                         NewInventoryClassDTO
                                 .builder()
                                 .name("Office")
                                 .description("simple office")
                                 .attributes(emptyList())
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
                                 .build(),
                         NewInventoryClassDTO
                                 .builder()
                                 .name("Laboratory")
                                 .description("laboratory")
                                 .attributes(emptyList())
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
                                 .build(),
                         NewInventoryClassDTO
                                 .builder()
                                 .name("Server room")
                                 .description("server room")
                                 .attributes(emptyList())
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
                                 .build()
                 ),
                 NewInventoryDomainDTO
@@ -165,7 +177,7 @@ public class BuildEnvironmentForElementTest {
         );
     }
 
-    public class EnvironmentResult {
+    public static class EnvironmentResult {
         public String domainId;
 
         public Map<String, String> classIds = new HashMap<>();
