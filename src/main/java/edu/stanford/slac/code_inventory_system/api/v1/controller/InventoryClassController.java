@@ -90,7 +90,7 @@ public class InventoryClassController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryClassSummaryDTO>> findAll(
             Authentication authentication,
-            @Parameter(name = "search", description = "Search by text string")
+            @Parameter(name = "search", description = "Search by filtering on cass name that contains the input string")
             @RequestParam(value = "search") Optional<String> search
             ){
         // check for auth
