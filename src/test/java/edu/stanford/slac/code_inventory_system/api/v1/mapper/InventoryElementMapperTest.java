@@ -1,6 +1,6 @@
 package edu.stanford.slac.code_inventory_system.api.v1.mapper;
 
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementAttributeValue;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementAttributeValueDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryElementDTO;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementAttributeNotForClass;
@@ -72,7 +72,7 @@ public class InventoryElementMapperTest {
                                 .classId("id")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("wrong name")
                                                         .value(String.valueOf(Long.MAX_VALUE))
@@ -117,12 +117,12 @@ public class InventoryElementMapperTest {
                                 .classId("id")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-1")
                                                         .value(String.valueOf(Long.MAX_VALUE))
                                                         .build(),
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-2")
                                                         .value(String.valueOf(Long.MIN_VALUE))
@@ -175,12 +175,12 @@ public class InventoryElementMapperTest {
                                 .classId("id")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-1")
                                                         .value(String.valueOf(Double.MAX_VALUE))
                                                         .build(),
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-2")
                                                         .value(String.valueOf(Double.MIN_VALUE))
@@ -233,12 +233,12 @@ public class InventoryElementMapperTest {
                                 .classId("id")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-1")
                                                         .value("True")
                                                         .build(),
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-2")
                                                         .value("0")
@@ -286,7 +286,7 @@ public class InventoryElementMapperTest {
                                 .classId("id")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-1")
                                                         .value("1900-12-31")
@@ -336,7 +336,7 @@ public class InventoryElementMapperTest {
                                 .classId("id")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-1")
                                                         .value("1900-12-31T00:00:00")
@@ -389,7 +389,7 @@ public class InventoryElementMapperTest {
                                 .classId("id")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("attr-1")
                                                         .value("this is a string")
@@ -430,9 +430,9 @@ public class InventoryElementMapperTest {
         assertThat(invElemDTO.attributes())
                 .hasSize(1);
         AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
-                .isOfAnyClassIn(InventoryElementAttributeValue.class)
-                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
-        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                .isOfAnyClassIn(InventoryElementAttributeValueDTO.class)
+                .extracting(InventoryElementAttributeValueDTO::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValueDTO) invElemDTO.attributes().get(0)).value()).isEqualTo(
                 "this is a string"
         );
     }
@@ -458,9 +458,9 @@ public class InventoryElementMapperTest {
         assertThat(invElemDTO.attributes())
                 .hasSize(1);
         AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
-                .isOfAnyClassIn(InventoryElementAttributeValue.class)
-                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
-        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                .isOfAnyClassIn(InventoryElementAttributeValueDTO.class)
+                .extracting(InventoryElementAttributeValueDTO::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValueDTO) invElemDTO.attributes().get(0)).value()).isEqualTo(
                 "true"
         );
     }
@@ -486,9 +486,9 @@ public class InventoryElementMapperTest {
         assertThat(invElemDTO.attributes())
                 .hasSize(1);
         AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
-                .isOfAnyClassIn(InventoryElementAttributeValue.class)
-                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
-        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                .isOfAnyClassIn(InventoryElementAttributeValueDTO.class)
+                .extracting(InventoryElementAttributeValueDTO::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValueDTO) invElemDTO.attributes().get(0)).value()).isEqualTo(
                 String.valueOf(Long.MAX_VALUE)
         );
     }
@@ -514,9 +514,9 @@ public class InventoryElementMapperTest {
         assertThat(invElemDTO.attributes())
                 .hasSize(1);
         AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
-                .isOfAnyClassIn(InventoryElementAttributeValue.class)
-                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
-        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                .isOfAnyClassIn(InventoryElementAttributeValueDTO.class)
+                .extracting(InventoryElementAttributeValueDTO::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValueDTO) invElemDTO.attributes().get(0)).value()).isEqualTo(
                 String.valueOf(Double.MAX_VALUE)
         );
     }
@@ -548,9 +548,9 @@ public class InventoryElementMapperTest {
         assertThat(invElemDTO.attributes())
                 .hasSize(1);
         AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
-                .isOfAnyClassIn(InventoryElementAttributeValue.class)
-                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
-        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                .isOfAnyClassIn(InventoryElementAttributeValueDTO.class)
+                .extracting(InventoryElementAttributeValueDTO::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValueDTO) invElemDTO.attributes().get(0)).value()).isEqualTo(
                 "2000-12-31"
         );
     }
@@ -585,9 +585,9 @@ public class InventoryElementMapperTest {
         assertThat(invElemDTO.attributes())
                 .hasSize(1);
         AssertionsForClassTypes.assertThat(invElemDTO.attributes().get(0))
-                .isOfAnyClassIn(InventoryElementAttributeValue.class)
-                .extracting(InventoryElementAttributeValue::name).isEqualTo("attr-1");
-        assertThat(((InventoryElementAttributeValue) invElemDTO.attributes().get(0)).value()).isEqualTo(
+                .isOfAnyClassIn(InventoryElementAttributeValueDTO.class)
+                .extracting(InventoryElementAttributeValueDTO::name).isEqualTo("attr-1");
+        assertThat(((InventoryElementAttributeValueDTO) invElemDTO.attributes().get(0)).value()).isEqualTo(
                 "2000-12-31T00:00:00"
         );
     }

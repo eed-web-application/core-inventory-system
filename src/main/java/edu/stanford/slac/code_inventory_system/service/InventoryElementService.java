@@ -10,17 +10,18 @@ import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryElementMapper;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.QueryParameterMapper;
 import edu.stanford.slac.code_inventory_system.exception.*;
-import edu.stanford.slac.code_inventory_system.model.InventoryClass;
-import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
-import edu.stanford.slac.code_inventory_system.model.InventoryElement;
-import edu.stanford.slac.code_inventory_system.model.Tag;
+import edu.stanford.slac.code_inventory_system.model.*;
+import edu.stanford.slac.code_inventory_system.model.value.AbstractValue;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
+import edu.stanford.slac.code_inventory_system.repository.InventoryElementAttributeHistoryRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryElementRepository;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class InventoryElementService {
     InventoryClassRepository inventoryClassRepository;
     InventoryDomainRepository inventoryDomainRepository;
     InventoryElementRepository inventoryElementRepository;
+    InventoryElementAttributeHistoryRepository inventoryElementAttributeHistoryRepository;
 
     /**
      * Create new inventory domain, after the name normalization
@@ -74,7 +76,7 @@ public class InventoryElementService {
         );
 
         // create tag id
-        var inventoryDomainToSave =  inventoryElementMapper.toModel(
+        var inventoryDomainToSave = inventoryElementMapper.toModel(
                 newInventoryDomainDTO
                         .toBuilder()
                         .name(
@@ -83,7 +85,7 @@ public class InventoryElementService {
                         .build()
         );
         inventoryDomainToSave.getTags().forEach(
-                tag->tag.toBuilder().id(UUID.randomUUID().toString()).build()
+                tag -> tag.toBuilder().id(UUID.randomUUID().toString()).build()
         );
 
         // name normalization
@@ -95,7 +97,7 @@ public class InventoryElementService {
         );
 
         // update authorization for the domain
-        if(newInventoryDomainDTO.authorizations()!=null) {
+        if (newInventoryDomainDTO.authorizations() != null) {
             manageAuthorizationForDomain(newlyCreatedDomain, newInventoryDomainDTO.authorizations());
         }
 
@@ -154,7 +156,7 @@ public class InventoryElementService {
         );
 
         // update authorization for the domain
-        if(updateDomainDTO.authorizations()!=null) {
+        if (updateDomainDTO.authorizations() != null) {
             manageAuthorizationForDomain(savedDomain, updateDomainDTO.authorizations());
         }
 
@@ -173,7 +175,7 @@ public class InventoryElementService {
      * @param domain         the domain for which we need to manage the authorization
      * @param authorizations the list on the new authorization old and new
      */
-    private void manageAuthorizationForDomain(InventoryDomain domain, @Valid  List<AuthorizationDTO> authorizations) {
+    private void manageAuthorizationForDomain(InventoryDomain domain, @Valid List<AuthorizationDTO> authorizations) {
         String domainAuthorizationResource = "/cis/domain/%s".formatted(domain.getId());
         List<AuthorizationDTO> allAuthorizationForDomain = new ArrayList<>(authService.findByResourceIs(domainAuthorizationResource));
         for (AuthorizationDTO authorization :
@@ -352,7 +354,7 @@ public class InventoryElementService {
             InventoryClass parentClass = inventoryClassRepository.findById(
                     parentElement.getClassId()
             ).orElseThrow(
-                    ()->InventoryClassNotFound.classNotFoundById()
+                    () -> InventoryClassNotFound.classNotFoundById()
                             .errorCode(-7)
                             .id(parentElement.getClassId())
                             .build()
@@ -362,13 +364,13 @@ public class InventoryElementService {
             assertion(
                     ControllerLogicException.builder()
                             .errorCode(-8)
-                    .errorMessage("Parent class cannot permit to have this kind of element as child")
+                            .errorMessage("Parent class cannot permit to have this kind of element as child")
                             .build(),
-                    ()->any(
+                    () -> any(
                             // if is empty element from any class can be a child
-                            ()->parentClass.getPermittedChildClass()==null || parentClass.getPermittedChildClass().isEmpty(),
+                            () -> parentClass.getPermittedChildClass() == null || parentClass.getPermittedChildClass().isEmpty(),
                             // the class id of the child need to mach one within the list
-                            ()->parentClass.getPermittedChildClass().stream().filter(c->c.compareTo(inventoryElementToSave.getClassId())==0).count()==1
+                            () -> parentClass.getPermittedChildClass().stream().filter(c -> c.compareTo(inventoryElementToSave.getClassId()) == 0).count() == 1
                     )
             );
 
@@ -405,6 +407,7 @@ public class InventoryElementService {
      * @param elementId                 the element unique identifier
      * @param updateInventoryElementDTO the information updatable
      */
+    @Transactional
     public void update(String domainId, String elementId, @Valid UpdateInventoryElementDTO updateInventoryElementDTO) {
         if (updateInventoryElementDTO == null) return;
 
@@ -440,11 +443,18 @@ public class InventoryElementService {
                 () -> Objects.equals(inventoryElementToUpdate.getDomainId(), domainId)
         );
 
+        // keep away this for check what are the modified attribute to
+        // update the history
+        List<AbstractValue> oldAttribute = inventoryElementToUpdate.getAttributes();
+
         // update the model
         inventoryElementMapper.updateModel(
                 inventoryElementToUpdate,
                 updateInventoryElementDTO
         );
+
+        // update attribute value history
+        updateAttributeHistory(domainId, elementId, oldAttribute, inventoryElementToUpdate.getAttributes());
 
         // checks for tag id existence
         if (!inventoryElementToUpdate.getTags().isEmpty()) {
@@ -458,12 +468,47 @@ public class InventoryElementService {
                     )
             );
         }
+
         // save element
         var updatedInventoryElement = wrapCatch(
                 () -> inventoryElementRepository.save(inventoryElementToUpdate),
                 -5
         );
         log.info("User '{}' updated the inventory element '{}[{}]' ", updatedInventoryElement.getCreatedBy(), updatedInventoryElement.getName(), inventoryDomainFound.getName());
+    }
+
+    /**
+     * Updates the attribute history of a specified element in a specific domain.
+     *
+     * @param domainId      the ID of the domain where the element belongs
+     * @param elementId     the ID of the element whose attribute history needs to be updated
+     * @param oldAttribute  the previous value of the attribute
+     * @param newAttributes the updated values of the attribute
+     */
+    private void updateAttributeHistory(
+            String domainId,
+            String elementId,
+            @NotNull List<AbstractValue> oldAttribute,
+            @NotNull List<AbstractValue> newAttributes
+    ) {
+        for (AbstractValue oldValue : oldAttribute) {
+            if (newAttributes.stream()
+                    .noneMatch(a -> a.equals(oldValue))
+            ) {
+                // the oldValue has been updated or removed
+                var archivedChangedValue = wrapCatch(
+                        () -> inventoryElementAttributeHistoryRepository.save(
+                                InventoryElementAttributeHistory.builder()
+                                        .inventoryDomainId(domainId)
+                                        .inventoryElementId(elementId)
+                                        .value(oldValue)
+                                        .build()
+                        ),
+                        -1
+                );
+                log.info("Attribute {} has be modified by {}", archivedChangedValue.getValue().getName(), archivedChangedValue.getCreatedBy());
+            }
+        }
     }
 
     /**
@@ -494,11 +539,12 @@ public class InventoryElementService {
 
     /**
      * Return all the child of an item
-     * @param domainId the domain id
+     *
+     * @param domainId  the domain id
      * @param elementId the element id root for the child
      * @return the list of the summary of all the children
      */
-    public List<InventoryElementSummaryDTO> getAllChildren(String domainId, String elementId){
+    public List<InventoryElementSummaryDTO> getAllChildren(String domainId, String elementId) {
         // check if domain exists
         assertion(
                 InventoryDomainNotFound.domainNotFoundById()
@@ -508,16 +554,17 @@ public class InventoryElementService {
                 () -> inventoryDomainRepository.existsById(domainId)
         );
         return inventoryElementRepository.findAllByDomainIdIsAndParentIdIs(
-                domainId,
-                elementId)
+                        domainId,
+                        elementId)
                 .stream()
                 .map(
-                inventoryElementMapper::toSummaryDTO
-        ).toList();
+                        inventoryElementMapper::toSummaryDTO
+                ).toList();
     }
 
     /**
      * Perform the search operation on all inventory element
+     *
      * @param queryParameterDTO the query information
      * @return the list of found element
      */
@@ -531,5 +578,27 @@ public class InventoryElementService {
                 -1
         );
         return found.stream().map(inventoryElementMapper::toSummaryDTO).toList();
+    }
+
+    /**
+     * Finds the history of a specific attribute for a given domain, element, and attribute name.
+     *
+     * @param domainId      the ID of the inventory domain
+     * @param elementId     the ID of the inventory element
+     * @return a list of InventoryElementAttributeHistory objects representing the attribute history
+     */
+    public List<InventoryElementAttributeHistoryDTO> findAllAttributeHistory(
+            String domainId,
+            String elementId
+    ) {
+        var foundAttributeHistory = wrapCatch(
+                () -> inventoryElementAttributeHistoryRepository.findAllByInventoryDomainIdIsAndInventoryElementIdIs(
+                        domainId, elementId),
+                -1
+        );
+        return foundAttributeHistory
+                .stream()
+                .map(history -> inventoryElementMapper.toDTO(history))
+                .toList();
     }
 }

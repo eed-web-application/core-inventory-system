@@ -5,6 +5,7 @@ import edu.stanford.slac.ad.eed.baselib.exception.NotAuthorized;
 import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassSummaryDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementAttributeHistoryDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
 import edu.stanford.slac.code_inventory_system.service.InventoryClassService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -86,7 +87,7 @@ public class InventoryClassController {
     @GetMapping(
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    @Operation(summary = "Return all the classes")
+    @Operation(summary = "return the found class")
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryClassSummaryDTO>> findAll(
             Authentication authentication,

@@ -8,7 +8,6 @@ import lombok.ToString;
 import org.springframework.data.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -41,21 +40,19 @@ public class InventoryElement {
      */
     private String classId;
     /**
-     * Is the unique id of the parend in the inventory
+     * Is the unique id of the parent in the inventory
      */
     private String parentId;
     /**
      * represent the full three path from the root to this element that is the leaf
      */
     private String fullTreePath;
-
     /**
      *  Indicate for which other InventoryElement this is the implementation
      *  For example an element that represent a Server001, during the year
      *  can be implemented using different server machine.
      */
     private String implementationFor;
-
     /**
      * Teh value for the attributes
      */
@@ -70,7 +67,7 @@ public class InventoryElement {
      * IS the history of that element
      */
     @Builder.Default
-    private List<InventoryElementHistory> history = emptyList();
+    private List<InventoryMaintenance> maintenanceHistory = emptyList();
     /**
      * Define the ids of the tag associated with the element
      */

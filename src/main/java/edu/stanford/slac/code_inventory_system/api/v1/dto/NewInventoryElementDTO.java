@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Collections;
 import java.util.List;
 @Validated
 @Builder(toBuilder = true)
@@ -31,4 +30,4 @@ public record NewInventoryElementDTO(
         @Schema(description = "The list of tag that describe the element")
         List<String> tags,
         @Schema(description = "The values for the element attributes(will be checked against those defined in the class)")
-        List<InventoryElementAttributeValue> attributes){}
+        List<InventoryElementAttributeValueDTO> attributes){}

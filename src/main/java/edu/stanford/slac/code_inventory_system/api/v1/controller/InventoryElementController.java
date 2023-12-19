@@ -266,6 +266,44 @@ public class InventoryElementController {
         );
     }
 
+
+    @GetMapping(
+            path = "/domain/{domainId}/element/{elementId}/attributes/history",
+            produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(summary = "Return all history for the element attributes")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResultResponse<List<InventoryElementAttributeHistoryDTO>> findAllAttributeHistory(
+            Authentication authentication,
+            @Parameter(name = "domainId", description = "The domain id that own the element")
+            @PathVariable(value = "domainId") String domainId,
+            @Parameter(name = "elementId", description = "The element id that own the attribute")
+            @PathVariable(value = "elementId") String elementId
+    ){
+        // check for auth
+        assertion(
+                NotAuthorized.notAuthorizedBuilder()
+                        .errorCode(-1)
+                        .errorDomain("InventoryElementController::findAllElements")
+                        .build(),
+                // should be authenticated
+                () -> authService.checkAuthentication(authentication),
+                ()->any(
+                        // should be root  for update the domain
+                        () -> authService.checkForRoot(authentication),
+                        // or a writer for update the domain
+                        () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                                authentication,
+                                // only admin can update the domain
+                                AuthorizationTypeDTO.Read,
+                                "/cis/domain/%s".formatted(domainId))
+                )
+        );
+        return ApiResultResponse.of(
+                inventoryElementService.findAllAttributeHistory(domainId, elementId)
+        );
+    }
+
     @GetMapping(
             path = "/domain/{domainId}/element/{elementId}/children",
             produces = {MediaType.APPLICATION_JSON_VALUE}

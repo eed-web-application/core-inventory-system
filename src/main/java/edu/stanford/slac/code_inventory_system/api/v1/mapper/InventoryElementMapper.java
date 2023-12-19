@@ -10,10 +10,7 @@ import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementAttributeNotForClass;
 import edu.stanford.slac.code_inventory_system.exception.TagNotFound;
-import edu.stanford.slac.code_inventory_system.model.InventoryClass;
-import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
-import edu.stanford.slac.code_inventory_system.model.InventoryElement;
-import edu.stanford.slac.code_inventory_system.model.Tag;
+import edu.stanford.slac.code_inventory_system.model.*;
 import edu.stanford.slac.code_inventory_system.model.value.*;
 import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
@@ -27,7 +24,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static edu.stanford.slac.code_inventory_system.config.AppProperties.CIS_DOMAIN_AUTH_FORMAT;
@@ -81,6 +77,12 @@ public abstract class InventoryElementMapper {
 
     @Mapping(target = "tags", expression = "java(toDTOTagsFromId(inventoryElement.getDomainId(),inventoryElement.getTags()))")
     public abstract InventoryElementSummaryDTO toSummaryDTO(InventoryElement inventoryElement);
+
+
+
+    @Mapping(target = "value", expression = "java(getInventoryElementAttributeValueDTO(inventoryElementAttributeHistory.getValue()))")
+    public abstract InventoryElementAttributeHistoryDTO toDTO(InventoryElementAttributeHistory inventoryElementAttributeHistory);
+
     /**
      * return the list of the authorization DTO from the domain id
      * @param domainId the id of the domain
@@ -92,9 +94,11 @@ public abstract class InventoryElementMapper {
     }
 
     /**
+     * Converts a list of AuthenticationTokenDTO objects to a list of AuthenticationToken objects.
+     * If the input list is null or empty, an empty list is returned.
      *
-     * @param authenticationTokenDTOS
-     * @return
+     * @param authenticationTokenDTOS the list of AuthenticationTokenDTO objects to convert
+     * @return the list of AuthenticationToken objects
      */
     public List<AuthenticationToken> toAuthenticationToken(List<AuthenticationTokenDTO> authenticationTokenDTOS) {
         if(authenticationTokenDTOS == null || authenticationTokenDTOS.isEmpty()) return emptyList();
@@ -106,10 +110,12 @@ public abstract class InventoryElementMapper {
     }
 
     /**
+     * Converts a list of tag IDs to a list of TagDTO objects.
      *
-     * @param domainId
-     * @param tagsId
-     * @return
+     * @param domainId the unique ID of the domain
+     * @param tagsId the list of tag IDs
+     * @return the list of TagDTO objects
+     * @throws TagNotFound if any of the tag IDs cannot be found in the inventoryDomainRepository
      */
     public List<TagDTO> toDTOTagsFromId(String domainId, List<String> tagsId) {
         List<TagDTO> result = new ArrayList<>();
@@ -130,11 +136,21 @@ public abstract class InventoryElementMapper {
         return result;
     }
 
+    /**
+     * Converts a list of AbstractValue objects to a list of InventoryElementAttributeValue objects with string values.
+     *
+     * @param classId                       the id of the inventory class
+     * @param inventoryElementAttributeValueDTOS the list of InventoryElementAttributeValueDTO objects to convert
+     * @return the list of InventoryElementAttributeValue objects with string values
+     * @throws InventoryClassNotFound       if the inventory class with the given id is not found
+     * @throws InventoryElementAttributeNotForClass  if the attribute is not found in the inventory class
+     * @throws ControllerLogicException     if an invalid attribute type is encountered
+     */
     public List<AbstractValue> toElementAttributeWithClass(
             String classId,
-            List<InventoryElementAttributeValue> inventoryElementAttributeValues) {
+            List<InventoryElementAttributeValueDTO> inventoryElementAttributeValueDTOS) {
         List<AbstractValue> abstractAttributeList = new ArrayList<>();
-        if (inventoryElementAttributeValues == null) return abstractAttributeList;
+        if (inventoryElementAttributeValueDTOS == null) return abstractAttributeList;
         InventoryClass ic = wrapCatch(
                 () -> inventoryClassRepository.findById(classId),
                 -1
@@ -147,7 +163,7 @@ public abstract class InventoryElementMapper {
         );
 
         // check for the all attribute and convert it
-        for (var attributeValue : inventoryElementAttributeValues) {
+        for (var attributeValue : inventoryElementAttributeValueDTOS) {
             var attributeFound = ic.getAttributes().stream().filter(
                     attr -> attr.getName().compareToIgnoreCase(attributeValue.name()) == 0
             ).findFirst().orElseThrow(
@@ -219,63 +235,76 @@ public abstract class InventoryElementMapper {
     }
 
     /**
+     * Converts a list of AbstractValue objects to a list of InventoryElementAttributeValue objects with string values.
      *
-     * @param inventoryElementAttributeClass
-     * @return
+     * @param inventoryElementAttributeClass the list of AbstractValue objects to convert
+     * @return the list of InventoryElementAttributeValue objects with string values
+     * @throws ControllerLogicException if an invalid attribute type is encountered
      */
-    public List<InventoryElementAttributeValue> toElementAttributeWithString(
+    public List<InventoryElementAttributeValueDTO> toElementAttributeWithString(
             List<AbstractValue> inventoryElementAttributeClass) {
-        List<InventoryElementAttributeValue> resultList = new ArrayList<>();
+        List<InventoryElementAttributeValueDTO> resultList = new ArrayList<>();
         if (inventoryElementAttributeClass == null) return resultList;
         for (AbstractValue abstractValue : inventoryElementAttributeClass) {
-            InventoryElementAttributeValue newAttributeValue = null;
-            Class<? extends AbstractValue> valueType = abstractValue.getClass();
-            if (valueType.isAssignableFrom(StringValue.class)) {
-                newAttributeValue = InventoryElementAttributeValue
-                        .builder()
-                        .name(abstractValue.getName())
-                        .value(((StringValue) abstractValue).getValue())
-                        .build();
-            } else if (valueType.isAssignableFrom(BooleanValue.class)) {
-                newAttributeValue = InventoryElementAttributeValue
-                        .builder()
-                        .name(abstractValue.getName())
-                        .value(((BooleanValue) abstractValue).getValue().toString())
-                        .build();
-            } else if (valueType.isAssignableFrom(NumberValue.class)) {
-                newAttributeValue = InventoryElementAttributeValue
-                        .builder()
-                        .name(abstractValue.getName())
-                        .value(((NumberValue) abstractValue).getValue().toString())
-                        .build();
-            } else if (valueType.isAssignableFrom(DoubleValue.class)) {
-                newAttributeValue = InventoryElementAttributeValue
-                        .builder()
-                        .name(abstractValue.getName())
-                        .value(((DoubleValue) abstractValue).getValue().toString())
-                        .build();
-            } else if (valueType.isAssignableFrom(DateValue.class)) {
-                newAttributeValue = InventoryElementAttributeValue
-                        .builder()
-                        .name(abstractValue.getName())
-                        .value(((DateValue) abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                        .build();
-            } else if (valueType.isAssignableFrom(DateTimeValue.class)) {
-                newAttributeValue = InventoryElementAttributeValue
-                        .builder()
-                        .name(abstractValue.getName())
-                        .value(((DateTimeValue) abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                        .build();
-            } else {
-                throw ControllerLogicException.builder()
-                        .errorCode(-4)
-                        .errorMessage("Invalid attribute type")
-                        .errorDomain("InventoryElementMapper::toElementAttributeWithClass")
-                        .build();
-            }
-            resultList.add(newAttributeValue);
+            resultList.add(getInventoryElementAttributeValueDTO(abstractValue));
         }
         return resultList;
+    }
+
+    /**
+     * Retrieves an InventoryElementAttributeValueDTO based on the given AbstractValue.
+     *
+     * @param abstractValue the AbstractValue to convert
+     * @return the corresponding InventoryElementAttributeValueDTO
+     * @throws ControllerLogicException if an invalid attribute type is encountered
+     */
+    protected InventoryElementAttributeValueDTO getInventoryElementAttributeValueDTO(AbstractValue abstractValue) {
+        InventoryElementAttributeValueDTO newAttributeValue = null;
+        Class<? extends AbstractValue> valueType = abstractValue.getClass();
+        if (valueType.isAssignableFrom(StringValue.class)) {
+            newAttributeValue = InventoryElementAttributeValueDTO
+                    .builder()
+                    .name(abstractValue.getName())
+                    .value(((StringValue) abstractValue).getValue())
+                    .build();
+        } else if (valueType.isAssignableFrom(BooleanValue.class)) {
+            newAttributeValue = InventoryElementAttributeValueDTO
+                    .builder()
+                    .name(abstractValue.getName())
+                    .value(((BooleanValue) abstractValue).getValue().toString())
+                    .build();
+        } else if (valueType.isAssignableFrom(NumberValue.class)) {
+            newAttributeValue = InventoryElementAttributeValueDTO
+                    .builder()
+                    .name(abstractValue.getName())
+                    .value(((NumberValue) abstractValue).getValue().toString())
+                    .build();
+        } else if (valueType.isAssignableFrom(DoubleValue.class)) {
+            newAttributeValue = InventoryElementAttributeValueDTO
+                    .builder()
+                    .name(abstractValue.getName())
+                    .value(((DoubleValue) abstractValue).getValue().toString())
+                    .build();
+        } else if (valueType.isAssignableFrom(DateValue.class)) {
+            newAttributeValue = InventoryElementAttributeValueDTO
+                    .builder()
+                    .name(abstractValue.getName())
+                    .value(((DateValue) abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                    .build();
+        } else if (valueType.isAssignableFrom(DateTimeValue.class)) {
+            newAttributeValue = InventoryElementAttributeValueDTO
+                    .builder()
+                    .name(abstractValue.getName())
+                    .value(((DateTimeValue) abstractValue).getValue().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                    .build();
+        } else {
+            throw ControllerLogicException.builder()
+                    .errorCode(-4)
+                    .errorMessage("Invalid attribute type")
+                    .errorDomain("InventoryElementMapper::toElementAttributeWithClass")
+                    .build();
+        }
+        return newAttributeValue;
     }
 
 }

@@ -1,6 +1,5 @@
 package edu.stanford.slac.code_inventory_system.model;
 
-import edu.stanford.slac.code_inventory_system.model.value.DateTimeValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryElementHistory {
+public class InventoryMaintenance {
     /**
      * The time stamp when the event is occurred
      */
@@ -24,7 +23,7 @@ public class InventoryElementHistory {
     /**
      * the type of the record
      */
-    private InventoryElementHistoryType type;
+    private InventoryMaintenanceHistoryType type;
 
     /**
      * The action that has been performed

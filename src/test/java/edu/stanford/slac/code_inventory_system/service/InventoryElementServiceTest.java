@@ -12,7 +12,7 @@ import edu.stanford.slac.code_inventory_system.exception.TagNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
-import org.assertj.core.api.AssertionsForClassTypes;
+import edu.stanford.slac.code_inventory_system.model.InventoryElementAttributeHistory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -60,6 +60,7 @@ public class InventoryElementServiceTest {
         mongoTemplate.remove(new Query(), InventoryClass.class);
         mongoTemplate.remove(new Query(), InventoryDomain.class);
         mongoTemplate.remove(new Query(), InventoryElement.class);
+        mongoTemplate.remove(new Query(), InventoryElementAttributeHistory.class);
     }
 
     @Test
@@ -427,7 +428,7 @@ public class InventoryElementServiceTest {
                                 .classId(newClassID)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -500,7 +501,7 @@ public class InventoryElementServiceTest {
                                 .classId(newBuildingClassID)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -524,7 +525,7 @@ public class InventoryElementServiceTest {
                                 .parentId(newRootElementId)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("room-number")
                                                         .value("101")
@@ -625,7 +626,7 @@ public class InventoryElementServiceTest {
                                 .classId(newBuildingClassID)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -752,7 +753,7 @@ public class InventoryElementServiceTest {
                                 )
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -832,7 +833,7 @@ public class InventoryElementServiceTest {
                                 .classId(newBuildingClassID)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -857,7 +858,7 @@ public class InventoryElementServiceTest {
                                 .description("updated description")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("43")
@@ -886,5 +887,21 @@ public class InventoryElementServiceTest {
         assertThat(fullElementRead.tags())
                 .hasSize(1)
                 .extracting(TagDTO::name).contains("tag-a");
+
+        // check the history of the attribute
+        var fullAttributeHistory = assertDoesNotThrow(
+                () ->inventoryElementService.findAllAttributeHistory(
+                        newDomainId,
+                        newElementId
+                )
+        );
+        assertThat(fullAttributeHistory)
+                .isNotNull()
+                .hasSize(1)
+                .extracting(
+                        InventoryElementAttributeHistoryDTO::getValue
+                )
+                .extracting(InventoryElementAttributeValueDTO::value)
+                .contains("34");
     }
 }

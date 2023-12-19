@@ -213,7 +213,7 @@ public class TestControllerHelperService {
         );
     }
 
-    public ApiResultResponse<String> inventoryElementControllerUpdateElement(
+    public ApiResultResponse<Boolean> inventoryElementControllerUpdateElement(
             MockMvc mockMvc,
             ResultMatcher resultMatcher,
             Optional<String> userInfo,
@@ -228,6 +228,25 @@ public class TestControllerHelperService {
                                 updateInventoryElementDTO
                         )
                 );
+        return executeHttpRequest(
+                new TypeReference<>() {
+                },
+                mockMvc,
+                resultMatcher,
+                userInfo,
+                requestBuilder
+        );
+    }
+
+    public ApiResultResponse<List<InventoryElementAttributeHistoryDTO>> inventoryElementControllerFindAttributeHistory(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo,
+            String domainId,
+            String elementId) throws Exception {
+        var requestBuilder = get("/v1/inventory/domain/{domainId}/element/{elementId}/attributes/history",domainId, elementId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
         return executeHttpRequest(
                 new TypeReference<>() {
                 },
