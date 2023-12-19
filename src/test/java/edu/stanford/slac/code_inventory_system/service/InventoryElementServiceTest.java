@@ -539,6 +539,15 @@ public class InventoryElementServiceTest {
                 ()->inventoryElementService.getFullElement(newDomainId, newElementId)
         );
         assertThat(fullInventoryElement.implementedBy()).isEqualTo(newImplementationElementId);
+
+        // test find all implementation
+        var allImplementationHistory = assertDoesNotThrow(
+                ()->inventoryElementService.findAllImplementationForDomainAndElementIds(newDomainId, newElementId)
+        );
+        assertThat(allImplementationHistory)
+                .hasSize(1)
+                .extracting(InventoryElementSummaryDTO::id)
+                .contains(newImplementationElementId);
     }
 
     @Test

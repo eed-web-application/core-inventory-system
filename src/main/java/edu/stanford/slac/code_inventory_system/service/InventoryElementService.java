@@ -371,24 +371,21 @@ public class InventoryElementService {
             );
 
             inventoryElementToSave.setParentId(inventoryElementToSave.getParentId());
-            inventoryElementToSave.setFullTreePath(
-                    "%s/%s".formatted(
-                            parentElement.getFullTreePath(),
-                            inventoryElementToSave.getName()
-                    )
-            );
-            inventoryElementToSave.setFullTreeIdPath(
-                    "%s/%s".formatted(
-                            parentElement.getFullTreeIdPath(),
-                            inventoryElementToSave.getId()
-                    )
-            );
-        } else {
-            inventoryElementToSave.setFullTreePath(
-                    "/%s".formatted(
-                            inventoryElementToSave.getName()
-                    )
-            );
+            if(parentElement.getFullTreePath()!=null) {
+                inventoryElementToSave.setFullTreePath(
+                        "%s/%s".formatted(
+                                parentElement.getFullTreePath(),
+                                inventoryElementToSave.getParentId()
+                        )
+                );
+            } else {
+                inventoryElementToSave.setFullTreePath(
+                        "/%s".formatted(
+                                inventoryElementToSave.getParentId()
+                        )
+                );
+            }
+
         }
 
         // save new element
@@ -442,7 +439,15 @@ public class InventoryElementService {
         );
 
         // create new element
-        String newImplementationElementId = createNew(domainId, newImplementationElement);
+        String newImplementationElementId = createNew(
+                domainId,
+                newImplementationElement
+                        .toBuilder()
+                        // the parent id of the implementation element
+                        // is the implement element id
+                        .parentId(elementId)
+                        .build()
+        );
 
         // set the newly created item as implementation
         inventoryElementToImplements.setImplementedBy(newImplementationElementId);
@@ -458,6 +463,44 @@ public class InventoryElementService {
                 savedImplementedItem.getName()
         );
         return newImplementationElementId;
+    }
+
+    /**
+     * Fetches the implementation history of an inventory element.
+     *
+     * @param domainId the ID of the domain
+     * @param elementId the ID of the inventory element
+     * @return a list of InventoryElementSummaryDTO objects representing the implementation history
+     */
+    public List<InventoryElementSummaryDTO> findAllImplementationForDomainAndElementIds(String domainId, String elementId) {
+        // fetch the class for all implementation kind
+        var foundElement = wrapCatch(
+                ()->inventoryElementRepository.findById(elementId),
+                1
+        ).orElseThrow(
+                ()->InventoryElementNotFound.elementNotFoundById()
+                        .errorCode(-2)
+                        .id(elementId)
+                        .build()
+        );
+
+        var classOfFoundElement = wrapCatch(
+                ()->inventoryClassService.findById(foundElement.getClassId(), true),
+                -3
+        );
+
+        // find all the history
+        List<InventoryElement> foundImplementationHistory = wrapCatch(
+                ()->inventoryElementRepository.findAllByDomainIdIsAndParentIdIsAndClassIdIn(
+                        domainId,
+                        elementId,
+                        classOfFoundElement.implementedByClass()
+                ),
+                -4
+        );
+        return foundImplementationHistory.stream()
+                .map(inventoryElementMapper::toSummaryDTO)
+                .collect(Collectors.toList());
     }
 
     /**

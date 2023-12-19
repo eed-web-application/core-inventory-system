@@ -27,8 +27,6 @@ public record NewInventoryElementDTO(
 //        @NotNull
         @Schema(description = "The description for the specific element of a class type")
         String description,
-        @Schema(description = "The full element path using the elements name")
-        String fullTreePath,
         @Schema(description = "The list of tag that describe the element")
         List<String> tags,
         @Schema(description = "The values for the element attributes(will be checked against those defined in the class)")

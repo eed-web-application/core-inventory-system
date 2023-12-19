@@ -63,10 +63,48 @@ public class InventoryElementIndex {
                 InventoryElement.class,
                 mongoTemplate,
                 new Index().on(
-                                "tags",
+                                "classId",
+                                Sort.Direction.ASC
+                        )
+                        .on(
+                                "classId",
+                                Sort.Direction.ASC
+                        )
+                        .unique()
+                        .named("domain-id-name-unique")
+                        .sparse()
+        );
+
+        MongoDDLOps.createIndex(
+                InventoryElement.class,
+                mongoTemplate,
+                new Index().on(
+                                "tags.id",
                                 Sort.Direction.ASC
                         )
                         .named("tags-id")
+                        .sparse()
+        );
+
+        MongoDDLOps.createIndex(
+                InventoryElement.class,
+                mongoTemplate,
+                new Index().on(
+                                "createdDate",
+                                Sort.Direction.DESC
+                        )
+                        .named("createdDate")
+                        .sparse()
+        );
+
+        MongoDDLOps.createIndex(
+                InventoryElement.class,
+                mongoTemplate,
+                new Index().on(
+                                "lastModifiedDate",
+                                Sort.Direction.DESC
+                        )
+                        .named("lastModifiedDate")
                         .sparse()
         );
     }

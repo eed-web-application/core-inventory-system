@@ -50,17 +50,15 @@ public class InventoryElement {
      */
     private String classId;
     /**
-     * Is the unique id of the parent in the inventory
+     * Is the unique id of the parent in the inventory, in case this is an implementation element
+     * the parent id point to the implemented element
      */
     private String parentId;
     /**
      * represent the full three path from the root to this element that is the leaf
      */
     private String fullTreePath;
-    /**
-     * represent the full three path from the root to this element that is the leaf
-     */
-    private String fullTreeIdPath;
+
     /**
      *  Indicate for which other InventoryElement this is the implementation
      *  For example an element that represent a Server001, during the year

@@ -218,6 +218,76 @@ public class InventoryElementControllerElementTest {
     }
 
     @Test
+    public void createImplementationElementOk() {
+        var createLogicalServerResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Logical Server")
+                                .description("logical server")
+                                .classId(environmentBuildInfo.classIds.get("server"))
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(createLogicalServerResult.getErrorCode()).isEqualTo(0);
+        assertThat(createLogicalServerResult.getPayload()).isNotNull();
+
+        // create new implementation of the logical server with real one
+        var newServerImplementationId = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerNewImplementationElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        createLogicalServerResult.getPayload(),
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("New Dell Server")
+                                .description("physical server")
+                                .classId(environmentBuildInfo.classIds.get("commercial-server"))
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(newServerImplementationId.getErrorCode()).isEqualTo(0);
+        assertThat(newServerImplementationId.getPayload()).isNotNull();
+
+        var fetchImplementedElementDTOResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerFindElementById(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        createLogicalServerResult.getPayload()
+                )
+        );
+        assertThat(fetchImplementedElementDTOResult.getErrorCode()).isEqualTo(0);
+        assertThat(fetchImplementedElementDTOResult.getPayload()).isNotNull();
+        assertThat(fetchImplementedElementDTOResult.getPayload().implementedBy()).isEqualTo(newServerImplementationId.getPayload());
+
+        // find all implementations
+        var findAllImplementationResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerFindAllImplementationHistory(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        createLogicalServerResult.getPayload()
+                )
+        );
+        assertThat(findAllImplementationResult.getErrorCode()).isEqualTo(0);
+        assertThat(findAllImplementationResult.getPayload()).hasSize(1);
+        assertThat(findAllImplementationResult.getPayload().get(0).id()).isEqualTo(newServerImplementationId.getPayload());
+    }
+
+    @Test
     public void createElementWhitChildOk() {
         var createBuilding34Result = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
