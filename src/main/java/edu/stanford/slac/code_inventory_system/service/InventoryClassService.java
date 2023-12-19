@@ -111,6 +111,21 @@ public class InventoryClassService {
     }
 
     /**
+     * Checks if an inventory class exists by its ID.
+     *
+     * @param classId the ID of the inventory class
+     * @return {@code true} if the inventory class exists, {@code false} otherwise
+     */
+    public Boolean existsById(String classId) {
+        return wrapCatch(
+                () -> inventoryClassRepository.existsById(
+                        classId
+                ),
+                -1
+        );
+    }
+
+    /**
      * Represents a field of the inherited class.
      */
     @Builder
@@ -119,6 +134,8 @@ public class InventoryClassService {
         Set<String> extendsClass = new HashSet<>();
         @Builder.Default
         Set<String> permittedChildClass = new HashSet<>();
+        @Builder.Default
+        Set<String> implementedByClass = new HashSet<>();
         @Builder.Default
         Set<InventoryClassAttribute> attributes = new HashSet<>();
     }
@@ -147,6 +164,7 @@ public class InventoryClassService {
 
             inheritedClassField.extendsClass.addAll(inventoryClass.getExtendsClass());
             inheritedClassField.permittedChildClass.addAll(inventoryClass.getPermittedChildClass());
+            inheritedClassField.implementedByClass.addAll(inventoryClass.getImplementedByClass());
             inheritedClassField.attributes.addAll(inventoryClass.getAttributes());
 
             if (!inventoryClass.getExtendsClass().isEmpty()) {

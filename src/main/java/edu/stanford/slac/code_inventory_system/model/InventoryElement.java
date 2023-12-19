@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2023, The Board of Trustees of the Leland Stanford Junior University,
+ * through SLAC National Accelerator Laboratory. This file is part of code-inventory-system. It is subject
+ * to the license terms in the LICENSE.txt file found in the top-level directory of this distribution
+ * and at: https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+ * No part of code-inventory-system, including this file, may be copied, modified, propagated, or distributed
+ * except according to the terms contained in the LICENSE.txt file.
+ *
+ */
+
 package edu.stanford.slac.code_inventory_system.model;
 
 import edu.stanford.slac.code_inventory_system.model.value.AbstractValue;
@@ -48,6 +58,10 @@ public class InventoryElement {
      */
     private String fullTreePath;
     /**
+     * represent the full three path from the root to this element that is the leaf
+     */
+    private String fullTreeIdPath;
+    /**
      *  Indicate for which other InventoryElement this is the implementation
      *  For example an element that represent a Server001, during the year
      *  can be implemented using different server machine.
@@ -58,6 +72,20 @@ public class InventoryElement {
      */
     @Builder.Default
     private List<AbstractValue> attributes = emptyList();
+
+    /**
+     * The implementedBy variable in the InventoryElement class represents the implementation of the element.
+     * It indicates which other InventoryElement is an implementation of the current element.
+     * <p>
+     * For example, if an element represents a server (e.g., "Server001"), the implementedBy variable can be used to specify
+     * the server machine that is being used to implement the server element. This allows for tracking different
+     * implementations of the same element over time.
+     * <p>
+     * The implementedBy variable is an elementId that belong to a class that is contained in {{@link InventoryClass#implementedByClass}}
+     */
+    @Builder.Default
+    private String implementedBy = null;
+
     /**
      * the list of the connector class that can be used as ID
      */

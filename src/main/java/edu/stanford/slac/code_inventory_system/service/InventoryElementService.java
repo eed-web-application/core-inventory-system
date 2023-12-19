@@ -47,7 +47,7 @@ public class InventoryElementService {
     AuthService authService;
     QueryParameterMapper queryParameterMapper;
     InventoryElementMapper inventoryElementMapper;
-    InventoryClassRepository inventoryClassRepository;
+    InventoryClassService inventoryClassService;
     InventoryDomainRepository inventoryDomainRepository;
     InventoryElementRepository inventoryElementRepository;
     InventoryElementAttributeHistoryRepository inventoryElementAttributeHistoryRepository;
@@ -310,7 +310,7 @@ public class InventoryElementService {
                         .errorCode(-3)
                         .id(inventoryElementToSave.getDomainId())
                         .build(),
-                () -> inventoryClassRepository.existsById(inventoryElementToSave.getClassId())
+                () -> inventoryClassService.existsById(inventoryElementToSave.getClassId())
         );
 
         // checks for tag id existence
@@ -351,13 +351,9 @@ public class InventoryElementService {
 
             // check if this element can be a child for the parent
             // inventoryElementToSave as child
-            InventoryClass parentClass = inventoryClassRepository.findById(
-                    parentElement.getClassId()
-            ).orElseThrow(
-                    () -> InventoryClassNotFound.classNotFoundById()
-                            .errorCode(-7)
-                            .id(parentElement.getClassId())
-                            .build()
+            InventoryClassDTO parentClass = inventoryClassService.findById(
+                    parentElement.getClassId(),
+                    false
             );
 
             //check for permission to be a child of the parent
@@ -368,9 +364,9 @@ public class InventoryElementService {
                             .build(),
                     () -> any(
                             // if is empty element from any class can be a child
-                            () -> parentClass.getPermittedChildClass() == null || parentClass.getPermittedChildClass().isEmpty(),
+                            () -> parentClass.permittedChildClass() == null || parentClass.permittedChildClass().isEmpty(),
                             // the class id of the child need to mach one within the list
-                            () -> parentClass.getPermittedChildClass().stream().filter(c -> c.compareTo(inventoryElementToSave.getClassId()) == 0).count() == 1
+                            () -> parentClass.permittedChildClass().stream().filter(c -> c.compareTo(inventoryElementToSave.getClassId()) == 0).count() == 1
                     )
             );
 
@@ -379,6 +375,12 @@ public class InventoryElementService {
                     "%s/%s".formatted(
                             parentElement.getFullTreePath(),
                             inventoryElementToSave.getName()
+                    )
+            );
+            inventoryElementToSave.setFullTreeIdPath(
+                    "%s/%s".formatted(
+                            parentElement.getFullTreeIdPath(),
+                            inventoryElementToSave.getId()
                     )
             );
         } else {
@@ -398,6 +400,64 @@ public class InventoryElementService {
         );
         log.info("User '{}' created new inventory element '{}[{}]' ", newlyCreatedElement.getCreatedBy(), newlyCreatedElement.getName(), inventoryDomainFound.getName());
         return newlyCreatedElement.getId();
+    }
+
+    @Transactional
+    public String createNewImplementation(@NotNull String domainId, @NotNull String elementId, @NotNull NewInventoryElementDTO newImplementationElement) {
+        // fetch the elements to implements
+        var inventoryElementToImplements = wrapCatch(
+                () -> inventoryElementRepository.findById(elementId),
+                -1
+        ).orElseThrow(
+                () -> InventoryElementNotFound
+                        .elementNotFoundById()
+                        .errorCode(-2)
+                        .id(elementId)
+                        .build()
+        );
+
+        // fetch the class of the implemented item to check if new
+        // implementation element can implement it
+        var inventoryClassOfImplementedElement = wrapCatch(
+                () -> inventoryClassService.findById(
+                        inventoryElementToImplements.getClassId(),
+                        true),
+                -3
+        );
+
+        // assert on the class id of new implementation element
+        // should be contained into the implementedByClass of the
+        // class of the implemented item
+        assertion(
+                ControllerLogicException
+                        .builder()
+                        .errorCode(-4)
+                        .errorMessage("The implementation item doesn't belong to an authorized implementable class for item:" + elementId)
+                        .errorDomain("ImplementationElementService::createNewImplementation")
+                        .build(),
+                () -> inventoryClassOfImplementedElement
+                        .implementedByClass()
+                        .stream()
+                        .anyMatch(e -> e.compareTo(newImplementationElement.classId()) == 0)
+        );
+
+        // create new element
+        String newImplementationElementId = createNew(domainId, newImplementationElement);
+
+        // set the newly created item as implementation
+        inventoryElementToImplements.setImplementedBy(newImplementationElementId);
+
+        // update the implemented element
+        var savedImplementedItem = wrapCatch(
+                () -> inventoryElementRepository.save(inventoryElementToImplements),
+                -5
+        );
+        log.info(
+                "User '{}' created new implementation for '{}'",
+                savedImplementedItem.getLastModifiedBy(),
+                savedImplementedItem.getName()
+        );
+        return newImplementationElementId;
     }
 
     /**

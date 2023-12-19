@@ -27,6 +27,8 @@ public record InventoryElementDTO(
         String domainId,
         @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")
         String classId,
+        @Schema(description = "Is the {@link InventoryClassDTO#id} of the element that is an implementation of this one")
+        String implementedBy,
         @Schema(description = "The values for the element attributes(will be checked against those defined in the class)")
         List<InventoryElementAttributeValueDTO> attributes,
         @Schema(description = "The list of tag that describe the element")
