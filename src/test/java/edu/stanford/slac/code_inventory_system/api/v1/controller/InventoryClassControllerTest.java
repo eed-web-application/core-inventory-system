@@ -59,6 +59,7 @@ public class InventoryClassControllerTest {
                                 .description("description")
                                 .extendsClass(emptyList())
                                 .permittedChildClass(emptyList())
+                                .implementedByClass(emptyList())
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -125,6 +126,7 @@ public class InventoryClassControllerTest {
                                     .description("description")
                                     .extendsClass(emptyList())
                                     .permittedChildClass(emptyList())
+                                    .implementedByClass(emptyList())
                                     .attributes(
                                             List.of(
                                                     InventoryClassAttributeDTO
@@ -183,6 +185,7 @@ public class InventoryClassControllerTest {
                                 .description("description")
                                 .extendsClass(emptyList())
                                 .permittedChildClass(emptyList())
+                                .implementedByClass(emptyList())
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
@@ -211,6 +214,7 @@ public class InventoryClassControllerTest {
                                 .description("description")
                                 .extendsClass(of(createNewRootClassResult.getPayload()))
                                 .permittedChildClass(emptyList())
+                                .implementedByClass(emptyList())
                                 .attributes(
                                         List.of(
                                                 InventoryClassAttributeDTO
