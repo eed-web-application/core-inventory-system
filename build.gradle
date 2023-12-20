@@ -85,26 +85,36 @@ jacoco {
 
 test {
     finalizedBy jacocoTestReport // report is always generated after tests run
-    testLogging{
-        // By default, don't show standard streams.
+    // Configure test logging
+    testLogging {
+        // Show standard output and error streams only for failed tests
         showStandardStreams = false
-        exceptionFormat 'full'
-        events 'failed', 'skipped'
 
-        // Custom log output for failed tests
-        afterTest { descriptor, result ->
-            if (result.resultType != TestResult.ResultType.SUCCESS) {
-                logger.lifecycle("Test: ${descriptor.name} - Result: ${result.resultType}")
-                if (result.exception != null) {
-                    logger.error("Test exception: ${result.exception}")
-                }
-                // Log the standard output and error for failed tests
-                logger.lifecycle("Standard Output: \n${result.standardOutput}")
-                logger.lifecycle("Standard Error: \n${result.standardError}")
+        // Set the format for the exception stack trace
+        exceptionFormat = 'full'
+
+        // Log events for failed     and skipped tests
+        events 'failed', 'skipped'
+    }
+
+    // Customize the logging for test results
+    afterTest { descriptor, result ->
+        if (result.resultType != TestResult.ResultType.SUCCESS) {
+            logger.lifecycle("Test: ${descriptor.name} - Result: ${result.resultType}")
+            if (result.exception != null) {
+                logger.error("Test exception: ", result.exception)
+            }
+            // Log standard output and error only for failed tests
+            def standardOutput = descriptor.testClass.testOutput.getStandardOutput()
+            def standardError = descriptor.testClass.testOutput.getStandardError()
+            if (standardOutput) {
+                logger.lifecycle("Standard Output: \n${standardOutput}")
+            }
+            if (standardError) {
+                logger.lifecycle("Standard Error: \n${standardError}")
             }
         }
     }
-
 }
 
 jacocoTestReport {
