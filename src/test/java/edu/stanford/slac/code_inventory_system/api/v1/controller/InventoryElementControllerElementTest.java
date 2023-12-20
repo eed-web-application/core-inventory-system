@@ -361,7 +361,7 @@ public class InventoryElementControllerElementTest {
     public void findAllTestSimple() {
         for (int idx = 0; idx < 20; idx++) {
             int finalIdx = idx;
-            var createBuilding34Result = assertDoesNotThrow(
+            var createBuildingResult = assertDoesNotThrow(
                     () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
                             mockMvc,
                             status().isCreated(),
@@ -390,8 +390,8 @@ public class InventoryElementControllerElementTest {
                     )
             );
 
-            assertThat(createBuilding34Result.getErrorCode()).isEqualTo(0);
-            assertThat(createBuilding34Result.getPayload()).isNotNull();
+            assertThat(createBuildingResult.getErrorCode()).isEqualTo(0);
+            assertThat(createBuildingResult.getPayload()).isNotNull();
 
             var createFloor1Building34Result = assertDoesNotThrow(
                     () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
