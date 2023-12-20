@@ -23,7 +23,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -134,7 +133,7 @@ public class InventoryElementServiceTest {
                 .isNotEmpty();
 
         var fullDomain = assertDoesNotThrow(
-                () -> inventoryElementService.getFullDomain(newDomainId)
+                () -> inventoryElementService.getInventoryDomainById(newDomainId)
         );
 
         assertThat(fullDomain).isNotNull()
@@ -181,7 +180,7 @@ public class InventoryElementServiceTest {
         );
 
         var updatedDomain = assertDoesNotThrow(
-                () -> inventoryElementService.getFullDomain(newDomainId)
+                () -> inventoryElementService.getInventoryDomainById(newDomainId)
         );
         // check for tag
         assertThat(updatedDomain.description()).contains("Update the description");
@@ -212,7 +211,7 @@ public class InventoryElementServiceTest {
         );
 
         updatedDomain = assertDoesNotThrow(
-                () -> inventoryElementService.getFullDomain(newDomainId)
+                () -> inventoryElementService.getInventoryDomainById(newDomainId)
         );
         // check for tag
         assertThat(updatedDomain.description()).contains("Update the description");
@@ -238,7 +237,7 @@ public class InventoryElementServiceTest {
         );
 
         updatedDomain = assertDoesNotThrow(
-                () -> inventoryElementService.getFullDomain(newDomainId)
+                () -> inventoryElementService.getInventoryDomainById(newDomainId)
         );
         // check for tag
         assertThat(updatedDomain.description()).contains("Update the description");
@@ -288,7 +287,7 @@ public class InventoryElementServiceTest {
         );
 
         var updatedDomain = assertDoesNotThrow(
-                () -> inventoryElementService.getFullDomain(newDomainId)
+                () -> inventoryElementService.getInventoryDomainById(newDomainId)
         );
         // check for tag
         assertThat(updatedDomain.authorizations())
@@ -314,7 +313,7 @@ public class InventoryElementServiceTest {
         );
 
         updatedDomain = assertDoesNotThrow(
-                () -> inventoryElementService.getFullDomain(newDomainId)
+                () -> inventoryElementService.getInventoryDomainById(newDomainId)
         );
 
         // check that has been removed the second authorization
@@ -340,7 +339,7 @@ public class InventoryElementServiceTest {
         );
 
         updatedDomain = assertDoesNotThrow(
-                () -> inventoryElementService.getFullDomain(newDomainId)
+                () -> inventoryElementService.getInventoryDomainById(newDomainId)
         );
 
         // check that has been removed the second authorization
@@ -536,7 +535,7 @@ public class InventoryElementServiceTest {
 
         // the implemented by id should be equals to newImplementationElementId
         var fullInventoryElement = assertDoesNotThrow(
-                ()->inventoryElementService.getFullElement(newDomainId, newElementId)
+                ()->inventoryElementService.getInventoryElementByDomainIdAndElementId(newDomainId, newElementId)
         );
         assertThat(fullInventoryElement.implementedBy()).isEqualTo(newImplementationElementId);
 
@@ -723,7 +722,7 @@ public class InventoryElementServiceTest {
 
         // get the implemented element that should not have the implementedBy populated
         var fullInventoryElement = assertDoesNotThrow(
-                ()->inventoryElementService.getFullElement(newDomainId, newElementId)
+                ()->inventoryElementService.getInventoryElementByDomainIdAndElementId(newDomainId, newElementId)
         );
         assertThat(fullInventoryElement.implementedBy()).isNull();
     }
@@ -1104,7 +1103,7 @@ public class InventoryElementServiceTest {
         );
 
         var fullDomain = assertDoesNotThrow(
-                () -> inventoryElementService.getFullDomain(newDomainId)
+                () -> inventoryElementService.getInventoryDomainById(newDomainId)
         );
         // check tag tags are presents
         assertThat(fullDomain.tags()).hasSize(1);
@@ -1160,7 +1159,7 @@ public class InventoryElementServiceTest {
                 )
         );
         var fullElementRead = assertDoesNotThrow(
-                () ->inventoryElementService.getFullElement(
+                () ->inventoryElementService.getInventoryElementByDomainIdAndElementId(
                         newDomainId,
                         newElementId
                 )
