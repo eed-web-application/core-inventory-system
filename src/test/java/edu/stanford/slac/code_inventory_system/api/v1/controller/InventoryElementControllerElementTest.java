@@ -402,6 +402,7 @@ public class InventoryElementControllerElementTest {
                             NewInventoryElementDTO
                                     .builder()
                                     .name("%03d floor".formatted(finalIdx))
+                                    .description("Is the control system software engineer office and experimental lab building")
                                     .parentId(createBuildingResult.getPayload())
                                     .classId(environmentBuildInfo.classIds.get("floor"))
                                     .attributes(emptyList())
