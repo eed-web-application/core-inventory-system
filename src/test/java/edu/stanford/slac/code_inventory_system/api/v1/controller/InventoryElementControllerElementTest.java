@@ -369,7 +369,7 @@ public class InventoryElementControllerElementTest {
                             environmentBuildInfo.domainId,
                             NewInventoryElementDTO
                                     .builder()
-                                    .name(" %03d Building".formatted(finalIdx))
+                                    .name("%03d Building".formatted(finalIdx))
                                     .description("Is the control system software engineer office and experimental lab building")
                                     .classId(environmentBuildInfo.classIds.get("building"))
                                     .attributes(

@@ -66,12 +66,7 @@ public class InventoryElementIndex {
                                 "classId",
                                 Sort.Direction.ASC
                         )
-                        .on(
-                                "classId",
-                                Sort.Direction.ASC
-                        )
-                        .unique()
-                        .named("domain-id-name-unique")
+                        .named("classId")
                         .sparse()
         );
 
