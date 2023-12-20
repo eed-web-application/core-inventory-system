@@ -9,7 +9,7 @@ import lombok.Builder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "Describe attribute element")
-public record InventoryElementAttributeValue(
+public record InventoryElementAttributeValueDTO(
         @Schema(description = "The name of the attribute")
         String name,
         @Schema(description = "The string representation of the attribute value")

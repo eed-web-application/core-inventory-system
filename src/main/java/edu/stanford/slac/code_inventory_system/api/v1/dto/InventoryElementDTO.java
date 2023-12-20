@@ -8,10 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,8 +27,12 @@ public record InventoryElementDTO(
         String domainId,
         @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")
         String classId,
+        @Schema(description = "The full path using the id up to the parent of this element")
+        String fullTreePath,
+        @Schema(description = "Is the {@link InventoryClassDTO#id} of the element that is an implementation of this one")
+        String implementedBy,
         @Schema(description = "The values for the element attributes(will be checked against those defined in the class)")
-        List<InventoryElementAttributeValue> attributes,
+        List<InventoryElementAttributeValueDTO> attributes,
         @Schema(description = "The list of tag that describe the element")
         List<TagDTO> tags,
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)

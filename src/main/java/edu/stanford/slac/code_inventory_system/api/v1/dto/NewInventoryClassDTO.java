@@ -27,6 +27,9 @@ public record NewInventoryClassDTO(
         @Schema(description = "The list of class id that can be child of this one")
         List<String> permittedChildClass,
         @NotNull
+        @Schema(description = "The list of class that can implement object of this one")
+        List<String> implementedByClass,
+        @NotNull
         @Schema(description = "The list of attributes that can be used to specialize the inventory class")
         List<InventoryClassAttributeDTO> attributes
 ) {

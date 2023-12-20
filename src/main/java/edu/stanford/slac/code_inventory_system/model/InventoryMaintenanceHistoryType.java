@@ -3,7 +3,7 @@ package edu.stanford.slac.code_inventory_system.model;
 /**
  * Type of history records
  */
-public enum InventoryElementHistoryType {
+public enum InventoryMaintenanceHistoryType {
     /**
      * Define a history record recorded locally, in this case
      * the description contains the event recorded

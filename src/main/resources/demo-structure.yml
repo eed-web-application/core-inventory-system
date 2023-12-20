@@ -1,7 +1,6 @@
 class-list:
   - name: Building
     description: building
-    type: Building
     attributes:
       - name: Building Number
         description: The number that identify the building
@@ -11,7 +10,6 @@ class-list:
         type: String
   - name: Experimental Facility
     description: experimental facility
-    type: Building
     attributes:
       - name: Building Number
         description: The number that identify the building
@@ -21,40 +19,25 @@ class-list:
         type: String
   - name: Floor
     description: simple floor
-    type: Floor
     attributes: []
   - name: Office
     description: simple office
-    type: Room
     attributes: []
   - name: Laboratory
     description: laboratory
-    type: Room
     attributes: []
   - name: Server room
     description: server room
-    type: Room
     attributes: []
   - name: Rack
     description: RACK that can host server or other hardware
-    type: Item
     attributes: []
-  - name: Rack Model
-    description: The specific model of a rack that can contains hardware that can be mounted on a rack
-    attributes:
-      - name: Marker Name
-        description: Is the marker that sell the Rack
-        mandatory: true
-        type: String
-    type: ItemHardware
   - name: Server
     description: Server machine for run software and algorithm
     attributes: []
-    type: Item
   - name: Conventional RACK server
     description: Server machine for run software and algorithm
     attributes: []
-    type: ItemHardware
 domain-list:
   - name: Inventory 001
     description: This is and inventory domain for testing purpose

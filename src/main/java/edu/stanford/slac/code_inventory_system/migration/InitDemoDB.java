@@ -60,7 +60,7 @@ public class InitDemoDB {
      * @param inventoryDataDTO the inventory data containing the list of classes, domains, and elements to create
      * @return a map containing the names of the created classes and domain as keys and the corresponding IDs as values
      */
-    public Map<String, String> buildEnvironment(
+    private Map<String, String> buildEnvironment(
             ImportInventoryDataDTO inventoryDataDTO
     ) {
         Map<String, String> resultInfo = new HashMap<>();

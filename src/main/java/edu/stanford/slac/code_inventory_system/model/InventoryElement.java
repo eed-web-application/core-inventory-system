@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2023, The Board of Trustees of the Leland Stanford Junior University,
+ * through SLAC National Accelerator Laboratory. This file is part of code-inventory-system. It is subject
+ * to the license terms in the LICENSE.txt file found in the top-level directory of this distribution
+ * and at: https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+ * No part of code-inventory-system, including this file, may be copied, modified, propagated, or distributed
+ * except according to the terms contained in the LICENSE.txt file.
+ *
+ */
+
 package edu.stanford.slac.code_inventory_system.model;
 
 import edu.stanford.slac.code_inventory_system.model.value.AbstractValue;
@@ -8,7 +18,6 @@ import lombok.ToString;
 import org.springframework.data.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -41,7 +50,8 @@ public class InventoryElement {
      */
     private String classId;
     /**
-     * Is the unique id of the parend in the inventory
+     * Is the unique id of the parent in the inventory, in case this is an implementation element
+     * the parent id point to the implemented element
      */
     private String parentId;
     /**
@@ -55,12 +65,25 @@ public class InventoryElement {
      *  can be implemented using different server machine.
      */
     private String implementationFor;
-
     /**
      * Teh value for the attributes
      */
     @Builder.Default
     private List<AbstractValue> attributes = emptyList();
+
+    /**
+     * The implementedBy variable in the InventoryElement class represents the implementation of the element.
+     * It indicates which other InventoryElement is an implementation of the current element.
+     * <p>
+     * For example, if an element represents a server (e.g., "Server001"), the implementedBy variable can be used to specify
+     * the server machine that is being used to implement the server element. This allows for tracking different
+     * implementations of the same element over time.
+     * <p>
+     * The implementedBy variable is an elementId that belong to a class that is contained in {{@link InventoryClass#implementedByClass}}
+     */
+    @Builder.Default
+    private String implementedBy = null;
+
     /**
      * the list of the connector class that can be used as ID
      */
@@ -70,7 +93,7 @@ public class InventoryElement {
      * IS the history of that element
      */
     @Builder.Default
-    private List<InventoryElementHistory> history = emptyList();
+    private List<InventoryMaintenance> maintenanceHistory = emptyList();
     /**
      * Define the ids of the tag associated with the element
      */

@@ -35,18 +35,27 @@ public class BuildEnvironmentForElementTest {
     ) {
         EnvironmentResult result = new EnvironmentResult();
         // create class
+
         for (NewInventoryClassDTO classDTO :
                 classes) {
+            if (!classDTO.implementedByClass().isEmpty()) {
+                classDTO = classDTO.toBuilder()
+                        .implementedByClass(
+                                getIdsFromName(classDTO.implementedByClass(), result)
+                        )
+                        .build();
+            }
+            NewInventoryClassDTO finalClassDTO = classDTO;
             var createNewClassResult = assertDoesNotThrow(
                     () -> testControllerHelperService.inventoryClassControllerCreateNew(
                             mockMvc,
                             status().isCreated(),
                             userInfo,
-                            classDTO
+                            finalClassDTO
                     )
             );
             assertThat(createNewClassResult.getErrorCode()).isEqualTo(0);
-            result.classIds.put(normalizeStringWithReplace(classDTO.name()," ", "-") , createNewClassResult.getPayload());
+            result.classIds.put(normalizeStringWithReplace(classDTO.name(), " ", "-"), createNewClassResult.getPayload());
         }
 
         // create domain
@@ -63,8 +72,21 @@ public class BuildEnvironmentForElementTest {
         return result;
     }
 
+    private static List<String> getIdsFromName(List<String> classNames, EnvironmentResult result) {
+        List<String> implementationClassIds = new ArrayList<>();
+        for (String implementedByClass : classNames) {
+            if (!result.classIds.containsKey(normalizeStringWithReplace(implementedByClass, " ", "-"))) {
+                throw new RuntimeException("Class " + implementedByClass + " not found");
+            }
+            String classId = result.classIds.get(normalizeStringWithReplace(implementedByClass, " ", "-"));
+            implementationClassIds.add(classId);
+        }
+        return implementationClassIds;
+    }
+
     /**
      * Build environment one
+     *
      * @param mockMvc
      * @param userInfo
      * @return environment build info
@@ -81,6 +103,7 @@ public class BuildEnvironmentForElementTest {
                                 .name("Building")
                                 .description("building")
                                 .extendsClass(emptyList())
+                                .implementedByClass(emptyList())
                                 .permittedChildClass(emptyList())
                                 .attributes(
                                         List.of(
@@ -104,6 +127,7 @@ public class BuildEnvironmentForElementTest {
                                 .name("Experimental Facility")
                                 .description("experimental facility")
                                 .extendsClass(emptyList())
+                                .implementedByClass(emptyList())
                                 .permittedChildClass(emptyList())
                                 .attributes(
                                         List.of(
@@ -128,6 +152,7 @@ public class BuildEnvironmentForElementTest {
                                 .description("simple floor")
                                 .attributes(emptyList())
                                 .extendsClass(emptyList())
+                                .implementedByClass(emptyList())
                                 .permittedChildClass(emptyList())
                                 .build(),
                         NewInventoryClassDTO
@@ -136,6 +161,7 @@ public class BuildEnvironmentForElementTest {
                                 .description("simple office")
                                 .attributes(emptyList())
                                 .extendsClass(emptyList())
+                                .implementedByClass(emptyList())
                                 .permittedChildClass(emptyList())
                                 .build(),
                         NewInventoryClassDTO
@@ -144,6 +170,7 @@ public class BuildEnvironmentForElementTest {
                                 .description("laboratory")
                                 .attributes(emptyList())
                                 .extendsClass(emptyList())
+                                .implementedByClass(emptyList())
                                 .permittedChildClass(emptyList())
                                 .build(),
                         NewInventoryClassDTO
@@ -152,6 +179,25 @@ public class BuildEnvironmentForElementTest {
                                 .description("server room")
                                 .attributes(emptyList())
                                 .extendsClass(emptyList())
+                                .implementedByClass(emptyList())
+                                .permittedChildClass(emptyList())
+                                .build(),
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("Commercial Server")
+                                .description("Commercial server")
+                                .attributes(emptyList())
+                                .extendsClass(emptyList())
+                                .implementedByClass(emptyList())
+                                .permittedChildClass(emptyList())
+                                .build(),
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("Server")
+                                .description("Server that permit to run application")
+                                .attributes(emptyList())
+                                .extendsClass(emptyList())
+                                .implementedByClass(List.of("Commercial Server"))
                                 .permittedChildClass(emptyList())
                                 .build()
                 ),

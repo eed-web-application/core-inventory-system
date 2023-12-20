@@ -12,15 +12,19 @@ import edu.stanford.slac.code_inventory_system.exception.TagNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
-import org.assertj.core.api.AssertionsForClassTypes;
+import edu.stanford.slac.code_inventory_system.model.InventoryElementAttributeHistory;
+import edu.stanford.slac.code_inventory_system.repository.InventoryElementRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.annotation.DirtiesContext;
@@ -34,6 +38,7 @@ import static java.util.Collections.emptyList;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 
 @AutoConfigureMockMvc
 @SpringBootTest()
@@ -52,14 +57,19 @@ public class InventoryElementServiceTest {
     InventoryElementService inventoryElementService;
     @Autowired
     InventoryClassMapper inventoryClassMapper;
+    @Autowired
+    @SpyBean
+    InventoryElementRepository inventoryElementRepository;
 
     @BeforeEach
     public void cleanCollection() {
+        Mockito.reset(inventoryElementRepository);
         mongoTemplate.remove(new Query(), Authorization.class);
         mongoTemplate.remove(new Query(), AuthenticationToken.class);
         mongoTemplate.remove(new Query(), InventoryClass.class);
         mongoTemplate.remove(new Query(), InventoryDomain.class);
         mongoTemplate.remove(new Query(), InventoryElement.class);
+        mongoTemplate.remove(new Query(), InventoryElementAttributeHistory.class);
     }
 
     @Test
@@ -427,7 +437,7 @@ public class InventoryElementServiceTest {
                                 .classId(newClassID)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -439,6 +449,283 @@ public class InventoryElementServiceTest {
         );
 
         assertThat(newElementId).isNotNull().isNotEmpty();
+    }
+
+    @Test
+    public void createNewImplementationElementOK() {
+        String newImplClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("impl class a")
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        String newClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("class a")
+                                .implementedByClass(List.of(newImplClassID))
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        String newDomainId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("New Domain")
+                                .description("This is the description for the new domain")
+                                .build()
+                )
+        );
+
+        String newElementId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        newDomainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Implemented item")
+                                .description("Main control system building")
+                                .classId(newClassID)
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(newElementId).isNotNull().isNotEmpty();
+
+        // implements the new created elements
+        String newImplementationElementId = assertDoesNotThrow(
+                () -> inventoryElementService.createNewImplementation(
+                        newDomainId,
+                        newElementId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Building Implementation")
+                                .description("Main control system building")
+                                .classId(newImplClassID)
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(newImplementationElementId).isNotNull().isNotEmpty();
+
+        // the implemented by id should be equals to newImplementationElementId
+        var fullInventoryElement = assertDoesNotThrow(
+                ()->inventoryElementService.getFullElement(newDomainId, newElementId)
+        );
+        assertThat(fullInventoryElement.implementedBy()).isEqualTo(newImplementationElementId);
+
+        // test find all implementation
+        var allImplementationHistory = assertDoesNotThrow(
+                ()->inventoryElementService.findAllImplementationForDomainAndElementIds(newDomainId, newElementId)
+        );
+        assertThat(allImplementationHistory)
+                .hasSize(1)
+                .extracting(InventoryElementSummaryDTO::id)
+                .contains(newImplementationElementId);
+    }
+
+    @Test
+    public void createNewImplementationElementFailWrongImplClassId() {
+        String newImplClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("impl class a")
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        String newClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("class a")
+                                .implementedByClass(List.of(newImplClassID))
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        String newDomainId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("New Domain")
+                                .description("This is the description for the new domain")
+                                .build()
+                )
+        );
+
+        String newElementId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        newDomainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Implemented item")
+                                .description("Main control system building")
+                                .classId(newClassID)
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(newElementId).isNotNull().isNotEmpty();
+
+        // implements the new created elements
+        ControllerLogicException exceptionOnWrongClassId = assertThrows(
+                ControllerLogicException.class,
+                () -> inventoryElementService.createNewImplementation(
+                        newDomainId,
+                        newElementId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Building Implementation")
+                                .description("Main control system building")
+                                .classId("wrong-id")
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(exceptionOnWrongClassId.getErrorCode()).isEqualTo(-4);
+    }
+
+    @Test
+    public void createNewImplementationElementSaveOnTransactionError() {
+        String newImplClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("impl class a")
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        String newClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("class a")
+                                .implementedByClass(List.of(newImplClassID))
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        String newDomainId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("New Domain")
+                                .description("This is the description for the new domain")
+                                .build()
+                )
+        );
+
+        String newElementId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        newDomainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Implemented item")
+                                .description("Main control system building")
+                                .classId(newClassID)
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(newElementId).isNotNull().isNotEmpty();
+        //simulate that something is gone wrong saving on database the new attribute
+        Mockito.doThrow(new RuntimeException()).when(inventoryElementRepository)
+                .save(any());
+        // implements the new created elements
+        ControllerLogicException exceptionOnWrongClassId = assertThrows(
+                ControllerLogicException.class,
+                () -> inventoryElementService.createNewImplementation(
+                        newDomainId,
+                        newElementId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Building Implementation")
+                                .description("Main control system building")
+                                .classId(newImplClassID)
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(exceptionOnWrongClassId.getErrorCode()).isEqualTo(-7);
+
+        // get the implemented element that should not have the implementedBy populated
+        var fullInventoryElement = assertDoesNotThrow(
+                ()->inventoryElementService.getFullElement(newDomainId, newElementId)
+        );
+        assertThat(fullInventoryElement.implementedBy()).isNull();
     }
 
     @Test
@@ -500,7 +787,7 @@ public class InventoryElementServiceTest {
                                 .classId(newBuildingClassID)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -524,7 +811,7 @@ public class InventoryElementServiceTest {
                                 .parentId(newRootElementId)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("room-number")
                                                         .value("101")
@@ -625,7 +912,7 @@ public class InventoryElementServiceTest {
                                 .classId(newBuildingClassID)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -752,7 +1039,7 @@ public class InventoryElementServiceTest {
                                 )
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -832,7 +1119,7 @@ public class InventoryElementServiceTest {
                                 .classId(newBuildingClassID)
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("34")
@@ -857,7 +1144,7 @@ public class InventoryElementServiceTest {
                                 .description("updated description")
                                 .attributes(
                                         List.of(
-                                                InventoryElementAttributeValue
+                                                InventoryElementAttributeValueDTO
                                                         .builder()
                                                         .name("building-number")
                                                         .value("43")
@@ -886,5 +1173,21 @@ public class InventoryElementServiceTest {
         assertThat(fullElementRead.tags())
                 .hasSize(1)
                 .extracting(TagDTO::name).contains("tag-a");
+
+        // check the history of the attribute
+        var fullAttributeHistory = assertDoesNotThrow(
+                () ->inventoryElementService.findAllAttributeHistory(
+                        newDomainId,
+                        newElementId
+                )
+        );
+        assertThat(fullAttributeHistory)
+                .isNotNull()
+                .hasSize(1)
+                .extracting(
+                        InventoryElementAttributeHistoryDTO::getValue
+                )
+                .extracting(InventoryElementAttributeValueDTO::value)
+                .contains("34");
     }
 }

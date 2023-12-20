@@ -97,7 +97,7 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
             }
             query.with(
                     Sort.by(
-                            Sort.Direction.DESC, "fullTreePath")
+                            Sort.Direction.DESC, "name")
             ).limit(queryParameter.getContextSize());
             elementsBeforeAnchor.addAll(
                     mongoTemplate.find(
@@ -128,7 +128,7 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
 
             query.with(
                     Sort.by(
-                            Sort.Direction.ASC, "fullTreePath")
+                            Sort.Direction.ASC, "name")
             ).limit(queryParameter.getLimit());
             elementsAfterAnchor.addAll(
                     mongoTemplate.find(
