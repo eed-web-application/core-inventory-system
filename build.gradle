@@ -98,6 +98,9 @@ test {
                 if (result.exception != null) {
                     logger.error("Test exception: ${result.exception}")
                 }
+                // Log the standard output and error for failed tests
+                logger.lifecycle("Standard Output: \n${result.standardOutput}")
+                logger.lifecycle("Standard Error: \n${result.standardError}")
             }
         }
     }
