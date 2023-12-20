@@ -85,6 +85,22 @@ jacoco {
 
 test {
     finalizedBy jacocoTestReport // report is always generated after tests run
+    testLogging{
+        // By default, don't show standard streams.
+        showStandardStreams = false
+        events 'failed', 'skipped'
+
+        // Custom log output for failed tests
+        afterTest { descriptor, result ->
+            if (result.resultType != TestResult.ResultType.SUCCESS) {
+                logger.lifecycle("Test: ${descriptor.name} - Result: ${result.resultType}")
+                if (result.exception != null) {
+                    logger.error("Test exception: ${result.exception}")
+                }
+            }
+        }
+    }
+
 }
 
 jacocoTestReport {
