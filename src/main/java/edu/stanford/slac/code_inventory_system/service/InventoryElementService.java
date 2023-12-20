@@ -378,7 +378,7 @@ public class InventoryElementService {
             );
 
             inventoryElementToSave.setParentId(inventoryElementToSave.getParentId());
-            if(parentElement.getFullTreePath()!=null) {
+            if (parentElement.getFullTreePath() != null) {
                 inventoryElementToSave.setFullTreePath(
                         "%s/%s".formatted(
                                 parentElement.getFullTreePath(),
@@ -409,9 +409,9 @@ public class InventoryElementService {
     /**
      * Creates a new implementation element for a specified inventory element.
      *
-     * @param domainId                  The ID of the domain where the element belongs
-     * @param elementId                 The ID of the inventory element
-     * @param newImplementationElement  The new implementation element to be created
+     * @param domainId                 The ID of the domain where the element belongs
+     * @param elementId                The ID of the inventory element
+     * @param newImplementationElement The new implementation element to be created
      * @return The ID of the newly created implementation element
      * @throws InventoryElementNotFound If the inventory element with the specified ID does not exist
      * @throws ControllerLogicException If the new implementation element does not belong to an authorized implementable class for the inventory element
@@ -485,30 +485,30 @@ public class InventoryElementService {
     /**
      * Fetches the implementation history of an inventory element.
      *
-     * @param domainId the ID of the domain
+     * @param domainId  the ID of the domain
      * @param elementId the ID of the inventory element
      * @return a list of InventoryElementSummaryDTO objects representing the implementation history
      */
     public List<InventoryElementSummaryDTO> findAllImplementationForDomainAndElementIds(String domainId, String elementId) {
         // fetch the class for all implementation kind
         var foundElement = wrapCatch(
-                ()->inventoryElementRepository.findById(elementId),
+                () -> inventoryElementRepository.findById(elementId),
                 1
         ).orElseThrow(
-                ()->InventoryElementNotFound.elementNotFoundById()
+                () -> InventoryElementNotFound.elementNotFoundById()
                         .errorCode(-2)
                         .id(elementId)
                         .build()
         );
 
         var classOfFoundElement = wrapCatch(
-                ()->inventoryClassService.findById(foundElement.getClassId(), true),
+                () -> inventoryClassService.findById(foundElement.getClassId(), true),
                 -3
         );
 
         // find all the history
         List<InventoryElement> foundImplementationHistory = wrapCatch(
-                ()->inventoryElementRepository.findAllByDomainIdIsAndParentIdIsAndClassIdIn(
+                () -> inventoryElementRepository.findAllByDomainIdIsAndParentIdIsAndClassIdIn(
                         domainId,
                         elementId,
                         classOfFoundElement.implementedByClass()
@@ -703,8 +703,8 @@ public class InventoryElementService {
     /**
      * Finds the history of a specific attribute for a given domain, element, and attribute name.
      *
-     * @param domainId      the ID of the inventory domain
-     * @param elementId     the ID of the inventory element
+     * @param domainId  the ID of the inventory domain
+     * @param elementId the ID of the inventory element
      * @return a list of InventoryElementAttributeHistory objects representing the attribute history
      */
     public List<InventoryElementAttributeHistoryDTO> findAllAttributeHistory(
@@ -725,16 +725,46 @@ public class InventoryElementService {
     /**
      * Finds three paths based on the given domainId, elementId, and direction.
      *
-     * @param domainId the ID of the domain
+     * @param domainId  the ID of the domain
      * @param elementId the ID of the element
-     * @param upward specify whether to find paths in an upward direction(up to root)
+     * @param upward    specify whether to find paths in an upward direction(up to root)
      */
     public List<InventoryElementSummaryDTO> findThreePath(String domainId, String elementId, boolean upward) {
-        List<InventoryElement> inventoryElements = null;
-        if(upward) {
-            inventoryElements = inventoryElementRepository.findPathToRoot(domainId, elementId);
+        List<InventoryElement> inventoryElements = new ArrayList<>();
+        assertion(
+                InventoryDomainNotFound.domainNotFoundById()
+                        .errorCode(-1)
+                        .id(domainId)
+                        .build(),
+                () -> inventoryDomainRepository.existsById(domainId)
+        );
+
+        inventoryElements.add(wrapCatch(
+                        () -> inventoryElementRepository.findById(elementId),
+                        -2
+                ).orElseThrow(
+                        () -> InventoryElementNotFound
+                                .elementNotFoundById()
+                                .errorCode(-3)
+                                .id(elementId)
+                                .build()
+                )
+        );
+
+        if (upward) {
+            inventoryElements.addAll(
+                    wrapCatch(
+                            () -> inventoryElementRepository.findPathToRoot(domainId, elementId),
+                            -4
+                    )
+            );
         } else {
-            inventoryElements = inventoryElementRepository.findIdPathToLeaf(domainId, elementId);
+            inventoryElements.addAll(
+                    wrapCatch(
+                            () -> inventoryElementRepository.findIdPathToLeaf(domainId, elementId),
+                            -4
+                    )
+            );
         }
         return inventoryElements
                 .stream()

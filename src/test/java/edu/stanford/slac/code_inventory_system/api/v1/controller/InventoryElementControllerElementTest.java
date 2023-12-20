@@ -513,9 +513,9 @@ public class InventoryElementControllerElementTest {
         );
         assertThat(searchResultBackward.getErrorCode()).isEqualTo(0);
         assertThat(searchResultBackward.getPayload())
-                .hasSize(2)
+                .hasSize(3)
                 .extracting(InventoryElementSummaryDTO::id)
-                .containsExactly(floorChildElement.getPayload(), buildingRootElement.getPayload());
+                .containsExactly(roomChildElement.getPayload(), floorChildElement.getPayload(), buildingRootElement.getPayload());
 
         var searchResultForward = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryElementControllerFindPathFromElementId(
@@ -529,8 +529,8 @@ public class InventoryElementControllerElementTest {
         );
         assertThat(searchResultForward.getErrorCode()).isEqualTo(0);
         assertThat(searchResultForward.getPayload())
-                .hasSize(2)
+                .hasSize(3)
                 .extracting(InventoryElementSummaryDTO::id)
-                .containsExactly(floorChildElement.getPayload(), roomChildElement.getPayload());
+                .containsExactly(buildingRootElement.getPayload(), floorChildElement.getPayload(), roomChildElement.getPayload());
     }
 }
