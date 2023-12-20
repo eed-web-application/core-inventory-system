@@ -16,6 +16,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.annotation.*;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +55,7 @@ public class InventoryElement {
      * Is the unique id of the parent in the inventory, in case this is an implementation element
      * the parent id point to the implemented element
      */
+    @Field(targetType = FieldType.OBJECT_ID)
     private String parentId;
     /**
      * represent the full three path from the root to this element that is the leaf

@@ -5,6 +5,7 @@ import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationTypeDTO;
 import edu.stanford.slac.ad.eed.baselib.exception.NotAuthorized;
 import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
+import edu.stanford.slac.code_inventory_system.model.InventoryElement;
 import edu.stanford.slac.code_inventory_system.service.InventoryElementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,12 +15,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -88,7 +86,7 @@ public class InventoryElementController {
                         "/cis/domain/%s".formatted(domainId))
         );
         return ApiResultResponse.of(
-                inventoryElementService.getFullDomain(domainId)
+                inventoryElementService.getInventoryDomainById(domainId)
         );
     }
 
@@ -296,7 +294,7 @@ public class InventoryElementController {
                 )
         );
         return ApiResultResponse.of(
-                inventoryElementService.getFullElement(domainId, elementId)
+                inventoryElementService.getInventoryElementByDomainIdAndElementId(domainId, elementId)
         );
     }
 
@@ -404,7 +402,7 @@ public class InventoryElementController {
                 )
         );
         return ApiResultResponse.of(
-                inventoryElementService.getAllChildren(domainId, elementId)
+                inventoryElementService.findAllChildrenByDomainIdAndElementId(domainId, elementId)
         );
     }
 
@@ -462,6 +460,49 @@ public class InventoryElementController {
                                 .tags(tags.orElse(Collections.emptyList()))
                                 .requireAllTags(requireAllTags.orElse(false))
                                 .build()
+                )
+        );
+    }
+
+    @GetMapping(
+            path = "/domain/{domainId}/element/{elementId}/path",
+            produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(summary = "Update an inventory element")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResultResponse<List<InventoryElementSummaryDTO>> findPathFromElementId(
+            Authentication authentication,
+            @Parameter(name = "anchorId", description = "Is the domain id where that own the element")
+            @PathVariable(name = "domainId") String domainId,
+            @Parameter(name = "anchorId", description = "Is the element id where to start the the path")
+            @PathVariable(name = "elementId") String elementId,
+            @Parameter(name = "upward", description = "If true return the path towards the root, otherwise downward the leaf")
+            @RequestParam(value = "upward", defaultValue = "false") Optional<Boolean> requireAllTags
+    ) {
+        // check for auth
+        assertion(
+                NotAuthorized.notAuthorizedBuilder()
+                        .errorCode(-1)
+                        .errorDomain("InventoryElementController::findAllElements")
+                        .build(),
+                // should be authenticated
+                () -> authService.checkAuthentication(authentication),
+                ()->any(
+                        // should be root  for update the domain
+                        () -> authService.checkForRoot(authentication),
+                        // or a writer for update the domain
+                        () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                                authentication,
+                                // only admin can update the domain
+                                AuthorizationTypeDTO.Read,
+                                "/cis/domain/%s".formatted(domainId))
+                )
+        );
+        return ApiResultResponse.of(
+                inventoryElementService.findThreePath(
+                        domainId,
+                        elementId,
+                        requireAllTags.orElse(false)
                 )
         );
     }

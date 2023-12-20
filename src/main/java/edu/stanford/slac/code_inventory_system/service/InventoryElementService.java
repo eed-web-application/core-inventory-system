@@ -1,10 +1,19 @@
+/*
+ * Copyright (c) 2023, The Board of Trustees of the Leland Stanford Junior University,
+ * through SLAC National Accelerator Laboratory. This file is part of code-inventory-system. It is subject
+ * to the license terms in the LICENSE.txt file found in the top-level directory of this distribution
+ * and at: https://confluence.slac.stanford.edu/display/ppareg/LICENSE.html.
+ * No part of code-inventory-system, including this file, may be copied, modified, propagated, or distributed
+ * except according to the terms contained in the LICENSE.txt file.
+ *
+ */
+
 package edu.stanford.slac.code_inventory_system.service;
 
 import edu.stanford.slac.ad.eed.baselib.api.v1.dto.AuthorizationDTO;
 import edu.stanford.slac.ad.eed.baselib.api.v1.dto.NewAuthorizationDTO;
 import edu.stanford.slac.ad.eed.baselib.api.v1.mapper.AuthMapper;
 import edu.stanford.slac.ad.eed.baselib.exception.ControllerLogicException;
-import edu.stanford.slac.ad.eed.baselib.model.Authorization;
 import edu.stanford.slac.ad.eed.baselib.service.AuthService;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.api.v1.mapper.InventoryElementMapper;
@@ -12,7 +21,6 @@ import edu.stanford.slac.code_inventory_system.api.v1.mapper.QueryParameterMappe
 import edu.stanford.slac.code_inventory_system.exception.*;
 import edu.stanford.slac.code_inventory_system.model.*;
 import edu.stanford.slac.code_inventory_system.model.value.AbstractValue;
-import edu.stanford.slac.code_inventory_system.repository.InventoryClassRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryDomainRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryElementAttributeHistoryRepository;
 import edu.stanford.slac.code_inventory_system.repository.InventoryElementRepository;
@@ -21,7 +29,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -222,7 +229,7 @@ public class InventoryElementService {
     /**
      * Return the full domain
      */
-    public InventoryDomainDTO getFullDomain(String domainId) {
+    public InventoryDomainDTO getInventoryDomainById(String domainId) {
         var newlyCreatedDomain = wrapCatch(
                 () -> inventoryDomainRepository.findById(
                         domainId
@@ -371,7 +378,7 @@ public class InventoryElementService {
             );
 
             inventoryElementToSave.setParentId(inventoryElementToSave.getParentId());
-            if(parentElement.getFullTreePath()!=null) {
+            if (parentElement.getFullTreePath() != null) {
                 inventoryElementToSave.setFullTreePath(
                         "%s/%s".formatted(
                                 parentElement.getFullTreePath(),
@@ -399,6 +406,16 @@ public class InventoryElementService {
         return newlyCreatedElement.getId();
     }
 
+    /**
+     * Creates a new implementation element for a specified inventory element.
+     *
+     * @param domainId                 The ID of the domain where the element belongs
+     * @param elementId                The ID of the inventory element
+     * @param newImplementationElement The new implementation element to be created
+     * @return The ID of the newly created implementation element
+     * @throws InventoryElementNotFound If the inventory element with the specified ID does not exist
+     * @throws ControllerLogicException If the new implementation element does not belong to an authorized implementable class for the inventory element
+     */
     @Transactional
     public String createNewImplementation(@NotNull String domainId, @NotNull String elementId, @NotNull NewInventoryElementDTO newImplementationElement) {
         // fetch the elements to implements
@@ -468,30 +485,30 @@ public class InventoryElementService {
     /**
      * Fetches the implementation history of an inventory element.
      *
-     * @param domainId the ID of the domain
+     * @param domainId  the ID of the domain
      * @param elementId the ID of the inventory element
      * @return a list of InventoryElementSummaryDTO objects representing the implementation history
      */
     public List<InventoryElementSummaryDTO> findAllImplementationForDomainAndElementIds(String domainId, String elementId) {
         // fetch the class for all implementation kind
         var foundElement = wrapCatch(
-                ()->inventoryElementRepository.findById(elementId),
+                () -> inventoryElementRepository.findById(elementId),
                 1
         ).orElseThrow(
-                ()->InventoryElementNotFound.elementNotFoundById()
+                () -> InventoryElementNotFound.elementNotFoundById()
                         .errorCode(-2)
                         .id(elementId)
                         .build()
         );
 
         var classOfFoundElement = wrapCatch(
-                ()->inventoryClassService.findById(foundElement.getClassId(), true),
+                () -> inventoryClassService.findById(foundElement.getClassId(), true),
                 -3
         );
 
         // find all the history
         List<InventoryElement> foundImplementationHistory = wrapCatch(
-                ()->inventoryElementRepository.findAllByDomainIdIsAndParentIdIsAndClassIdIn(
+                () -> inventoryElementRepository.findAllByDomainIdIsAndParentIdIsAndClassIdIn(
                         domainId,
                         elementId,
                         classOfFoundElement.implementedByClass()
@@ -621,7 +638,7 @@ public class InventoryElementService {
      * @param elementId the element id
      * @return the full inventory element
      */
-    public InventoryElementDTO getFullElement(String domainId, String elementId) {
+    public InventoryElementDTO getInventoryElementByDomainIdAndElementId(String domainId, String elementId) {
         // check if domain exists
         assertion(
                 InventoryDomainNotFound.domainNotFoundById()
@@ -647,7 +664,7 @@ public class InventoryElementService {
      * @param elementId the element id root for the child
      * @return the list of the summary of all the children
      */
-    public List<InventoryElementSummaryDTO> getAllChildren(String domainId, String elementId) {
+    public List<InventoryElementSummaryDTO> findAllChildrenByDomainIdAndElementId(String domainId, String elementId) {
         // check if domain exists
         assertion(
                 InventoryDomainNotFound.domainNotFoundById()
@@ -686,8 +703,8 @@ public class InventoryElementService {
     /**
      * Finds the history of a specific attribute for a given domain, element, and attribute name.
      *
-     * @param domainId      the ID of the inventory domain
-     * @param elementId     the ID of the inventory element
+     * @param domainId  the ID of the inventory domain
+     * @param elementId the ID of the inventory element
      * @return a list of InventoryElementAttributeHistory objects representing the attribute history
      */
     public List<InventoryElementAttributeHistoryDTO> findAllAttributeHistory(
@@ -702,6 +719,56 @@ public class InventoryElementService {
         return foundAttributeHistory
                 .stream()
                 .map(history -> inventoryElementMapper.toDTO(history))
+                .toList();
+    }
+
+    /**
+     * Finds three paths based on the given domainId, elementId, and direction.
+     *
+     * @param domainId  the ID of the domain
+     * @param elementId the ID of the element
+     * @param upward    specify whether to find paths in an upward direction(up to root)
+     */
+    public List<InventoryElementSummaryDTO> findThreePath(String domainId, String elementId, boolean upward) {
+        List<InventoryElement> inventoryElements = new ArrayList<>();
+        assertion(
+                InventoryDomainNotFound.domainNotFoundById()
+                        .errorCode(-1)
+                        .id(domainId)
+                        .build(),
+                () -> inventoryDomainRepository.existsById(domainId)
+        );
+
+        inventoryElements.add(wrapCatch(
+                        () -> inventoryElementRepository.findById(elementId),
+                        -2
+                ).orElseThrow(
+                        () -> InventoryElementNotFound
+                                .elementNotFoundById()
+                                .errorCode(-3)
+                                .id(elementId)
+                                .build()
+                )
+        );
+
+        if (upward) {
+            inventoryElements.addAll(
+                    wrapCatch(
+                            () -> inventoryElementRepository.findPathToRoot(domainId, elementId),
+                            -4
+                    )
+            );
+        } else {
+            inventoryElements.addAll(
+                    wrapCatch(
+                            () -> inventoryElementRepository.findIdPathToLeaf(domainId, elementId),
+                            -4
+                    )
+            );
+        }
+        return inventoryElements
+                .stream()
+                .map(inventoryElementMapper::toSummaryDTO)
                 .toList();
     }
 }

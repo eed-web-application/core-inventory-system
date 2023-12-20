@@ -18,7 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @AutoConfigureMockMvc
 @SpringBootTest()
@@ -84,5 +84,44 @@ public class InventoryElementRepositoryTest {
                 .usingRecursiveComparison()
                 .ignoringActualNullFields()
                 .isEqualTo(ie);
+    }
+    @Test
+    public void testThreeUpward(){
+        var root = inventoryElementRepository.save(
+                InventoryElement
+                        .builder()
+                        .domainId("domainId")
+                        .name("root")
+                        .build()
+        );
+        var child1 = inventoryElementRepository.save(
+                InventoryElement
+                        .builder()
+                        .domainId("domainId")
+                        .name("child1")
+                        .parentId(root.getId())
+                        .build()
+        );
+        var child2 = inventoryElementRepository.save(
+                InventoryElement
+                        .builder()
+                        .name("child2")
+                        .domainId("domainId")
+                        .parentId(child1.getId())
+                        .build()
+        );
+        var pathToRoot = inventoryElementRepository.findPathToRoot("domainId", child2.getId());
+        assertThat(pathToRoot)
+                .isNotNull()
+                .hasSize(2)
+                .extracting(InventoryElement::getId)
+                .containsExactly(child1.getId(), root.getId());
+
+        var pathToLeaf = inventoryElementRepository.findIdPathToLeaf("domainId", root.getId());
+        assertThat(pathToLeaf)
+                .isNotNull()
+                .hasSize(2)
+                .extracting(InventoryElement::getId)
+                .containsExactly(child1.getId(), child2.getId());
     }
 }

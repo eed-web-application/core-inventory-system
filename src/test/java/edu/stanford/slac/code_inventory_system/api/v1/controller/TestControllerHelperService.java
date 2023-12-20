@@ -371,6 +371,27 @@ public class TestControllerHelperService {
         );
     }
 
+    public ApiResultResponse<List<InventoryElementSummaryDTO>> inventoryElementControllerFindPathFromElementId(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo,
+            String domainId,
+            String elementId,
+            Optional<Boolean> upward
+    ) throws Exception {
+        var requestBuilder = get("/v1/inventory/domain/{domainId}/element/{elementId}/path",domainId, elementId)
+                .accept(MediaType.APPLICATION_JSON);
+        upward.ifPresent(b -> requestBuilder.param("upward", String.valueOf(b)));
+        return executeHttpRequest(
+                new TypeReference<>() {
+                },
+                mockMvc,
+                resultMatcher,
+                userInfo,
+                requestBuilder
+        );
+    }
+
     public <T> ApiResultResponse<T> executeHttpRequest(
             TypeReference<ApiResultResponse<T>> typeRef,
             MockMvc mockMvc,
