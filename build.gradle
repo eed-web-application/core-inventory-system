@@ -88,7 +88,7 @@ test {
     // Configure test logging
     testLogging {
         // Show standard output and error streams only for failed tests
-        showStandardStreams = false
+        showStandardStreams = true
 
         // Set the format for the exception stack trace
         exceptionFormat = 'full'
