@@ -88,6 +88,7 @@ test {
     testLogging{
         // By default, don't show standard streams.
         showStandardStreams = false
+        exceptionFormat 'full'
         events 'failed', 'skipped'
 
         // Custom log output for failed tests
