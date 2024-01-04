@@ -476,8 +476,8 @@ public class InventoryElementController {
             @PathVariable(name = "domainId") String domainId,
             @Parameter(name = "anchorId", description = "Is the element id where to start the the path")
             @PathVariable(name = "elementId") String elementId,
-            @Parameter(name = "upward", description = "If true return the path towards the root, otherwise downward the leaf")
-            @RequestParam(value = "upward", defaultValue = "false") Optional<Boolean> requireAllTags
+            @Parameter(name = "pathType", description = "If is the type of the path to return")
+            @RequestParam(value = "pathType", defaultValue = "full") Optional<ThreePathType> threePathType
     ) {
         // check for auth
         assertion(
@@ -502,7 +502,7 @@ public class InventoryElementController {
                 inventoryElementService.findThreePath(
                         domainId,
                         elementId,
-                        requireAllTags.orElse(false)
+                        threePathType.orElse(ThreePathType.Full)
                 )
         );
     }

@@ -157,6 +157,15 @@ public class BuildEnvironmentForElementTest {
                                 .build(),
                         NewInventoryClassDTO
                                 .builder()
+                                .name("Computing Room")
+                                .description("simple floor")
+                                .attributes(emptyList())
+                                .extendsClass(emptyList())
+                                .implementedByClass(emptyList())
+                                .permittedChildClass(emptyList())
+                                .build(),
+                        NewInventoryClassDTO
+                                .builder()
                                 .name("Office")
                                 .description("simple office")
                                 .attributes(emptyList())
