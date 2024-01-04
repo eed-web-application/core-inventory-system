@@ -31,10 +31,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static edu.stanford.slac.ad.eed.baselib.exception.Utility.any;
@@ -727,9 +724,9 @@ public class InventoryElementService {
      *
      * @param domainId  the ID of the domain
      * @param elementId the ID of the element
-     * @param upward    specify whether to find paths in an upward direction(up to root)
+     * @param threePathType    specify the type of path to return
      */
-    public List<InventoryElementSummaryDTO> findThreePath(String domainId, String elementId, boolean upward) {
+    public List<InventoryElementSummaryDTO> findThreePath(String domainId, String elementId, ThreePathType threePathType) {
         List<InventoryElement> inventoryElements = new ArrayList<>();
         assertion(
                 InventoryDomainNotFound.domainNotFoundById()
@@ -739,7 +736,7 @@ public class InventoryElementService {
                 () -> inventoryDomainRepository.existsById(domainId)
         );
 
-        inventoryElements.add(wrapCatch(
+        InventoryElement targetElement = wrapCatch(
                         () -> inventoryElementRepository.findById(elementId),
                         -2
                 ).orElseThrow(
@@ -748,24 +745,47 @@ public class InventoryElementService {
                                 .errorCode(-3)
                                 .id(elementId)
                                 .build()
-                )
-        );
+                );
 
-        if (upward) {
-            inventoryElements.addAll(
-                    wrapCatch(
-                            () -> inventoryElementRepository.findPathToRoot(domainId, elementId),
-                            -4
-                    )
-            );
-        } else {
-            inventoryElements.addAll(
-                    wrapCatch(
-                            () -> inventoryElementRepository.findIdPathToLeaf(domainId, elementId),
-                            -4
-                    )
-            );
+        switch (threePathType) {
+            case Upward -> {
+                inventoryElements.add(targetElement);
+                inventoryElements.addAll(
+                        wrapCatch(
+                                () -> inventoryElementRepository.findPathToRoot(domainId, elementId),
+                                -4
+                        )
+                );
+            }
+            case Downward -> {
+                inventoryElements.add(targetElement);
+                inventoryElements.addAll(
+                        wrapCatch(
+                                () -> inventoryElementRepository.findIdPathToLeaf(domainId, elementId),
+                                -4
+                        )
+                );
+            }
+            case Full -> {
+                // add upward path
+                inventoryElements.addAll(
+                        wrapCatch(
+                                () -> inventoryElementRepository.findPathToRoot(domainId, elementId),
+                                -4
+                        )
+                );
+                Collections.reverse(inventoryElements);
+                // add current element
+                inventoryElements.add(targetElement);
+                inventoryElements.addAll(
+                        wrapCatch(
+                                () -> inventoryElementRepository.findIdPathToLeaf(domainId, elementId),
+                                -4
+                        )
+                );
+            }
         }
+
         return inventoryElements
                 .stream()
                 .map(inventoryElementMapper::toSummaryDTO)

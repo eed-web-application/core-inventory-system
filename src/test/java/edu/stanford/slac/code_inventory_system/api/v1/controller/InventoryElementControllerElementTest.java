@@ -465,6 +465,7 @@ public class InventoryElementControllerElementTest {
         );
         AssertionsForClassTypes.assertThat(buildingRootElement.getErrorCode()).isEqualTo(0);
         AssertionsForClassTypes.assertThat(buildingRootElement.getPayload()).isNotNull();
+
         var floorChildElement = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
                         mockMvc,
@@ -483,7 +484,8 @@ public class InventoryElementControllerElementTest {
         AssertionsForClassTypes.assertThat(floorChildElement.getErrorCode()).isEqualTo(0);
         AssertionsForClassTypes.assertThat(floorChildElement.getPayload()).isNotNull();
 
-        var roomChildElement = assertDoesNotThrow(
+        // computing room
+        var computingRoom = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
                         mockMvc,
                         status().isCreated(),
@@ -491,32 +493,70 @@ public class InventoryElementControllerElementTest {
                         environmentBuildInfo.domainId,
                         NewInventoryElementDTO
                                 .builder()
-                                .name("Room1")
+                                .name("Computing room")
                                 .parentId(floorChildElement.getPayload())
-                                .description("Is the floor")
+                                .description("Is the computing room")
+                                .classId(environmentBuildInfo.classIds.get("computing-room"))
+                                .build()
+                )
+        );
+        AssertionsForClassTypes.assertThat(computingRoom.getErrorCode()).isEqualTo(0);
+        AssertionsForClassTypes.assertThat(computingRoom.getPayload()).isNotNull();
+
+        var serverRoomChildElement = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Server room")
+                                .parentId(computingRoom.getPayload())
+                                .description("Is the server room")
                                 .classId(environmentBuildInfo.classIds.get("server-room"))
                                 .build()
                 )
         );
-        AssertionsForClassTypes.assertThat(roomChildElement.getErrorCode()).isEqualTo(0);
-        AssertionsForClassTypes.assertThat(roomChildElement.getPayload()).isNotNull();
+        AssertionsForClassTypes.assertThat(serverRoomChildElement.getErrorCode()).isEqualTo(0);
+        AssertionsForClassTypes.assertThat(serverRoomChildElement.getPayload()).isNotNull();
 
+        var serverChildElement = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("server")
+                                .parentId(serverRoomChildElement.getPayload())
+                                .description("Is the server")
+                                .classId(environmentBuildInfo.classIds.get("server"))
+                                .build()
+                )
+        );
+        AssertionsForClassTypes.assertThat(serverRoomChildElement.getErrorCode()).isEqualTo(0);
+        AssertionsForClassTypes.assertThat(serverRoomChildElement.getPayload()).isNotNull();
+
+        //upward
         var searchResultBackward = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryElementControllerFindPathFromElementId(
                         mockMvc,
                         status().isOk(),
                         Optional.of("user1@slac.stanford.edu"),
                         environmentBuildInfo.domainId,
-                        roomChildElement.getPayload(),
-                        Optional.of(true)
+                        serverChildElement.getPayload(),
+                        Optional.of(ThreePathType.Upward)
                 )
         );
         assertThat(searchResultBackward.getErrorCode()).isEqualTo(0);
         assertThat(searchResultBackward.getPayload())
-                .hasSize(3)
+                .hasSize(5)
                 .extracting(InventoryElementSummaryDTO::id)
-                .containsExactly(roomChildElement.getPayload(), floorChildElement.getPayload(), buildingRootElement.getPayload());
+                .containsExactly(serverChildElement.getPayload(), serverRoomChildElement.getPayload(), computingRoom.getPayload(), floorChildElement.getPayload(), buildingRootElement.getPayload());
 
+        // downward
         var searchResultForward = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryElementControllerFindPathFromElementId(
                         mockMvc,
@@ -524,13 +564,30 @@ public class InventoryElementControllerElementTest {
                         Optional.of("user1@slac.stanford.edu"),
                         environmentBuildInfo.domainId,
                         buildingRootElement.getPayload(),
-                        Optional.of(false)
+                        Optional.of(ThreePathType.Downward)
                 )
         );
         assertThat(searchResultForward.getErrorCode()).isEqualTo(0);
         assertThat(searchResultForward.getPayload())
-                .hasSize(3)
+                .hasSize(5)
                 .extracting(InventoryElementSummaryDTO::id)
-                .containsExactly(buildingRootElement.getPayload(), floorChildElement.getPayload(), roomChildElement.getPayload());
+                .containsExactly(buildingRootElement.getPayload(), floorChildElement.getPayload(), computingRoom.getPayload(), serverRoomChildElement.getPayload(), serverChildElement.getPayload());
+
+        // full
+        var searchResultFull = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerFindPathFromElementId(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        serverRoomChildElement.getPayload(),
+                        Optional.of(ThreePathType.Full)
+                )
+        );
+        assertThat(searchResultForward.getErrorCode()).isEqualTo(0);
+        assertThat(searchResultForward.getPayload())
+                .hasSize(5)
+                .extracting(InventoryElementSummaryDTO::id)
+                .containsExactly(buildingRootElement.getPayload(), floorChildElement.getPayload(), computingRoom.getPayload(), serverRoomChildElement.getPayload(), serverChildElement.getPayload());
     }
 }

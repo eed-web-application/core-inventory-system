@@ -124,7 +124,7 @@ public class InventoryElementController {
             Authentication authentication,
             @PathVariable(name = "domainId") String domainId,
             @Valid @RequestBody UpdateDomainDTO updateDomainDTO
-            ) {
+    ) {
         // check for auth
         assertion(
                 NotAuthorized.notAuthorizedBuilder()
@@ -133,7 +133,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or an admin  for update the domain
@@ -162,7 +162,7 @@ public class InventoryElementController {
             Authentication authentication,
             @PathVariable(name = "domainId") String domainId,
             @Valid @RequestBody NewInventoryElementDTO newInventoryElementDTO
-            ) {
+    ) {
         // check for auth
         assertion(
                 NotAuthorized.notAuthorizedBuilder()
@@ -171,7 +171,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -207,7 +207,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -243,7 +243,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -273,7 +273,7 @@ public class InventoryElementController {
             Authentication authentication,
             @PathVariable(name = "domainId") String domainId,
             @PathVariable(name = "elementId") String elementId
-    ){
+    ) {
         // check for auth
         assertion(
                 NotAuthorized.notAuthorizedBuilder()
@@ -282,7 +282,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -311,7 +311,7 @@ public class InventoryElementController {
             @PathVariable(value = "domainId") String domainId,
             @Parameter(name = "elementId", description = "The element id that own the attribute")
             @PathVariable(value = "elementId") String elementId
-    ){
+    ) {
         // check for auth
         assertion(
                 NotAuthorized.notAuthorizedBuilder()
@@ -320,7 +320,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -340,7 +340,7 @@ public class InventoryElementController {
             path = "/domain/{domainId}/element/{elementId}/implementation",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    @Operation(summary = "Return all the implementation of an inventory element")
+    @Operation(summary = "Return all the implementation history of an inventory element")
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryElementSummaryDTO>> findAllImplementationHistory(
             Authentication authentication,
@@ -355,7 +355,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -375,13 +375,13 @@ public class InventoryElementController {
             path = "/domain/{domainId}/element/{elementId}/children",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    @Operation(summary = "Update an inventory element")
+    @Operation(summary = "Find the child of a given element id that is the parent")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResultResponse<List<InventoryElementSummaryDTO>> findChildrenByRootId(
+    public ApiResultResponse<List<InventoryElementSummaryDTO>> findChildrenByParentId(
             Authentication authentication,
             @PathVariable(name = "domainId") String domainId,
             @PathVariable(name = "elementId") String elementId
-    ){
+    ) {
         // check for auth
         assertion(
                 NotAuthorized.notAuthorizedBuilder()
@@ -390,7 +390,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -410,7 +410,7 @@ public class InventoryElementController {
             path = "/domain/{domainId}/element",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    @Operation(summary = "Update an inventory element")
+    @Operation(summary = "find all element that respect the criteria")
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryElementSummaryDTO>> findAllElements(
             Authentication authentication,
@@ -428,7 +428,7 @@ public class InventoryElementController {
             @RequestParam("tags") Optional<List<String>> tags,
             @Parameter(name = "requireAllTags", description = "Require that all entries found includes all the tags")
             @RequestParam(value = "requireAllTags", defaultValue = "false") Optional<Boolean> requireAllTags
-    ){
+    ) {
         // check for auth
         assertion(
                 NotAuthorized.notAuthorizedBuilder()
@@ -437,7 +437,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -468,7 +468,12 @@ public class InventoryElementController {
             path = "/domain/{domainId}/element/{elementId}/path",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    @Operation(summary = "Update an inventory element")
+    @Operation(summary = """
+            find the element path given an element id. The path can be requested to be:
+            - upward(from the element to the leaf)
+            - downward(from the element to the root)
+            - full (give the full path to the root to leaf that contains the element)
+             """)
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryElementSummaryDTO>> findPathFromElementId(
             Authentication authentication,
@@ -476,8 +481,8 @@ public class InventoryElementController {
             @PathVariable(name = "domainId") String domainId,
             @Parameter(name = "anchorId", description = "Is the element id where to start the the path")
             @PathVariable(name = "elementId") String elementId,
-            @Parameter(name = "upward", description = "If true return the path towards the root, otherwise downward the leaf")
-            @RequestParam(value = "upward", defaultValue = "false") Optional<Boolean> requireAllTags
+            @Parameter(name = "pathType", description = "If is the type of the path to return")
+            @RequestParam(value = "pathType", defaultValue = "full") Optional<ThreePathType> threePathType
     ) {
         // check for auth
         assertion(
@@ -487,7 +492,7 @@ public class InventoryElementController {
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
-                ()->any(
+                () -> any(
                         // should be root  for update the domain
                         () -> authService.checkForRoot(authentication),
                         // or a writer for update the domain
@@ -502,7 +507,7 @@ public class InventoryElementController {
                 inventoryElementService.findThreePath(
                         domainId,
                         elementId,
-                        requireAllTags.orElse(false)
+                        threePathType.orElse(ThreePathType.Full)
                 )
         );
     }

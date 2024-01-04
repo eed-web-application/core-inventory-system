@@ -377,11 +377,11 @@ public class TestControllerHelperService {
             Optional<String> userInfo,
             String domainId,
             String elementId,
-            Optional<Boolean> upward
+            Optional<ThreePathType> pathType
     ) throws Exception {
         var requestBuilder = get("/v1/inventory/domain/{domainId}/element/{elementId}/path",domainId, elementId)
                 .accept(MediaType.APPLICATION_JSON);
-        upward.ifPresent(b -> requestBuilder.param("upward", String.valueOf(b)));
+        pathType.ifPresent(b -> requestBuilder.param("pathType", b.name()));
         return executeHttpRequest(
                 new TypeReference<>() {
                 },
