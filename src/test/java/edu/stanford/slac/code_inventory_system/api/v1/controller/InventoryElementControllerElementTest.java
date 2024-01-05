@@ -590,4 +590,78 @@ public class InventoryElementControllerElementTest {
                 .extracting(InventoryElementSummaryDTO::id)
                 .containsExactly(buildingRootElement.getPayload(), floorChildElement.getPayload(), computingRoom.getPayload(), serverRoomChildElement.getPayload(), serverChildElement.getPayload());
     }
+
+    @Test
+    public void testBugOnPath() {
+        var buildingRootElement= assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Building1")
+                                .description("Is the building")
+                                .classId(environmentBuildInfo.classIds.get("building"))
+                                .build()
+                )
+        );
+        AssertionsForClassTypes.assertThat(buildingRootElement.getErrorCode()).isEqualTo(0);
+        AssertionsForClassTypes.assertThat(buildingRootElement.getPayload()).isNotNull();
+
+        var floorChildElement = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Floor1")
+                                .parentId(buildingRootElement.getPayload())
+                                .description("Is the floor")
+                                .classId(environmentBuildInfo.classIds.get("floor"))
+                                .build()
+                )
+        );
+        AssertionsForClassTypes.assertThat(floorChildElement.getErrorCode()).isEqualTo(0);
+        AssertionsForClassTypes.assertThat(floorChildElement.getPayload()).isNotNull();
+
+        // computing room
+        var computingRoom = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Computing room")
+                                .parentId(floorChildElement.getPayload())
+                                .description("Is the computing room")
+                                .classId(environmentBuildInfo.classIds.get("computing-room"))
+                                .build()
+                )
+        );
+        AssertionsForClassTypes.assertThat(computingRoom.getErrorCode()).isEqualTo(0);
+        AssertionsForClassTypes.assertThat(computingRoom.getPayload()).isNotNull();
+
+        // full
+        var searchResultFull = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerFindPathFromElementId(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        floorChildElement.getPayload(),
+                        Optional.of(ThreePathType.Full)
+                )
+        );
+        AssertionsForClassTypes.assertThat(searchResultFull.getErrorCode()).isEqualTo(0);
+        assertThat(searchResultFull.getPayload())
+                .hasSize(3)
+                .extracting(InventoryElementSummaryDTO::id)
+                .containsExactly(buildingRootElement.getPayload(), floorChildElement.getPayload(), computingRoom.getPayload());
+    }
 }
