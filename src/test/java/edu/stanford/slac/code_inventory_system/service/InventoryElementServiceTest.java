@@ -799,7 +799,7 @@ public class InventoryElementServiceTest {
 
         assertThat(newRootElementId).isNotNull().isNotEmpty();
 
-        String newParentElementId = assertDoesNotThrow(
+        String newChildElementId = assertDoesNotThrow(
                 () -> inventoryElementService.createNew(
                         newDomainId,
                         NewInventoryElementDTO
@@ -821,7 +821,17 @@ public class InventoryElementServiceTest {
                 )
         );
 
-        assertThat(newParentElementId).isNotNull().isNotEmpty();
+        assertThat(newChildElementId).isNotNull().isNotEmpty();
+
+        var createdChildElement = assertDoesNotThrow(
+                () -> inventoryElementService.getInventoryElementByDomainIdAndElementId(
+                        newDomainId,
+                        newChildElementId
+                )
+        );
+
+        assertThat(createdChildElement).isNotNull();
+        assertThat(createdChildElement.parentId()).isNotNull().isEqualTo(newRootElementId);
     }
 
     @Test

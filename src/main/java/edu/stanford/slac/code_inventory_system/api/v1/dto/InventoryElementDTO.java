@@ -25,6 +25,8 @@ public record InventoryElementDTO(
         String description,
         @Schema(description = "Specify the domain which the item belong")
         String domainId,
+        @Schema(description = "If not null represent the id of the parent")
+        String parentId,
         @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")
         String classId,
         @Schema(description = "The full path using the id up to the parent of this element")

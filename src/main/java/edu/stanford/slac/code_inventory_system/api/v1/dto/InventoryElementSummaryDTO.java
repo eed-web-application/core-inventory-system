@@ -23,6 +23,8 @@ public record InventoryElementSummaryDTO(
         String name,
         @Schema(description = "Specify the domain which the item belong")
         String domainId,
+        @Schema(description = "If not null represent the id of the parent")
+        String parentId,
         @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")
         String classId,
         @Schema(description = "The list of tag that describe the element")
