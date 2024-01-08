@@ -90,6 +90,7 @@ public abstract class InventoryElementMapper {
     public abstract InventoryElementAttributeHistoryDTO toDTO(InventoryElementAttributeHistory inventoryElementAttributeHistory);
 
     public InventoryDomainMinimalDTO toInventoryDomainMinimalFromId(String domainId) {
+        if(domainId == null) return null;
         var inventoryDomainFound = wrapCatch(
                 ()->inventoryDomainRepository.findById(domainId),
                 -1
@@ -98,6 +99,7 @@ public abstract class InventoryElementMapper {
     }
 
     public InventoryClassSummaryDTO toInventoryClassSummaryFromId(String classId) {
+        if(classId == null) return null;
         var inventoryClassFound = wrapCatch(
                 ()->inventoryClassRepository.findById(classId),
                 -1
