@@ -1176,8 +1176,8 @@ public class InventoryElementServiceTest {
         );
         assertThat(fullElementRead).isNotNull();
         assertThat(fullElementRead.id()).isEqualTo(newElementId);
-        assertThat(fullElementRead.classId()).isEqualTo(newBuildingClassID);
-        assertThat(fullElementRead.domainId()).isEqualTo(newDomainId);
+        assertThat(fullElementRead.classDTO().id()).isEqualTo(newBuildingClassID);
+        assertThat(fullElementRead.domainDTO().id()).isEqualTo(newDomainId);
         assertThat(fullElementRead.description()).isEqualTo("updated description");
         assertThat(fullElementRead.tags())
                 .hasSize(1)

@@ -53,7 +53,7 @@ public interface InventoryElementRepository extends MongoRepository<InventoryEle
             "{ $project: { 'pathToLeaf': 1, '_id': '0' } }",
             "{ $replaceRoot: { newRoot: '$pathToLeaf' } }",
             "{ $project: { 'attributes': 0, 'connectorClasses': 0, maintenanceHistory: 0 } }",
-            "{ $sort: { 'depth': 1 } }" // Sort the results by depth in ascending order
+            "{ $sort: { 'depth': 1, 'name': 1 } }" // Sort the results by depth and name in descending order
     })
     List<InventoryElement> findIdPathToLeaf(String domainId, String startingElementId);
 }

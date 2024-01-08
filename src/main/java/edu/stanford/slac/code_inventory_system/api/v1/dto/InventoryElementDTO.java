@@ -24,11 +24,11 @@ public record InventoryElementDTO(
         @Schema(description = "Is the description of the element")
         String description,
         @Schema(description = "Specify the domain which the item belong")
-        String domainId,
+        InventoryDomainMinimalDTO domainDTO,
         @Schema(description = "If not null represent the id of the parent")
         String parentId,
-        @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")
-        String classId,
+        @Schema(description = "Is the {@link InventoryClassSummaryDTO} of one of the existing class")
+        InventoryClassSummaryDTO classDTO,
         @Schema(description = "The full path using the id up to the parent of this element")
         String fullTreePath,
         @Schema(description = "Is the {@link InventoryClassDTO#id} of the element that is an implementation of this one")

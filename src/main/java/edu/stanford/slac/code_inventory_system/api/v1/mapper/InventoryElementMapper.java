@@ -43,6 +43,8 @@ public abstract class InventoryElementMapper {
     @Autowired
     AuthService authService;
     @Autowired
+    InventoryClassMapper inventoryClassMapper;
+    @Autowired
     InventoryClassRepository inventoryClassRepository;
     @Autowired
     InventoryDomainRepository inventoryDomainRepository;
@@ -66,6 +68,8 @@ public abstract class InventoryElementMapper {
 
     public abstract InventoryDomainSummaryDTO toSummaryDTO(InventoryDomain domain);
 
+    public abstract InventoryDomainMinimalDTO toMinimalDTO(InventoryDomain domain);
+
     public abstract TagDTO toDTO(Tag tag);
 
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithClass(newInventoryElementDTO.classId(),newInventoryElementDTO.attributes()))")
@@ -73,15 +77,33 @@ public abstract class InventoryElementMapper {
 
     @Mapping(target = "attributes", expression = "java(toElementAttributeWithString(inventoryElement.getAttributes()))")
     @Mapping(target = "tags", expression = "java(toDTOTagsFromId(inventoryElement.getDomainId(),inventoryElement.getTags()))")
+    @Mapping(target = "domainDTO", expression = "java(toInventoryDomainMinimalFromId(inventoryElement.getDomainId()))")
+    @Mapping(target = "classDTO", expression = "java(toInventoryClassSummaryFromId(inventoryElement.getClassId()))")
     public abstract InventoryElementDTO toDTO(InventoryElement inventoryElement);
 
     @Mapping(target = "tags", expression = "java(toDTOTagsFromId(inventoryElement.getDomainId(),inventoryElement.getTags()))")
+    @Mapping(target = "domainDTO", expression = "java(toInventoryDomainMinimalFromId(inventoryElement.getDomainId()))")
+    @Mapping(target = "classDTO", expression = "java(toInventoryClassSummaryFromId(inventoryElement.getClassId()))")
     public abstract InventoryElementSummaryDTO toSummaryDTO(InventoryElement inventoryElement);
-
-
 
     @Mapping(target = "value", expression = "java(getInventoryElementAttributeValueDTO(inventoryElementAttributeHistory.getValue()))")
     public abstract InventoryElementAttributeHistoryDTO toDTO(InventoryElementAttributeHistory inventoryElementAttributeHistory);
+
+    public InventoryDomainMinimalDTO toInventoryDomainMinimalFromId(String domainId) {
+        var inventoryDomainFound = wrapCatch(
+                ()->inventoryDomainRepository.findById(domainId),
+                -1
+        );
+        return inventoryDomainFound.map(this::toMinimalDTO).orElse(null);
+    }
+
+    public InventoryClassSummaryDTO toInventoryClassSummaryFromId(String classId) {
+        var inventoryClassFound = wrapCatch(
+                ()->inventoryClassRepository.findById(classId),
+                -1
+        );
+        return inventoryClassFound.map(inventoryClassMapper::toSummaryDTO).orElse(null);
+    }
 
     /**
      * return the list of the authorization DTO from the domain id

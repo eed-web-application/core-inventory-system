@@ -22,11 +22,11 @@ public record InventoryElementSummaryDTO(
         @Schema(description = "Is the name of the element")
         String name,
         @Schema(description = "Specify the domain which the item belong")
-        String domainId,
+        InventoryDomainMinimalDTO domainDTO,
         @Schema(description = "If not null represent the id of the parent")
         String parentId,
-        @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")
-        String classId,
+        @Schema(description = "Is the {@link InventoryClassMinimalDTO} of one of the existing class")
+        InventoryClassSummaryDTO classDTO,
         @Schema(description = "The list of tag that describe the element")
         List<TagDTO> tags,
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
