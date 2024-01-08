@@ -482,7 +482,7 @@ public class InventoryElementController {
             @Parameter(name = "anchorId", description = "Is the element id where to start the the path")
             @PathVariable(name = "elementId") String elementId,
             @Parameter(name = "pathType", description = "If is the type of the path to return")
-            @RequestParam(value = "pathType", defaultValue = "full") Optional<ThreePathType> threePathType
+            @Valid @RequestParam(value = "pathType", defaultValue = "Full") Optional<ThreePathType> threePathType
     ) {
         // check for auth
         assertion(
