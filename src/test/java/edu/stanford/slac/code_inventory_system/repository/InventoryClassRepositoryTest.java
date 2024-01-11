@@ -31,11 +31,11 @@ public class InventoryClassRepositoryTest {
     private InventoryClassRepository inventoryClassRepository;
     @Autowired
     private MongoTemplate mongoTemplate;
-
     @BeforeEach
     public void cleanCollection() {
         mongoTemplate.remove(new Query(), InventoryClass.class);
     }
+
 
     @Test
     public void saveOk() {

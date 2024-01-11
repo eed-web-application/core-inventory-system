@@ -414,7 +414,7 @@ public class InventoryElementController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryElementSummaryDTO>> findAllElements(
             Authentication authentication,
-            @Parameter(name = "anchorId", description = "Is the domain id where  the search is applyed")
+            @Parameter(name = "domainId", description = "Is the domain id where  the search is applyed")
             @PathVariable(name = "domainId") String domainId,
             @Parameter(name = "anchorId", description = "Is the id of an entry from where start the search")
             @RequestParam("anchorId") Optional<String> anchorId,
@@ -477,9 +477,9 @@ public class InventoryElementController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryElementSummaryDTO>> findPathFromElementId(
             Authentication authentication,
-            @Parameter(name = "anchorId", description = "Is the domain id where that own the element")
+            @Parameter(name = "domainId", description = "Is the domain id where that own the element")
             @PathVariable(name = "domainId") String domainId,
-            @Parameter(name = "anchorId", description = "Is the element id where to start the the path")
+            @Parameter(name = "elementId", description = "Is the element id where to start the the path")
             @PathVariable(name = "elementId") String elementId,
             @Parameter(name = "pathType", description = "If is the type of the path to return")
             @Valid @RequestParam(value = "pathType", defaultValue = "Full") Optional<ThreePathType> threePathType
