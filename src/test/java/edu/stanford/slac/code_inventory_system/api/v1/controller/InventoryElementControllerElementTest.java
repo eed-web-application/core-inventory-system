@@ -411,8 +411,8 @@ public class InventoryElementControllerElementTest {
             assertThat(createFloor1Building34Result.getErrorCode()).isEqualTo(0);
             assertThat(createFloor1Building34Result.getPayload()).isNotNull();
         }
-
-        var searchResultForward = assertDoesNotThrow(
+        // go forward
+        var searchResultForwardOne = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryElementControllerFindAllElements(
                         mockMvc,
                         status().isOk(),
@@ -426,25 +426,51 @@ public class InventoryElementControllerElementTest {
                         Optional.empty()
                 )
         );
-        assertThat(searchResultForward.getErrorCode()).isEqualTo(0);
-        assertThat(searchResultForward.getPayload())
+        assertThat(searchResultForwardOne.getErrorCode()).isEqualTo(0);
+        assertThat(searchResultForwardOne.getPayload())
                 .hasSize(10)
                 .extracting(InventoryElementSummaryDTO::domainDTO)
                 .extracting(InventoryDomainMinimalDTO::id)
                 .contains(environmentBuildInfo.domainId);
-        assertThat(searchResultForward.getPayload())
+        assertThat(searchResultForwardOne.getPayload())
                 .hasSize(10)
-                .extracting(InventoryElementSummaryDTO::classDTO)
-                .extracting(InventoryClassSummaryDTO::id)
-                .contains(environmentBuildInfo.classIds.get("building"), environmentBuildInfo.classIds.get("floor"));
+                .extracting(InventoryElementSummaryDTO::name)
+                .contains("000-building", "000-floor", "001-building", "001-floor", "002-building", "002-floor", "003-building", "003-floor", "004-building", "004-floor");
 
+        // go forward
+        var searchResultForwardTwo = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerFindAllElements(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        Optional.of(searchResultForwardOne.getPayload().get(9).id()),
+                        Optional.of(10),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty()
+                )
+        );
+        assertThat(searchResultForwardTwo.getErrorCode()).isEqualTo(0);
+        assertThat(searchResultForwardTwo.getPayload())
+                .hasSize(10)
+                .extracting(InventoryElementSummaryDTO::domainDTO)
+                .extracting(InventoryDomainMinimalDTO::id)
+                .contains(environmentBuildInfo.domainId);
+        assertThat(searchResultForwardTwo.getPayload())
+                .hasSize(10)
+                .extracting(InventoryElementSummaryDTO::name)
+                .contains("005-building", "005-floor", "006-building", "006-floor", "007-building", "007-floor", "008-building", "008-floor", "009-building", "009-floor");
+
+        //go backward
         var searchResultBackward = assertDoesNotThrow(
                 () -> testControllerHelperService.inventoryElementControllerFindAllElements(
                         mockMvc,
                         status().isOk(),
                         Optional.of("user1@slac.stanford.edu"),
                         environmentBuildInfo.domainId,
-                        Optional.of(searchResultForward.getPayload().get(9).id()),
+                        Optional.of(searchResultForwardTwo.getPayload().getFirst().id()),
                         Optional.of(0),
                         Optional.of(10),
                         Optional.empty(),
@@ -460,9 +486,27 @@ public class InventoryElementControllerElementTest {
                 .contains(environmentBuildInfo.domainId);
         assertThat(searchResultBackward.getPayload())
                 .hasSize(10)
-                .extracting(InventoryElementSummaryDTO::classDTO)
-                .extracting(InventoryClassSummaryDTO::id)
-                .contains(environmentBuildInfo.classIds.get("building"), environmentBuildInfo.classIds.get("floor"));
+                .extracting(InventoryElementSummaryDTO::name)
+                .contains("000-floor", "001-building", "001-floor", "002-building", "002-floor", "003-building", "003-floor", "004-building", "004-floor", "005-building");
+
+        //search with no parameter
+        var searchNoParamEmptyResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerFindAllElements(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        Optional.of(searchResultForwardOne.getPayload().get(9).id()),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty()
+                )
+        );
+        assertThat(searchNoParamEmptyResult.getErrorCode()).isEqualTo(0);
+        assertThat(searchNoParamEmptyResult.getPayload())
+                .hasSize(0);
     }
 
     @Test
