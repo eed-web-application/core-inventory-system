@@ -455,7 +455,7 @@ public class InventoryElementController {
                                 .domainId(List.of(domainId))
                                 .anchorID(anchorId.orElse(null))
                                 .contextSize(contextSize.orElse(0))
-                                .limit(limit.orElse(10))
+                                .limit(limit.orElse(0))
                                 .search(search.orElse(null))
                                 .tags(tags.orElse(Collections.emptyList()))
                                 .requireAllTags(requireAllTags.orElse(false))
