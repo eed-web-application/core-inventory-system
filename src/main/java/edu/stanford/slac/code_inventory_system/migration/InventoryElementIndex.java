@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.TextIndexDefinition;
 
 @AllArgsConstructor
 @ChangeUnit(id = "inventory-element-index", order = "1003", author = "bisegni")
@@ -101,6 +102,15 @@ public class InventoryElementIndex {
                         )
                         .named("lastModifiedDate")
                         .sparse()
+        );
+
+        MongoDDLOps.createIndex(
+                InventoryElement.class,
+                mongoTemplate,
+                new TextIndexDefinition.TextIndexDefinitionBuilder()
+                        .onField("name")
+                        .onField("description")
+                        .build()
         );
     }
 }
