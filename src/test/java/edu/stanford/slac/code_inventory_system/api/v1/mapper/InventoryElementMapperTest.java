@@ -1,8 +1,6 @@
 package edu.stanford.slac.code_inventory_system.api.v1.mapper;
 
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementAttributeValueDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryElementDTO;
-import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryElementDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.*;
 import edu.stanford.slac.code_inventory_system.exception.InventoryElementAttributeNotForClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
 import edu.stanford.slac.code_inventory_system.model.InventoryClassAttribute;
@@ -590,5 +588,59 @@ public class InventoryElementMapperTest {
         assertThat(((InventoryElementAttributeValueDTO) invElemDTO.attributes().get(0)).value()).isEqualTo(
                 "2000-12-31T00:00:00"
         );
+    }
+
+    @Test
+    public void testToElementSummaryDTO() {
+        when(inventoryClassRepository.findById(anyString())).thenReturn(
+                Optional.of(
+                        InventoryClass
+                                .builder()
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttribute
+                                                        .builder()
+                                                        .name("attr-1")
+                                                        .type(InventoryClassAttributeType.Double)
+                                                        .build(),
+                                                InventoryClassAttribute
+                                                        .builder()
+                                                        .name("attr-2")
+                                                        .type(InventoryClassAttributeType.Double)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        InventoryElementSummaryDTO invElemSummary = assertDoesNotThrow(
+                () -> inventoryElementMapper.toSummaryDTO(
+                        InventoryElement
+                                .builder()
+                                .attributes(
+                                        List.of(
+                                                DoubleValue
+                                                        .builder()
+                                                        .name("attr-1")
+                                                        .value(Double.MAX_VALUE)
+                                                        .build(),
+                                                DoubleValue
+                                                        .builder()
+                                                        .name("attr-2")
+                                                        .value(Double.MIN_VALUE)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        assertThat(invElemSummary.attributes())
+                .hasSize(2);
+        assertThat(invElemSummary.attributes().get(0))
+                .extracting(InventoryElementAttributeValueDTO::name).isEqualTo("attr-1");
+        assertThat((invElemSummary.attributes().get(0)).value()).isEqualTo(String.valueOf(Double.MAX_VALUE));
+        assertThat(invElemSummary.attributes().get(1))
+                .extracting(InventoryElementAttributeValueDTO::name).isEqualTo("attr-2");
+        assertThat((invElemSummary.attributes().get(1)).value()).isEqualTo(String.valueOf(Double.MIN_VALUE));
     }
 }

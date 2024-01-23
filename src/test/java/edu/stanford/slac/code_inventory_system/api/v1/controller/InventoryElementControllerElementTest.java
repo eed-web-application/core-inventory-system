@@ -328,6 +328,7 @@ public class InventoryElementControllerElementTest {
                         NewInventoryElementDTO
                                 .builder()
                                 .name("floor1")
+                                .description("Is the control system software engineer office and experimental lab building")
                                 .parentId(createBuilding34Result.getPayload())
                                 .classId(environmentBuildInfo.classIds.get("floor"))
                                 .attributes(emptyList())

@@ -404,7 +404,10 @@ public class InventoryElementServiceTest {
                         NewInventoryElementDTO
                                 .builder()
                                 .name("name")
+                                .description("description")
                                 .classId("cid")
+                                .tags(emptyList())
+                                .attributes(emptyList())
                                 .build()
                 )
         );
@@ -416,6 +419,9 @@ public class InventoryElementServiceTest {
                         NewInventoryElementDTO
                                 .builder()
                                 .name("name")
+                                .description("description")
+                                .tags(emptyList())
+                                .attributes(emptyList())
                                 .build()
                 )
         );
@@ -629,13 +635,13 @@ public class InventoryElementServiceTest {
 
         // the implemented by id should be equals to newImplementationElementId
         var fullInventoryElement = assertDoesNotThrow(
-                ()->inventoryElementService.getInventoryElementByDomainIdAndElementId(newDomainId, newElementId)
+                () -> inventoryElementService.getInventoryElementByDomainIdAndElementId(newDomainId, newElementId)
         );
         assertThat(fullInventoryElement.implementedBy()).isEqualTo(newImplementationElementId);
 
         // test find all implementation
         var allImplementationHistory = assertDoesNotThrow(
-                ()->inventoryElementService.findAllImplementationForDomainAndElementIds(newDomainId, newElementId)
+                () -> inventoryElementService.findAllImplementationForDomainAndElementIds(newDomainId, newElementId)
         );
         assertThat(allImplementationHistory)
                 .hasSize(1)
@@ -822,7 +828,7 @@ public class InventoryElementServiceTest {
 
         // get the implemented element that should not have the implementedBy populated
         var fullInventoryElement = assertDoesNotThrow(
-                ()->inventoryElementService.getInventoryElementByDomainIdAndElementId(newDomainId, newElementId)
+                () -> inventoryElementService.getInventoryElementByDomainIdAndElementId(newDomainId, newElementId)
         );
         assertThat(fullInventoryElement.implementedBy()).isNull();
     }
@@ -989,11 +995,11 @@ public class InventoryElementServiceTest {
 
         // update building adding floor as child
         InventoryClassDTO inventoryClassDTOBuildingToUpdate = assertDoesNotThrow(
-                ()->inventoryClassService.findById(newBuildingClassID, false)
+                () -> inventoryClassService.findById(newBuildingClassID, false)
         );
-        UpdateInventoryClassDTO uicDTO =  inventoryClassMapper.toUpdate(inventoryClassDTOBuildingToUpdate);
+        UpdateInventoryClassDTO uicDTO = inventoryClassMapper.toUpdate(inventoryClassDTOBuildingToUpdate);
         boolean updateResult = assertDoesNotThrow(
-                ()->inventoryClassService.update(
+                () -> inventoryClassService.update(
                         newBuildingClassID,
                         uicDTO
                                 .toBuilder()
@@ -1001,7 +1007,7 @@ public class InventoryElementServiceTest {
                                         List.of(newFloorClassID)
                                 )
                                 .build()
-                        )
+                )
         );
 
         String newDomainId = assertDoesNotThrow(
@@ -1289,7 +1295,7 @@ public class InventoryElementServiceTest {
                 )
         );
         var fullElementRead = assertDoesNotThrow(
-                () ->inventoryElementService.getInventoryElementByDomainIdAndElementId(
+                () -> inventoryElementService.getInventoryElementByDomainIdAndElementId(
                         newDomainId,
                         newElementId
                 )
@@ -1305,7 +1311,7 @@ public class InventoryElementServiceTest {
 
         // check the history of the attribute
         var fullAttributeHistory = assertDoesNotThrow(
-                () ->inventoryElementService.findAllAttributeHistory(
+                () -> inventoryElementService.findAllAttributeHistory(
                         newDomainId,
                         newElementId
                 )
