@@ -11,6 +11,7 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.jar.Attributes;
 
 @Builder(toBuilder = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -29,6 +30,8 @@ public record InventoryElementSummaryDTO(
         InventoryClassSummaryDTO classDTO,
         @Schema(description = "The list of tag that describe the element")
         List<TagDTO> tags,
+        @Schema(description = "The values for the element attributes(will be checked against those defined in the class)")
+        List<InventoryElementAttributeValueDTO> attributes,
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         @Schema(description = "The creation time")

@@ -84,6 +84,7 @@ public abstract class InventoryElementMapper {
     @Mapping(target = "tags", expression = "java(toDTOTagsFromId(inventoryElement.getDomainId(),inventoryElement.getTags()))")
     @Mapping(target = "domainDTO", expression = "java(toInventoryDomainMinimalFromId(inventoryElement.getDomainId()))")
     @Mapping(target = "classDTO", expression = "java(toInventoryClassSummaryFromId(inventoryElement.getClassId()))")
+    @Mapping(target = "attributes", expression = "java(toElementAttributeWithString(inventoryElement.getAttributes()))")
     public abstract InventoryElementSummaryDTO toSummaryDTO(InventoryElement inventoryElement);
 
     @Mapping(target = "value", expression = "java(getInventoryElementAttributeValueDTO(inventoryElementAttributeHistory.getValue()))")
