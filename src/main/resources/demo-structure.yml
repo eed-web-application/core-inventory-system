@@ -44,12 +44,20 @@ domain-list:
     tags:
       - name: tag-a
       - name: tag-b
+    authorizations: [ ]
+    authenticationTokens: [ ]
 element-list:
   - domainId: Inventory 001
     element:
       name: Building 34
+      description: Building 34
       classId: Building
+      tags: []
+      attributes: []
   - domainId: Inventory 001
     element:
       name: Floor 1
+      description: Floor 1
       classId: Floor
+      tags: []
+      attributes: []
