@@ -18,8 +18,7 @@ import java.util.List;
 @Schema(description = "DTO used for create a new inventory domain")
 public record NewInventoryDomainDTO(
         @Schema(description = "The name of the new domain")
-        @Pattern(regexp = "[a-z0-9\\-]*",
-                message = "Name must contain numbers and character and need to contain only lowercase and dash'-' character")
+
         @NotBlank(message = "Name is mandatory field")
         String name,
         @Schema(description = "The description of the new domain")

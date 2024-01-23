@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import edu.stanford.slac.code_inventory_system.api.v1.validator.NullOrRegex;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import org.springframework.validation.annotation.Validated;
@@ -25,9 +26,12 @@ public record NewInventoryElementDTO(
         @Schema(description = "Is the {@link NewInventoryElementDTO#id} of one of the existing element use as parent")
         String parentId,
 //        @NotNull
+        @NotEmpty(message = "description should not be empty")
         @Schema(description = "The description for the specific element of a class type")
         String description,
+        @NullOrRegex(regexp = "[0-9a-zA-Z\\-]+", message = "the tags list can be empty or contain non null string")
         @Schema(description = "The list of tag that describe the element")
         List<String> tags,
+        @NullOrRegex(regexp = "[0-9a-zA-Z\\-]+", message = "the attribute list can be empty or contain non null string")
         @Schema(description = "The values for the element attributes(will be checked against those defined in the class)")
         List<InventoryElementAttributeValueDTO> attributes){}

@@ -78,8 +78,11 @@ public class InventoryElementServiceTest {
                 () -> inventoryElementService.createNew(
                         NewInventoryDomainDTO
                                 .builder()
-                                .name("New Domain")
+                                .name("new-domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -96,6 +99,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -109,6 +115,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -126,6 +135,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -153,6 +165,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -176,6 +191,8 @@ public class InventoryElementServiceTest {
                                                         .build()
                                         )
                                 )
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -207,6 +224,8 @@ public class InventoryElementServiceTest {
                                                         .build()
                                         )
                                 )
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -233,6 +252,8 @@ public class InventoryElementServiceTest {
                                         List.of(
                                         )
                                 )
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -254,6 +275,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -309,6 +333,7 @@ public class InventoryElementServiceTest {
                                                 finalUpdatedDomain.authorizations().get(0)
                                         )
                                 )
+                                .authenticationTokens(emptyList())
                                 .build()
                 )
         );
@@ -335,6 +360,7 @@ public class InventoryElementServiceTest {
                                 .description("Inventory for the LCLS updated")
                                 .tags(emptyList())
                                 .authorizations(emptyList())
+                                .authenticationTokens(emptyList())
                                 .build()
                 )
         );
@@ -350,8 +376,8 @@ public class InventoryElementServiceTest {
 
     @Test
     public void createElementFailsWithNotMandatoryData() {
-        ControllerLogicException checkExceptionNoName = assertThrows(
-                ControllerLogicException.class,
+        ConstraintViolationException checkExceptionNoName = assertThrows(
+                ConstraintViolationException.class,
                 () -> inventoryElementService.createNew(
                         null,
                         NewInventoryElementDTO
@@ -359,9 +385,9 @@ public class InventoryElementServiceTest {
                                 .build()
                 )
         );
-        assertThat(checkExceptionNoName.getErrorCode()).isEqualTo(-1);
+
         checkExceptionNoName = assertThrows(
-                ControllerLogicException.class,
+                ConstraintViolationException.class,
                 () -> inventoryElementService.createNew(
                         null,
                         NewInventoryElementDTO
@@ -370,8 +396,8 @@ public class InventoryElementServiceTest {
                                 .build()
                 )
         );
-        assertThat(checkExceptionNoName.getErrorCode()).isEqualTo(-1);
-        checkExceptionNoName = assertThrows(
+
+        ControllerLogicException checkError = assertThrows(
                 ControllerLogicException.class,
                 () -> inventoryElementService.createNew(
                         null,
@@ -382,9 +408,9 @@ public class InventoryElementServiceTest {
                                 .build()
                 )
         );
-        assertThat(checkExceptionNoName.getErrorCode()).isEqualTo(-1);
+
         checkExceptionNoName = assertThrows(
-                ControllerLogicException.class,
+                ConstraintViolationException.class,
                 () -> inventoryElementService.createNew(
                         "did",
                         NewInventoryElementDTO
@@ -393,69 +419,68 @@ public class InventoryElementServiceTest {
                                 .build()
                 )
         );
-        assertThat(checkExceptionNoName.getErrorCode()).isEqualTo(-1);
     }
 
-//    @Test
-//    public void createEntryFailsWithParentIdEmptyOK() {
-//        String newClassID = assertDoesNotThrow(
-//                () -> inventoryClassService.createNew(
-//                        NewInventoryClassDTO
-//                                .builder()
-//                                .name("class a")
-//                                .attributes(
-//                                        List.of(
-//                                                InventoryClassAttributeDTO
-//                                                        .builder()
-//                                                        .name("Building Number")
-//                                                        .mandatory(true)
-//                                                        .type(InventoryClassAttributeTypeDTO.Number)
-//                                                        .build()
-//                                        )
-//                                )
-//                                .build()
-//                )
-//        );
-//        String newDomainId = assertDoesNotThrow(
-//                () -> inventoryElementService.createNew(
-//                        NewInventoryDomainDTO
-//                                .builder()
-//                                .name("new-domain")
-//                                .description("This is the description for the new domain")
-//                                .authenticationTokens(emptyList())
-//                                .tags(emptyList())
-//                                .authorizations(emptyList())
-//                                .authenticationTokens(emptyList())
-//                                .build()
-//                )
-//        );
-//        assertThat(newDomainId)
-//                .isNotNull()
-//                .isNotEmpty();
-//
-//        ConstraintViolationException exceptionOnParentIdEmptyString = assertThrows(
-//                ConstraintViolationException.class,
-//                () -> inventoryElementService.createNew(
-//                        newDomainId,
-//                        NewInventoryElementDTO
-//                                .builder()
-//                                .name("Building Control")
-//                                .description("Main control system building")
-//                                .parentId("")
-//                                .classId(newClassID)
-//                                .attributes(
-//                                        List.of(
-//                                                InventoryElementAttributeValueDTO
-//                                                        .builder()
-//                                                        .name("building-number")
-//                                                        .value("34")
-//                                                        .build()
-//                                        )
-//                                )
-//                                .build()
-//                )
-//        );
-//    }
+    @Test
+    public void createEntryFailsWithParentIdEmptyOK() {
+        String newClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("class a")
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("Building Number")
+                                                        .mandatory(true)
+                                                        .type(InventoryClassAttributeTypeDTO.Number)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        String newDomainId = assertDoesNotThrow(
+                () -> inventoryElementService.createNew(
+                        NewInventoryDomainDTO
+                                .builder()
+                                .name("new-domain")
+                                .description("This is the description for the new domain")
+                                .authenticationTokens(emptyList())
+                                .tags(emptyList())
+                                .authorizations(emptyList())
+                                .authenticationTokens(emptyList())
+                                .build()
+                )
+        );
+        assertThat(newDomainId)
+                .isNotNull()
+                .isNotEmpty();
+
+        ConstraintViolationException exceptionOnParentIdEmptyString = assertThrows(
+                ConstraintViolationException.class,
+                () -> inventoryElementService.createNew(
+                        newDomainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Building Control")
+                                .description("Main control system building")
+                                .parentId("")
+                                .classId(newClassID)
+                                .attributes(
+                                        List.of(
+                                                InventoryElementAttributeValueDTO
+                                                        .builder()
+                                                        .name("building-number")
+                                                        .value("34")
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+    }
 
     @Test
     public void createNewElementOK() {
@@ -484,6 +509,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -505,6 +533,7 @@ public class InventoryElementServiceTest {
                                                         .build()
                                         )
                                 )
+                                .tags(emptyList())
                                 .build()
                 )
         );
@@ -559,6 +588,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -571,7 +603,7 @@ public class InventoryElementServiceTest {
                                 .name("Implemented item")
                                 .description("Main control system building")
                                 .classId(newClassID)
-                                .attributes(emptyList())
+                                .tags(emptyList())
                                 .build()
                 )
         );
@@ -658,6 +690,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -743,6 +778,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -834,6 +872,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -969,6 +1010,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -1042,6 +1086,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -1052,10 +1099,12 @@ public class InventoryElementServiceTest {
                         newDomainId,
                         NewInventoryElementDTO
                                 .builder()
-                                .name("Room Control 1")
+                                .name("room control 1")
                                 .description("Main control system building")
                                 .classId(newBuildingClassID)
-                                .parentId("bad parent id")
+                                .parentId("bad-parent-id")
+                                .attributes(emptyList())
+                                .tags(emptyList())
                                 .build()
                 )
         );
@@ -1090,6 +1139,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -1100,12 +1152,12 @@ public class InventoryElementServiceTest {
                         newDomainId,
                         NewInventoryElementDTO
                                 .builder()
-                                .name("Building Control 1")
+                                .name("building control 1")
                                 .description("Main control system building")
                                 .classId(newBuildingClassID)
                                 .tags(
                                         List.of(
-                                                "bad tag id"
+                                                "bad-tag-id"
                                         )
                                 )
                                 .attributes(
@@ -1152,6 +1204,9 @@ public class InventoryElementServiceTest {
                                 .builder()
                                 .name("New Domain")
                                 .description("This is the description for the new domain")
+                                .tags(emptyList())
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );
@@ -1161,6 +1216,7 @@ public class InventoryElementServiceTest {
                         newDomainId,
                         UpdateDomainDTO
                                 .builder()
+                                .name("new-domain")
                                 .description("Updated description")
                                 .tags(
                                         List.of(
@@ -1170,6 +1226,8 @@ public class InventoryElementServiceTest {
                                                         .build()
                                         )
                                 )
+                                .authenticationTokens(emptyList())
+                                .authorizations(emptyList())
                                 .build()
                 )
         );

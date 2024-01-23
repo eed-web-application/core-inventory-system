@@ -47,7 +47,7 @@ import static edu.stanford.slac.code_inventory_system.service.utility.IdValueObj
  */
 @Log4j2
 @Service
-//@Validated
+@Validated
 @AllArgsConstructor
 public class InventoryElementService {
     AuthMapper authMapper;
