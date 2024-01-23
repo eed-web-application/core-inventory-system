@@ -28,8 +28,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Validate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +47,7 @@ import static edu.stanford.slac.code_inventory_system.service.utility.IdValueObj
  */
 @Log4j2
 @Service
+//@Validated
 @AllArgsConstructor
 public class InventoryElementService {
     AuthMapper authMapper;

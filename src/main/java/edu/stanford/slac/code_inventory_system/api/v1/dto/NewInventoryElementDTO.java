@@ -21,7 +21,7 @@ public record NewInventoryElementDTO(
         @NotNull
         @Schema(description = "Is the {@link InventoryClassDTO#id} of one of the existing class")
         String classId,
-        @NullOrRegex(regexp = "[0-9a-zA-Z\\-]*", message = "parentID should null or an alphanumeric value")
+        @NullOrRegex(regexp = "[0-9a-zA-Z\\-]+", message = "parentID should null or an alphanumeric value")
         @Schema(description = "Is the {@link NewInventoryElementDTO#id} of one of the existing element use as parent")
         String parentId,
 //        @NotNull

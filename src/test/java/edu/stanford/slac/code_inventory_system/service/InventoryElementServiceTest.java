@@ -14,6 +14,7 @@ import edu.stanford.slac.code_inventory_system.model.InventoryDomain;
 import edu.stanford.slac.code_inventory_system.model.InventoryElement;
 import edu.stanford.slac.code_inventory_system.model.InventoryElementAttributeHistory;
 import edu.stanford.slac.code_inventory_system.repository.InventoryElementRepository;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -394,6 +395,67 @@ public class InventoryElementServiceTest {
         );
         assertThat(checkExceptionNoName.getErrorCode()).isEqualTo(-1);
     }
+
+//    @Test
+//    public void createEntryFailsWithParentIdEmptyOK() {
+//        String newClassID = assertDoesNotThrow(
+//                () -> inventoryClassService.createNew(
+//                        NewInventoryClassDTO
+//                                .builder()
+//                                .name("class a")
+//                                .attributes(
+//                                        List.of(
+//                                                InventoryClassAttributeDTO
+//                                                        .builder()
+//                                                        .name("Building Number")
+//                                                        .mandatory(true)
+//                                                        .type(InventoryClassAttributeTypeDTO.Number)
+//                                                        .build()
+//                                        )
+//                                )
+//                                .build()
+//                )
+//        );
+//        String newDomainId = assertDoesNotThrow(
+//                () -> inventoryElementService.createNew(
+//                        NewInventoryDomainDTO
+//                                .builder()
+//                                .name("new-domain")
+//                                .description("This is the description for the new domain")
+//                                .authenticationTokens(emptyList())
+//                                .tags(emptyList())
+//                                .authorizations(emptyList())
+//                                .authenticationTokens(emptyList())
+//                                .build()
+//                )
+//        );
+//        assertThat(newDomainId)
+//                .isNotNull()
+//                .isNotEmpty();
+//
+//        ConstraintViolationException exceptionOnParentIdEmptyString = assertThrows(
+//                ConstraintViolationException.class,
+//                () -> inventoryElementService.createNew(
+//                        newDomainId,
+//                        NewInventoryElementDTO
+//                                .builder()
+//                                .name("Building Control")
+//                                .description("Main control system building")
+//                                .parentId("")
+//                                .classId(newClassID)
+//                                .attributes(
+//                                        List.of(
+//                                                InventoryElementAttributeValueDTO
+//                                                        .builder()
+//                                                        .name("building-number")
+//                                                        .value("34")
+//                                                        .build()
+//                                        )
+//                                )
+//                                .build()
+//                )
+//        );
+//    }
 
     @Test
     public void createNewElementOK() {
