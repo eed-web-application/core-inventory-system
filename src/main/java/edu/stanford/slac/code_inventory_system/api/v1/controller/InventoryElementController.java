@@ -372,6 +372,40 @@ public class InventoryElementController {
     }
 
     @GetMapping(
+            path = "/domain/{domainId}/roots",
+            produces = {MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(summary = "Find all element that are root for the domain")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResultResponse<List<InventoryElementSummaryDTO>> findRootByDomainId(
+            Authentication authentication,
+            @PathVariable(name = "domainId") String domainId
+    ) {
+        // check for auth
+        assertion(
+                NotAuthorized.notAuthorizedBuilder()
+                        .errorCode(-1)
+                        .errorDomain("InventoryElementController::getElement")
+                        .build(),
+                // should be authenticated
+                () -> authService.checkAuthentication(authentication),
+                () -> any(
+                        // should be root  for update the domain
+                        () -> authService.checkForRoot(authentication),
+                        // or a writer for update the domain
+                        () -> authService.checkAuthorizationForOwnerAuthTypeAndResourcePrefix(
+                                authentication,
+                                // only admin can update the domain
+                                AuthorizationTypeDTO.Read,
+                                "/cis/domain/%s".formatted(domainId))
+                )
+        );
+        return ApiResultResponse.of(
+                inventoryElementService.findAllRootByDomainId(domainId)
+        );
+    }
+
+    @GetMapping(
             path = "/domain/{domainId}/element/{elementId}/children",
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )

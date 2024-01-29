@@ -357,6 +357,105 @@ public class InventoryElementControllerElementTest {
     }
 
     @Test
+    public void getRootForDomain() {
+        var createBuilding34Result = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Control System Building 34")
+                                .description("Is the control system software engineer office and experimental lab building")
+                                .classId(environmentBuildInfo.classIds.get("building"))
+                                .attributes(
+                                        List.of(
+                                                InventoryElementAttributeValueDTO
+                                                        .builder()
+                                                        .name("building-number")
+                                                        .value("34")
+                                                        .build(),
+                                                InventoryElementAttributeValueDTO
+                                                        .builder()
+                                                        .name("security-level")
+                                                        .value("Green")
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        var createBuilding43Result = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("Control System Building 43")
+                                .description("Is the control system software engineer office and experimental lab building")
+                                .classId(environmentBuildInfo.classIds.get("building"))
+                                .attributes(
+                                        List.of(
+                                                InventoryElementAttributeValueDTO
+                                                        .builder()
+                                                        .name("building-number")
+                                                        .value("43")
+                                                        .build(),
+                                                InventoryElementAttributeValueDTO
+                                                        .builder()
+                                                        .name("security-level")
+                                                        .value("Green")
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+        assertThat(createBuilding43Result.getErrorCode()).isEqualTo(0);
+        assertThat(createBuilding43Result.getPayload()).isNotNull();
+
+        var createFloor1Building34Result = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerCreateNewElement(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId,
+                        NewInventoryElementDTO
+                                .builder()
+                                .name("floor1")
+                                .description("Is the control system software engineer office and experimental lab building")
+                                .parentId(createBuilding34Result.getPayload())
+                                .classId(environmentBuildInfo.classIds.get("floor"))
+                                .attributes(emptyList())
+                                .build()
+                )
+        );
+
+        assertThat(createFloor1Building34Result.getErrorCode()).isEqualTo(0);
+        assertThat(createFloor1Building34Result.getPayload()).isNotNull();
+
+
+        var findAllRoots = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryElementControllerFindAllRootsForDomain(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        environmentBuildInfo.domainId
+                )
+        );
+
+        assertThat(findAllRoots.getErrorCode()).isEqualTo(0);
+        assertThat(findAllRoots.getPayload()).isNotNull();
+        assertThat(findAllRoots.getPayload())
+                .hasSize(2)
+                .extracting(InventoryElementSummaryDTO::id)
+                .contains(createBuilding34Result.getPayload(), createBuilding43Result.getPayload());
+    }
+
+    @Test
     public void findAllTestSimple() {
         for (int idx = 0; idx < 20; idx++) {
             int finalIdx = idx;
