@@ -2,6 +2,7 @@ package edu.stanford.slac.code_inventory_system.service;
 
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassAttributeTypeDTO;
+import edu.stanford.slac.code_inventory_system.api.v1.dto.InventoryClassSummaryDTO;
 import edu.stanford.slac.code_inventory_system.api.v1.dto.NewInventoryClassDTO;
 import edu.stanford.slac.code_inventory_system.exception.InventoryClassNotFound;
 import edu.stanford.slac.code_inventory_system.model.InventoryClass;
@@ -19,6 +20,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.collect.ImmutableList.of;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -208,5 +210,108 @@ public class InventoryClassServiceTest {
         assertThat(fullInventoryClass.extendsClass())
                 .hasSize(3)
                 .contains(newRootClassId, newMiddleClassIdOne, newMiddleClassIdTwo);
+    }
+
+    @Test
+    public void testDTOReturnAllFields() {
+        var newBaseClassID = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(NewInventoryClassDTO
+                        .builder()
+                        .name("new base class")
+                        .attributes(
+                                of(
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("1")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+        );
+        assertThat(newBaseClassID).isNotNull();
+        //middle class
+        var newClassThatCanBeChild = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(NewInventoryClassDTO
+                        .builder()
+                        .name("new child-able class")
+                        .attributes(
+                                of(
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("2")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build(),
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("3")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+        );
+        assertThat(newClassThatCanBeChild).isNotNull();
+
+        //middle class
+        var newClassToCheck = assertDoesNotThrow(
+                () -> inventoryClassService.createNew(NewInventoryClassDTO
+                        .builder()
+                        .name("new middle class")
+                        .extendsClass(of(newBaseClassID))
+                        .permittedChildClass(of(newClassThatCanBeChild))
+                        .attributes(
+                                of(
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("3")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build(),
+                                        InventoryClassAttributeDTO
+                                                .builder()
+                                                .name("4")
+                                                .description("Indicate what is the security level of the building choosing from [green, yellow, red]")
+                                                .mandatory(true)
+                                                .type(InventoryClassAttributeTypeDTO.String)
+                                                .build()
+                                )
+                        )
+                        .build()
+                )
+        );
+        assertThat(newClassToCheck).isNotNull();
+
+
+        var allClasses = assertDoesNotThrow(
+                ()->inventoryClassService.findAll(Optional.empty())
+        );
+
+        assertThat(allClasses)
+                .hasSize(3)
+                .extracting(InventoryClassSummaryDTO::id)
+                .contains(newBaseClassID, newClassThatCanBeChild, newClassToCheck);
+
+        for (var inventoryClassSummaryDTO : allClasses) {
+            if(inventoryClassSummaryDTO.id().compareTo(newClassToCheck)==0) {
+                assertThat(inventoryClassSummaryDTO.extendsClass())
+                        .hasSize(1)
+                        .contains(newBaseClassID);
+                assertThat(inventoryClassSummaryDTO.attributes())
+                        .hasSize(2)
+                        .extracting(InventoryClassAttributeDTO::name)
+                        .contains("3","4");
+            }
+        }
+
     }
 }
