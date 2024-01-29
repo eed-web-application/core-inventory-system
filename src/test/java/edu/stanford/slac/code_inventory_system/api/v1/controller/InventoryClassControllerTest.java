@@ -251,4 +251,118 @@ public class InventoryClassControllerTest {
                 .contains("1", "2");
 
     }
+
+    @Test
+    public void checkAllAttributeOfDTO_Issue31() {
+        var createNewRootClassResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerCreateNew(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("General building")
+                                .description("description")
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
+                                .implementedByClass(emptyList())
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("1")
+                                                        .description("Determinate the security level choosing form [Green, Yellow, Red]")
+                                                        .type(InventoryClassAttributeTypeDTO.String)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        assertThat(createNewRootClassResult.getErrorCode()).isEqualTo(0);
+        assertThat(createNewRootClassResult.getPayload()).isNotNull();
+
+        var createNewClassForChildClass = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerCreateNew(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("General room")
+                                .description("room description")
+                                .extendsClass(emptyList())
+                                .permittedChildClass(emptyList())
+                                .implementedByClass(emptyList())
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("office number")
+                                                        .description("Determinate the number of the office managed by the room")
+                                                        .type(InventoryClassAttributeTypeDTO.String)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        assertThat(createNewRootClassResult.getErrorCode()).isEqualTo(0);
+        assertThat(createNewRootClassResult.getPayload()).isNotNull();
+
+        var createNewSubClassResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerCreateNew(
+                        mockMvc,
+                        status().isCreated(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        NewInventoryClassDTO
+                                .builder()
+                                .name("Laboratory building")
+                                .description("description")
+                                // extends the general building
+                                .extendsClass(of(createNewRootClassResult.getPayload()))
+                                // add office and child of this class
+                                .permittedChildClass(of(createNewClassForChildClass.getPayload()))
+                                .implementedByClass(emptyList())
+                                .attributes(
+                                        List.of(
+                                                InventoryClassAttributeDTO
+                                                        .builder()
+                                                        .name("2")
+                                                        .description("Determinate the security level choosing form [Green, Yellow, Red]")
+                                                        .type(InventoryClassAttributeTypeDTO.String)
+                                                        .build()
+                                        )
+                                )
+                                .build()
+                )
+        );
+
+        assertThat(createNewSubClassResult.getErrorCode()).isEqualTo(0);
+        assertThat(createNewSubClassResult.getPayload()).isNotNull();
+
+        var findByIdResult = assertDoesNotThrow(
+                () -> testControllerHelperService.inventoryClassControllerFindById(
+                        mockMvc,
+                        status().isOk(),
+                        Optional.of("user1@slac.stanford.edu"),
+                        createNewSubClassResult.getPayload(),
+                        Optional.of(true)
+                )
+        );
+
+        assertThat(findByIdResult.getErrorCode()).isEqualTo(0);
+        assertThat(findByIdResult.getPayload()).isNotNull();
+        assertThat(findByIdResult.getPayload().id()).isEqualTo(createNewSubClassResult.getPayload());
+        assertThat(findByIdResult.getPayload().attributes()).hasSize(2);
+        assertThat(findByIdResult.getPayload().attributes())
+                .extracting(InventoryClassAttributeDTO::name)
+                .contains("1", "2");
+        assertThat(findByIdResult.getPayload().permittedChildClass())
+                .hasSize(1)
+                .containsExactly(createNewClassForChildClass.getPayload());
+
+    }
 }
