@@ -45,7 +45,7 @@ public class InventoryClassController {
         assertion(
                 NotAuthorized.notAuthorizedBuilder()
                         .errorCode(-1)
-                        .errorDomain("InventoryClassController::newAttachment")
+                        .errorDomain("InventoryClassController::createNewClass")
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication),
@@ -73,7 +73,7 @@ public class InventoryClassController {
         assertion(
                 NotAuthorized.notAuthorizedBuilder()
                         .errorCode(-1)
-                        .errorDomain("InventoryClassController::newAttachment")
+                        .errorDomain("InventoryClassController::finById")
                         .build(),
                 // should be authenticated
                 () -> authService.checkAuthentication(authentication)
