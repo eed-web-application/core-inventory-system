@@ -24,6 +24,14 @@ public interface InventoryElementRepository extends MongoRepository<InventoryEle
     List<InventoryElement> findAllByDomainIdIsAndParentIdIs(String domainId, String elementId);
 
     /**
+     * Retrieves a list of InventoryElements that are root of the domain
+     *
+     * @param domainId   the domain ID
+     * @return a list of InventoryElements that are roots for the domain
+     */
+    List<InventoryElement> findAllByDomainIdIsAndParentIdIsNull(String domainId);
+
+    /**
      * Retrieves a list of InventoryElements that satisfy the given domain ID, parent ID, and class ID
      *
      * @param domainId   the domain ID

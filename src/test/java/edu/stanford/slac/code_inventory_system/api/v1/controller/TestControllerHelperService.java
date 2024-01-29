@@ -319,6 +319,31 @@ public class TestControllerHelperService {
         );
     }
 
+    /**
+     * Return the root element for a specific domain
+     * @param mockMvc the mock mvc
+     * @param resultMatcher the result matcher
+     * @param userInfo the user info
+     * @param domainId the domain id
+     * @return the root element
+     * @throws Exception the exception
+     */
+    public ApiResultResponse<List<InventoryElementSummaryDTO>> inventoryElementControllerFindAllRootsForDomain(
+            MockMvc mockMvc,
+            ResultMatcher resultMatcher,
+            Optional<String> userInfo,
+            String domainId) throws Exception {
+        var requestBuilder = get("/v1/inventory/domain/{domainId}/roots",domainId)
+                .accept(MediaType.APPLICATION_JSON);
+        return executeHttpRequest(
+                new TypeReference<>() {
+                },
+                mockMvc,
+                resultMatcher,
+                userInfo,
+                requestBuilder
+        );
+    }
     public ApiResultResponse<List<InventoryElementSummaryDTO>> inventoryElementControllerFindAllChildrenByRootId(
             MockMvc mockMvc,
             ResultMatcher resultMatcher,

@@ -683,6 +683,29 @@ public class InventoryElementService {
     }
 
     /**
+     * Return all the root of a domain
+     *
+     * @param domainId  the domain id
+     * @return the list of the summary of all the root
+     */
+    public List<InventoryElementSummaryDTO> findAllRootByDomainId(String domainId) {
+        // check if domain exists
+        assertion(
+                InventoryDomainNotFound.domainNotFoundById()
+                        .errorCode(-1)
+                        .id(domainId)
+                        .build(),
+                () -> inventoryDomainRepository.existsById(domainId)
+        );
+        return inventoryElementRepository.findAllByDomainIdIsAndParentIdIsNull(
+                        domainId)
+                .stream()
+                .map(
+                        inventoryElementMapper::toSummaryDTO
+                ).toList();
+    }
+
+    /**
      * Perform the search operation on all inventory element
      *
      * @param queryParameterDTO the query information
