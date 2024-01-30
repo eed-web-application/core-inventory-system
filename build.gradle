@@ -17,6 +17,9 @@ java {
 
 }
 
+springBoot {
+    buildInfo()
+}
 
 configurations {
     compileOnly {
