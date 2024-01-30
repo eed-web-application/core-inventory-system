@@ -10,6 +10,8 @@ group = 'edu.stanford.slac'
 version = '1.0.0'
 def javaSourceCompatibility = JavaVersion.VERSION_21
 def javaTargetCompatibility = JavaVersion.VERSION_21
+def ad_eed_baselib_version = "0.1.29"
+def ad_eed_base_mongodb_lib_version = "0.1.11"
 
 java {
     sourceCompatibility = javaSourceCompatibility
@@ -18,7 +20,16 @@ java {
 }
 
 springBoot {
-    buildInfo()
+    buildInfo {
+        {
+            properties {
+                additional = [
+                        'ad-eed-baselib': "${ad_eed_baselib_version}",
+                        'ad-eed-base-mongodb':"${ad_eed_base_mongodb_lib_version}"
+                ]
+            }
+        }
+    }
 }
 
 configurations {
@@ -61,8 +72,8 @@ dependencies {
             'org.mapstruct:mapstruct:1.5.3.Final'
 
     //eed library
-    implementation 'edu.stanford.slac:slac-ad-eed-baselib:0.1.27',
-            'edu.stanford.slac:slac-ad-eed-base-mongodb-lib:0.1.11'
+    implementation "edu.stanford.slac:slac-ad-eed-baselib:$ad_eed_baselib_version",
+            "edu.stanford.slac:slac-ad-eed-base-mongodb-lib:$ad_eed_base_mongodb_lib_version"
     // MongoDB
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     // mongock
