@@ -448,7 +448,7 @@ public class InventoryElementController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResultResponse<List<InventoryElementSummaryDTO>> findAllElements(
             Authentication authentication,
-            @Parameter(name = "domainId", description = "Is the domain id where  the search is applyed")
+            @Parameter(name = "domainId", description = "Is the domain id where  the search is applied")
             @PathVariable(name = "domainId") String domainId,
             @Parameter(name = "anchorId", description = "Is the id of an entry from where start the search")
             @RequestParam("anchorId") Optional<String> anchorId,
