@@ -26,6 +26,7 @@ springBoot {
     buildInfo {
         {
             properties {
+                version = "${project.version}"
                 additional = [
                         'ad-eed-baselib': "${project.ext.ad_eed_baselib_version}",
                         'ad-eed-base-mongodb':"${project.ext.ad_eed_base_mongodb_lib_version}"
@@ -161,4 +162,8 @@ testlogger {
     showSkippedStandardStreams true
     showFailedStandardStreams true
     logLevel 'lifecycle'
+}
+
+assemble.doLast {
+    println "built app version: ${project.version}"
 }
