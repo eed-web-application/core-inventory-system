@@ -9,8 +9,8 @@ plugins {
 group = 'edu.stanford.slac'
 version = '1.0.1'
 ext{
-    ad_eed_baselib_version="0.1.33"
-    ad_eed_base_mongodb_lib_version="0.1.13"
+    ad_eed_baselib_version="0.1.35"
+    ad_eed_base_mongodb_lib_version="0.1.14"
     javaSourceCompatibility = JavaVersion.VERSION_21
     javaTargetCompatibility = JavaVersion.VERSION_21
 }
