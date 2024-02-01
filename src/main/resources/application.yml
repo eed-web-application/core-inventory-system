@@ -10,7 +10,7 @@ server:
 
 spring:
   application:
-    name: 'CIS'
+    name: cis
   cache:
     type: hazelcast
   ldap:
