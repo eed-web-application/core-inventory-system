@@ -101,17 +101,21 @@ public class InitDemoDB {
         ) {
             NewInventoryElementDTO newInventoryElementDTO = newElement.getElement();
             if (!resultInfo.containsKey("domain_" + newElement.getDomainId().toLowerCase())) {
-                throw ControllerLogicException.of(
-                        -1,
-                        "No domain id found for %s".formatted(newElement.getDomainId()),
-                        "buildEnvironment");
+                throw ControllerLogicException
+                        .builder()
+                        .errorCode(-1)
+                        .errorMessage("No domain id found for %s".formatted(newElement.getDomainId()))
+                        .errorDomain("buildEnvironment")
+                        .build();
             }
 
             if (!resultInfo.containsKey("class_" + newElement.getElement().classId().toLowerCase())) {
-                throw ControllerLogicException.of(
-                        -2,
-                        "No class id found for %s".formatted(newElement.getElement().classId()),
-                        "buildEnvironment");
+                throw ControllerLogicException
+                        .builder()
+                        .errorCode(-2)
+                        .errorMessage("No class id found for %s".formatted(newElement.getElement().classId()))
+                        .errorDomain("buildEnvironment")
+                        .build();
             } else {
                 newInventoryElementDTO = newInventoryElementDTO.toBuilder()
                         .classId(resultInfo.get("class_" + newElement.getElement().classId().toLowerCase()))
@@ -121,10 +125,12 @@ public class InitDemoDB {
             if (
                     newElement.getElement().parentId() != null &&
                             !resultInfo.containsKey("element_" + newElement.getElement().parentId().toLowerCase())) {
-                throw ControllerLogicException.of(
-                        -2,
-                        "No parent id found for %s".formatted(newElement.getElement().parentId()),
-                        "buildEnvironment");
+                throw ControllerLogicException
+                        .builder()
+                        .errorCode(-2)
+                        .errorMessage("No parent id found for %s".formatted(newElement.getElement().parentId()))
+                        .errorDomain("buildEnvironment")
+                        .build();
             } else if (newElement.getElement().parentId() != null) {
                 newInventoryElementDTO = newInventoryElementDTO.toBuilder()
                         .parentId
