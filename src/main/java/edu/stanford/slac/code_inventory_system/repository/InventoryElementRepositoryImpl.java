@@ -27,22 +27,23 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
         Query q = new Query();
         q.addCriteria(Criteria.where("id").is(anchorId));
         q.fields().include("name");
-        var inventoryElementFound =  mongoTemplate.findOne(q, InventoryElement.class);
-        return (inventoryElementFound!=null)?inventoryElementFound.getName():null;
+        var inventoryElementFound = mongoTemplate.findOne(q, InventoryElement.class);
+        return (inventoryElementFound != null) ? inventoryElementFound.getName() : null;
     }
 
     @Override
     public List<InventoryElement> searchAll(QueryParameter queryParameter) {
         if (
                 queryParameter.getContextSize() != null &&
-                queryParameter.getContextSize() >0 &&
+                        queryParameter.getContextSize() > 0 &&
                         queryParameter.getAnchorID() == null
         ) {
-            throw ControllerLogicException.of(
-                    -1,
-                    "The context count cannot be used without the ancor",
-                    "InventoryElementRepositoryImpl::searchAll"
-            );
+            throw ControllerLogicException.
+                    builder()
+                    .errorCode(-1)
+                    .errorMessage("The context count cannot be used without the ancor")
+                    .errorDomain("InventoryElementRepositoryImpl::searchAll")
+                    .build();
         }
 
         // all the criteria
@@ -62,7 +63,7 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
             );
         }
 
-        if(queryParameter.getDomainId()!=null && !queryParameter.getDomainId().isEmpty()) {
+        if (queryParameter.getDomainId() != null && !queryParameter.getDomainId().isEmpty()) {
             allCriteria.add(
                     Criteria.where("domainId").in(queryParameter.getDomainId())
             );
@@ -75,11 +76,13 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
         ) {
             String anchorName = getAnchorName(queryParameter.getAnchorID());
             assertion(
-                    ControllerLogicException.of(
-                            -1,
-                            "error searching anchor name",
-                            "InventoryElementRepositoryImpl::searchAll"),
-                    ()->anchorName!=null
+                    ControllerLogicException
+                            .builder()
+                            .errorCode(-1)
+                            .errorMessage("error searching anchor name")
+                            .errorDomain("InventoryElementRepositoryImpl::searchAll")
+                            .build(),
+                    () -> anchorName != null
             );
             List<Criteria> localAllCriteria = allCriteria;
             localAllCriteria.add(
@@ -88,7 +91,7 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
 
             // at this point the anchor id is not null
             Query query = getQuery(queryParameter);
-            if(!localAllCriteria.isEmpty()) {
+            if (!localAllCriteria.isEmpty()) {
                 query.addCriteria(
                         new Criteria().andOperator(
                                 localAllCriteria
@@ -118,11 +121,11 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
                         Criteria.where("name").gt(anchorName)
                 );
             }
-            if(!localAllCriteria.isEmpty()) {
+            if (!localAllCriteria.isEmpty()) {
                 query.addCriteria(
                         new Criteria().andOperator(
-                        localAllCriteria
-                    )
+                                localAllCriteria
+                        )
                 );
             }
 
@@ -144,6 +147,7 @@ public class InventoryElementRepositoryImpl implements InventoryElementRepositor
 
     /**
      * Get the default query
+     *
      * @param queryParameter is the query parameter class
      * @return return the mongodb query
      */
